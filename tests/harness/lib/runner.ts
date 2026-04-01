@@ -77,10 +77,18 @@ export async function runInterview(
   log(logFile, `maxExchanges: ${opts.maxExchanges}`);
   log(logFile, `repoRoot: ${root}`);
 
-  // Read SKILL.md
+  // Read SKILL.md and strip YAML frontmatter (starts with --- which claude CLI
+  // interprets as a CLI flag)
   const skillPath = join(root, "skills/interview/SKILL.md");
   log(logFile, `Reading skill from: ${skillPath}`);
-  const skillContent = readFileSync(skillPath, "utf-8");
+  let skillContent = readFileSync(skillPath, "utf-8");
+
+  // Strip frontmatter — everything between first --- and second ---
+  const fmMatch = skillContent.match(/^---\n[\s\S]*?\n---\n/);
+  if (fmMatch) {
+    log(logFile, `Stripping frontmatter (${fmMatch[0].length} chars)`);
+    skillContent = skillContent.slice(fmMatch[0].length);
+  }
 
   // Build the arguments string
   const argsString = [
