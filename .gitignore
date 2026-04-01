@@ -7,3 +7,6 @@ node_modules/
 
 # Vitest
 .vite/
+
+# Test harness logs
+tests/harness/.logs/
