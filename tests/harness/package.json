@@ -1,0 +1,15 @@
+{
+  "name": "agentic-interview-team-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:smoke": "vitest run --grep smoke",
+    "clean": "node -e \"const {rmSync,existsSync}=require('fs');const p='../../agentic-interview-team-tests/projects';if(existsSync(p))rmSync(p,{recursive:true,force:true})\""
+  },
+  "devDependencies": {
+    "vitest": "^3.2.1"
+  }
+}
