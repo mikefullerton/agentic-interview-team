@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest",
-    "test:smoke": "vitest run --grep smoke",
-    "clean": "node -e \"const {rmSync,existsSync}=require('fs');const p='../../agentic-interview-team-tests/projects';if(existsSync(p))rmSync(p,{recursive:true,force:true})\""
+    "test:unit": "vitest run --config vitest.unit.config.ts",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts",
+    "test:smoke": "vitest run --config vitest.e2e.config.ts --grep smoke",
+    "test:watch": "vitest --config vitest.unit.config.ts"
   },
   "devDependencies": {
     "vitest": "^3.2.1"

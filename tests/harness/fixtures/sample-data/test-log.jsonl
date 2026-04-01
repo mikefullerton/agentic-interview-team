@@ -1,0 +1,14 @@
+{"event": "specialist_invoked", "specialist": "ui-ux-design", "mode": "structured", "timestamp": "2026-04-01T19:30:00"}
+{"event": "question_asked", "specialist": "ui-ux-design", "question": "What are you building and why?", "timestamp": "2026-04-01T19:30:10"}
+{"event": "answer_received", "transcript_file": "2026-04-01-19-30-45-vision-and-purpose.md", "timestamp": "2026-04-01T19:30:45"}
+{"event": "analysis_written", "analysis_file": "2026-04-01-19-31-00-vision-and-purpose-analysis.md", "transcript_id": "a1b2c3d4", "timestamp": "2026-04-01T19:31:00"}
+{"event": "checklist_updated", "topic": "Vision and purpose", "action": "covered", "timestamp": "2026-04-01T19:31:05"}
+{"event": "specialist_invoked", "specialist": "platform-ios-apple", "mode": "structured", "timestamp": "2026-04-01T19:31:10"}
+{"event": "question_asked", "specialist": "platform-ios-apple", "question": "What's your Dynamic Type support?", "timestamp": "2026-04-01T19:31:15"}
+{"event": "answer_received", "transcript_file": "2026-04-01-19-32-00-dynamic-type.md", "timestamp": "2026-04-01T19:32:00"}
+{"event": "analysis_written", "analysis_file": "2026-04-01-19-32-30-dynamic-type-analysis.md", "transcript_id": "d4e5f6a7", "timestamp": "2026-04-01T19:32:30"}
+{"event": "specialist_invoked", "specialist": "security", "mode": "exploratory", "timestamp": "2026-04-01T19:33:00"}
+{"event": "question_asked", "specialist": "security", "question": "How do you handle photo metadata privacy?", "timestamp": "2026-04-01T19:33:05"}
+{"event": "answer_received", "transcript_file": "2026-04-01-19-33-30-photo-metadata.md", "timestamp": "2026-04-01T19:33:30"}
+{"event": "analysis_written", "analysis_file": "2026-04-01-19-34-00-photo-metadata-analysis.md", "transcript_id": "e5f6a7b8", "timestamp": "2026-04-01T19:34:00"}
+{"event": "test_complete", "exchanges": 3, "specialists_invoked": ["ui-ux-design", "platform-ios-apple", "security"], "files_written": 6, "timestamp": "2026-04-01T19:34:05"}
