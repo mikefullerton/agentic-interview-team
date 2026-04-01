@@ -114,33 +114,39 @@ After structured questions for a topic area are covered, shift to exploration:
 
 ## Spawning Specialists
 
-Use the Agent tool to spawn specialist subagents. Each specialist invocation includes:
+Use the Agent tool to spawn specialist subagents. **Every agent invocation MUST include these paths from config** so agents can access all three repos:
 
-1. The specialist's question set (read from `research/specialists/<domain>.md` in the interview team repo)
-2. The current transcript context (what's been discussed so far)
-3. The user's profile
-4. The mode (structured or exploratory)
+- `cookbook_repo` — path to the agentic-cookbook (principles, guidelines, compliance)
+- `interview_team_repo` — path to this repo (specialist question sets, agent definitions)
+- `interview_repo` — path to the user's interview repo (transcripts, analyses, profile)
 
 ### Transcript Analyzer
-Spawn the transcript analyzer (`agents/transcript-analyzer.md`) to:
-- Read the current transcript and checklist
-- Recommend which specialists to bring in next
-- Identify gaps and contradictions
-- Suggest what to cover next
+Spawn the transcript analyzer (`agents/transcript-analyzer.md`) with:
+- The paths to all three repos (cookbook, interview team, interview)
+- The project's transcript and analysis directory paths
+- The project's checklist path
+- The current interview context (what topic is being discussed, what phase)
+- Returns: specialist recommendations, gap analysis, suggested next topic
 
 ### Specialist Interviewer
 Spawn `agents/specialist-interviewer.md` with:
-- The specialist domain and question set
+- The paths to all three repos
+- The specialist domain and question set path (`<interview_team_repo>/research/specialists/<domain>.md`)
+- The relevant cookbook guideline paths for this domain (e.g., `<cookbook_repo>/cookbook/guidelines/security/` for the security specialist)
 - Current transcript for context
+- The user's profile
 - Mode: structured or exploratory
-- Returns: the next question(s) to ask
+- Returns: the next question to ask
 
 ### Specialist Analyst
 Spawn `agents/specialist-analyst.md` with:
+- The paths to all three repos
 - The specialist domain
+- The relevant cookbook guideline and compliance paths for this domain
 - The question that was asked
 - The user's answer
 - Previous transcript and analysis for context
+- The path to write the analysis file
 - Returns: analysis insights, new questions to surface, contradictions found
 
 ## Writing Files

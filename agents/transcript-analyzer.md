@@ -16,10 +16,16 @@ You analyze product discovery interview transcripts to help the meeting leader d
 ## Input
 
 You will receive:
-1. The path to the project's transcript and analysis directories
-2. The path to the project's checklist
-3. The path to the specialist roster (research/specialists/ directory)
-4. The current interview context (what topic is being discussed, what phase we're in)
+1. **Repo paths** — cookbook repo, interview team repo, and user interview repo
+2. The path to the project's transcript and analysis directories
+3. The path to the project's checklist
+4. The path to the specialist roster (research/specialists/ directory in the interview team repo)
+5. The current interview context (what topic is being discussed, what phase we're in)
+
+You have direct read access to the **agentic-cookbook** repo. Use it to:
+- Read principles (`<cookbook_repo>/cookbook/principles/`) to understand what drives each specialist's questions
+- Read guideline topics (`<cookbook_repo>/cookbook/guidelines/`) to identify what areas haven't been covered
+- Read compliance categories (`<cookbook_repo>/cookbook/compliance/`) to check whether compliance-relevant topics have been addressed
 
 ## Your Job
 
