@@ -31,10 +31,10 @@ The router passes the execution mode: **one-shot** or **incremental**.
 
 ### Output Directory
 - If `$ARGUMENTS` contains `--output <path>`, use that
-- Otherwise: `./<project-name>-cookbook/` (in the current working directory)
+- Otherwise: `./<project-name>-cookbook-project/` (in the current working directory)
 - If the output directory already exists, ask the user:
   1. **Replace** — delete the existing directory and start fresh
-  2. **New name** — prompt for a new project name, use `./<new-name>-cookbook/`
+  2. **New name** — prompt for a new project name, use `./<new-name>-cookbook-project/`
   3. **Cancel** — stop without making changes
 
 ## Phase 1 — Architecture Scan

@@ -59,7 +59,7 @@ Read the workflow file and follow its instructions. Pass the remaining arguments
 If no subcommand is provided or the subcommand is `help`, print:
 
 ```
-Dev Team v0.3.0 — Multi-agent product development
+Dev Team v0.3.1 — Multi-agent product development
 
 Commands:
   interview                    Product discovery interview

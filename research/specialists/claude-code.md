@@ -50,6 +50,10 @@ Claude Code plugin architecture, skill/rule/agent/hook authoring, MCP server des
 - `rules/permissions.md`
 - `rules/authoring-ground-rules.md`
 
+## Conventions
+
+**Cookbook project naming**: Cookbook project directories MUST use the suffix `-cookbook-project`. For a source repository named `my-app`, the cookbook project is `my-app-cookbook-project`. This distinguishes cookbook projects from other directories and makes the project type immediately recognizable.
+
 ## Structured Questions
 
 1. What Claude Code extensions does your project use — skills, rules, agents, hooks, MCP servers, plugins? Which are project-local and which are shared across projects?
