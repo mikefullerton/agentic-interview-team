@@ -3,7 +3,7 @@ name: generate-project
 version: 0.1.0
 description: Reviews and improves a cookbook project using specialist expertise — specialists review each recipe, suggest improvements, user approves/rejects, recipes updated
 allowed-tools: Read, Glob, Grep, Agent, Write, Edit, AskUserQuestion, Bash(git *), Bash(mkdir *), Bash(ls *), Bash(date *), Bash(cat *)
-argument-hint: <project-path> [--specialist <domain>] [--recipe <scope>] [--config <path>]
+argument-hint: <project-path> [--specialist <domain>] [--recipe <scope>] [--config <path>] [--test-mode] [--target <path>]
 ---
 
 # Generate Project v0.1.0
@@ -232,6 +232,45 @@ Present the final summary:
 - **<N>** suggestions approved, **<M>** rejected
 - **<N>** compliance gaps remaining
 - Project updated at `<project-path>`"
+
+## Test Mode
+
+When `$ARGUMENTS` contains `--test-mode`, follow the test mode contract at `<interview_team_repo>/tests/test-mode-spec.md`.
+
+Read the contract file at the start of test mode to understand the unified log schema.
+
+### Test Mode Behavior
+
+1. **Auto-approve all prompts.** Every `AskUserQuestion` call is auto-approved — proceed with the first/default option without waiting for input. This applies to:
+   - Specialist assignment approval ("Want to adjust before I start reviews?")
+   - Individual suggestion approval — **approve all suggestions**
+   - Question answering — **skip all questions** (don't answer, mark as skipped)
+
+2. **Write test log.** Append JSON events to `<project>/test-log.jsonl`:
+
+   Phase boundaries:
+   - `phase_started` / `phase_completed` for: `load-project`, `specialist-assignment`, `review-loop`, `final-report`
+
+   Agent interactions:
+   - `agent_spawned` / `agent_completed` for each `recipe-reviewer` instance
+
+   Skill-specific events:
+   - `reviewer_spawned` — when launching a reviewer: `recipe_scope`, `specialist`
+   - `review_completed` — when a reviewer returns: `recipe_scope`, `specialist`, `suggestion_count`, `gap_count`
+   - `suggestion_approved` — for each auto-approved suggestion: `recipe_scope`, `specialist`, `title`
+   - `recipe_updated` — after applying changes to a recipe: `recipe_scope`, `changes_applied`, `new_version`
+
+   File writes:
+   - `file_written` for every artifact: review files, updated recipes, review-summary.md
+
+   End:
+   - `test_complete` summary
+
+3. **Target path.** Use `--target <path>` or first positional arg for the cookbook project directory.
+
+4. **No profile updates.** Don't modify any user data.
+
+5. **Config must pre-exist.** Fail immediately if config is missing.
 
 ## Aggressive Persistence
 
