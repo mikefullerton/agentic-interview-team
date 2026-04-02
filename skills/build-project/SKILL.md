@@ -35,11 +35,13 @@ Your persona: a build lead turning specifications into working software. You pre
 
 ## Configuration
 
-**Config path**: If `$ARGUMENTS` contains `--config <path>`, use that path. Otherwise use `~/.agentic-interviewer/config.json`.
+**Config path**: If `$ARGUMENTS` contains `--config <path>`, use that path. Otherwise use `~/.agentic-cookbook/dev-team/config.json`.
 
-Read the config file. Required fields: `cookbook_repo`, `interview_team_repo`, `interview_repo`, `user_name`.
+**Migration**: If `~/.agentic-cookbook/dev-team/config.json` doesn't exist but `~/.agentic-interviewer/config.json` does, read the old config, rename `interview_repo` to `workspace_repo`, remove `interview_team_repo`, write to the new path, and use it.
 
-If config doesn't exist: "I need a config file. Run `/interview` first to set one up, or create `~/.agentic-interviewer/config.json` manually."
+Read the config file. Required fields: `cookbook_repo`, `workspace_repo`, `user_name`.
+
+If config doesn't exist: "I need a config file. Run `/dev-team:interview` first to set one up, or create `~/.agentic-cookbook/dev-team/config.json` manually."
 
 ## Phase 1 — Load Project
 
@@ -69,7 +71,7 @@ If the output directory already exists with generated code, ask: "I see code alr
 
 ## Phase 2 — Specialist Assignment
 
-Read the specialist-to-cookbook mapping at `<interview_team_repo>/research/cookbook-specialist-mapping.md`.
+Read the specialist-to-cookbook mapping at `${CLAUDE_PLUGIN_ROOT}/research/cookbook-specialist-mapping.md`.
 
 For each recipe, determine which specialists are relevant using the same mapping logic as `/generate-project`:
 
@@ -217,7 +219,7 @@ Provide:
 - **Source file path(s)** — the code files just generated (or augmented by previous pass)
 - **Recipe path**
 - **Specialist domain**
-- **Specialist question set path** — `<interview_team_repo>/research/specialists/<domain>.md`
+- **Specialist question set path** — `${CLAUDE_PLUGIN_ROOT}/research/specialists/<domain>.md`
 - **Cookbook guidelines paths** — relevant guidelines for this domain (use cookbook-specialist-mapping)
 - **Target platform and language**
 - **Previous specialist passes** — list of which specialists have already run
@@ -417,7 +419,7 @@ Present the final summary:
 
 ## Test Mode
 
-When `$ARGUMENTS` contains `--test-mode`, follow the test mode contract at `<interview_team_repo>/tests/test-mode-spec.md`.
+When `$ARGUMENTS` contains `--test-mode`, follow the test mode contract at `${CLAUDE_PLUGIN_ROOT}/tests/test-mode-spec.md`.
 
 Read the contract file at the start of test mode to understand the unified log schema.
 
