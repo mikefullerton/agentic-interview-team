@@ -9,6 +9,12 @@ Claude Code plugin architecture, skill/rule/agent/hook authoring, MCP server des
 ### Guidelines
 - `cookbook/guidelines/skills-and-agents/authoring-skills-and-rules.md`
 - `cookbook/guidelines/skills-and-agents/performance.md`
+- `cookbook/guidelines/skills-and-agents/skill-checklist.md`
+- `cookbook/guidelines/skills-and-agents/rule-checklist.md`
+- `cookbook/guidelines/skills-and-agents/agent-checklist.md`
+- `cookbook/guidelines/skills-and-agents/skill-structure-reference.md`
+- `cookbook/guidelines/skills-and-agents/rule-structure-reference.md`
+- `cookbook/guidelines/skills-and-agents/agent-structure-reference.md`
 
 ### Principles
 - `cookbook/principles/separation-of-concerns.md`
