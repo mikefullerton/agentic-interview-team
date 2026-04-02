@@ -94,3 +94,48 @@ export function cleanTestOutput(projectName: string): void {
 export function testProjectDir(projectName: string): string {
   return join(REPO_PATHS.testOutput, "projects", projectName);
 }
+
+/**
+ * Get the target repo path for analyze-project tests.
+ * Reads from TEST_TARGET_REPO env var, or falls back to a default.
+ */
+export function getTargetRepo(): string {
+  const envPath = process.env.TEST_TARGET_REPO;
+  if (envPath) return resolve(envPath);
+  throw new Error(
+    "TEST_TARGET_REPO env var must be set to a git repo path for analyze tests"
+  );
+}
+
+/**
+ * Get the target cookbook project path for generate/build tests.
+ * Reads from TEST_TARGET_PROJECT env var, or falls back to a default.
+ */
+export function getTargetProject(): string {
+  const envPath = process.env.TEST_TARGET_PROJECT;
+  if (envPath) return resolve(envPath);
+  throw new Error(
+    "TEST_TARGET_PROJECT env var must be set to a cookbook project path for generate/build tests"
+  );
+}
+
+/**
+ * Create a test config file with the given overrides.
+ * Returns the path to the created config file.
+ */
+export function createTestConfig(overrides: Record<string, string> = {}): string {
+  const configDir = join(REPO_PATHS.testOutput, "config");
+  if (!existsSync(configDir)) mkdirSync(configDir, { recursive: true });
+
+  const configPath = join(configDir, `test-config-${Date.now()}.json`);
+  const config = {
+    interview_repo: REPO_PATHS.testOutput,
+    cookbook_repo: REPO_PATHS.cookbook,
+    interview_team_repo: REPO_PATHS.interviewTeam,
+    user_name: "test-user",
+    ...overrides,
+  };
+
+  writeFileSync(configPath, JSON.stringify(config, null, 2));
+  return configPath;
+}
