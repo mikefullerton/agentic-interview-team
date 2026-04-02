@@ -4,6 +4,8 @@
 
 import { existsSync, readFileSync, readdirSync, statSync } from "fs";
 import { join } from "path";
+import type { LogEvent } from "./log-parser.js";
+import { filterByEvent } from "./log-parser.js";
 
 // ── Filesystem assertions ───────────────────────────────────────────
 
@@ -186,3 +188,73 @@ export const ANALYSIS_FIELDS = [
   "session",
   "specialist",
 ];
+
+// ── Unified log assertions (all skills) ───────────────────────────────
+
+/**
+ * Verify a file_written event exists matching a path pattern.
+ */
+export function expectFileWritten(
+  events: LogEvent[],
+  pathPattern: string | RegExp
+): boolean {
+  const written = filterByEvent(events, "file_written");
+  if (typeof pathPattern === "string") {
+    return written.some((e) => (e.path as string).includes(pathPattern));
+  }
+  return written.some((e) => pathPattern.test(e.path as string));
+}
+
+/**
+ * Verify an agent_spawned event exists for the given agent name.
+ */
+export function expectAgentSpawned(
+  events: LogEvent[],
+  agentName: string
+): boolean {
+  return filterByEvent(events, "agent_spawned").some(
+    (e) => e.agent === agentName
+  );
+}
+
+/**
+ * Verify a phase_completed event exists for the given phase.
+ */
+export function expectPhaseCompleted(
+  events: LogEvent[],
+  phaseName: string
+): boolean {
+  return filterByEvent(events, "phase_completed").some(
+    (e) => e.phase === phaseName
+  );
+}
+
+/**
+ * Verify the build_result event matches expected outcome.
+ */
+export function expectBuildResult(
+  events: LogEvent[],
+  expected: "success" | "failure"
+): boolean {
+  const result = filterByEvent(events, "build_result")[0];
+  if (!result) return false;
+  return expected === "success" ? result.success === true : result.success === false;
+}
+
+/**
+ * Verify specialist_pass_complete events are in the expected tier order
+ * for a given recipe.
+ */
+export function expectSpecialistOrder(
+  events: LogEvent[],
+  recipe: string,
+  expectedOrder: string[]
+): boolean {
+  const passes = filterByEvent(events, "specialist_pass_complete")
+    .filter((e) => e.recipe_scope === recipe)
+    .map((e) => e.specialist as string);
+
+  // Filter expectedOrder to only specialists that actually ran
+  const expected = expectedOrder.filter((s) => passes.includes(s));
+  return JSON.stringify(passes) === JSON.stringify(expected);
+}
