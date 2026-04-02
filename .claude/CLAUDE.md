@@ -23,14 +23,15 @@ Three repos:
 
 ```
 .claude-plugin/            # Plugin manifest
-agents/                    # 14 subagent definitions
+agents/                    # 15 subagent definitions
 skills/
   interview/               # Product discovery interview
   analyze/                 # Codebase → cookbook project
   generate/                # Specialist recipe review
   build/                   # Cookbook project → working code
+  lint/                    # Artifact linting against cookbook standards
 research/
-  specialists/             # 18 specialist question sets (12 domain + 6 platform)
+  specialists/             # 19 specialist question sets (13 domain + 6 platform)
   cookbook-specialist-mapping.md
 planning/
   design-spec.md           # Full design specification
