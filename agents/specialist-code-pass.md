@@ -140,6 +140,18 @@ You will receive:
 - Build configuration for debug vs. release behavior
 - Environment-specific configuration (dev/staging/prod URLs)
 
+### claude-code
+**Focus sections:** All (skills, rules, agents are the primary artifacts)
+**What to add:**
+- Progressive disclosure structure — restructure always-on content (rules, CLAUDE.md) to minimal directives with skill/reference pointers for detailed guidance
+- Shell script extraction — identify deterministic operations (file scaffolding, git commands, linting, formatting) and extract to shell scripts instead of model-driven steps
+- Proper frontmatter fields — ensure all required fields are present and valid for the artifact type (skill, rule, or agent)
+- Context budget annotations — add comments noting per-turn cost (line count) for rule files, flag content that could move to on-demand loading
+- Skill versioning — add version field, version print on startup, on-disk version check boilerplate
+- Hook wiring — identify opportunities for deterministic automation via hooks (PostToolUse for formatting, PreToolUse for validation, Stop for verification)
+- Permission prompts — add explicit user confirmation before file modifications, following the atomic permission prompt pattern
+- Model selection annotations — flag subtasks that could use a smaller model, with tradeoff notes
+
 ### Platform Specialists (platform-ios-apple, platform-android, platform-windows, platform-web-frontend, platform-web-backend, platform-database)
 **Focus sections:** Platform Notes
 **What to add:**
