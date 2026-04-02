@@ -5,9 +5,9 @@ Auth, transport security, token handling, input validation, secure storage, sens
 
 ## Cookbook Sources
 - `cookbook/guidelines/security/` (12+ guidelines)
-- `cookbook/compliance/security-compliance.md`
+- `cookbook/compliance/security.md`
 - `cookbook/compliance/privacy-and-data.md`
-- `cookbook/compliance/user-safety-compliance.md`
+- `cookbook/compliance/user-safety.md`
 
 ## Structured Questions
 

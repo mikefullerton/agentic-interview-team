@@ -4,8 +4,8 @@
 UIKit, SwiftUI, App Store, Human Interface Guidelines, Dynamic Type, all Apple platforms (iOS, macOS, watchOS, tvOS, visionOS), platform integration.
 
 ## Cookbook Sources
-- `cookbook/guidelines/swift/`
-- Cross-cutting: accessibility, UI, platform compliance
+- `cookbook/guidelines/language/swift/`
+- `cookbook/compliance/platform-compliance.md`
 
 ## Structured Questions
 

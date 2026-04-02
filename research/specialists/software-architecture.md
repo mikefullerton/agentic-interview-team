@@ -8,7 +8,7 @@ Composition, dependency injection, boundaries, separation of concerns, modularit
 - `cookbook/principles/dependency-injection.md`
 - `cookbook/principles/manage-complexity-through-boundaries.md`
 - `cookbook/principles/separation-of-concerns.md`
-- `cookbook/principles/optimize-for-change.md`
+- `cookbook/principles/meta-principle-optimize-for-change.md`
 
 ## Structured Questions
 

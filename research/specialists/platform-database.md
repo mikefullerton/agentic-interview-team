@@ -4,7 +4,9 @@
 Schema design, migrations, indexing, query optimization, geoscaling, failover, replication, backup/restore, data modeling.
 
 ## Cookbook Sources
-- Cross-cutting: data persistence, reliability, networking/access-patterns
+- `cookbook/guidelines/language/python/database.md`
+- `cookbook/compliance/reliability.md`
+- `cookbook/compliance/access-patterns.md`
 
 ## Structured Questions
 

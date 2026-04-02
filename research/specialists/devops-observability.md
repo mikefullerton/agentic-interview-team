@@ -6,7 +6,7 @@ Structured logging, analytics, tight feedback loops, performance compliance, deb
 ## Cookbook Sources
 - `cookbook/guidelines/logging/`
 - `cookbook/principles/tight-feedback-loops.md`
-- `cookbook/compliance/performance-compliance.md`
+- `cookbook/compliance/performance.md`
 
 ## Structured Questions
 

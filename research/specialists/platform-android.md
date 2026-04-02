@@ -4,8 +4,8 @@
 Kotlin, Material Design, font scaling, Play Store, Jetpack Compose, Android architecture components, platform integration.
 
 ## Cookbook Sources
-- `cookbook/guidelines/kotlin/`
-- Cross-cutting: accessibility, UI, platform compliance
+- `cookbook/guidelines/language/kotlin/`
+- `cookbook/compliance/platform-compliance.md`
 
 ## Structured Questions
 

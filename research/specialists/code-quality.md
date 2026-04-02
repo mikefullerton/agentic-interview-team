@@ -8,7 +8,7 @@ Simplicity, deletability, explicit code, scope discipline, linting, atomic commi
 - `cookbook/principles/explicit-over-implicit.md`
 - `cookbook/principles/simplicity.md`
 - `cookbook/guidelines/code-quality/`
-- `cookbook/compliance/best-practices-compliance.md`
+- `cookbook/compliance/best-practices.md`
 
 ## Structured Questions
 
