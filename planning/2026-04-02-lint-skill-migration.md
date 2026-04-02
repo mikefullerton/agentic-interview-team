@@ -19,7 +19,7 @@ The cookbook repo has 7 standalone lint/review skills that each inline their own
 | Role | Command | Responsibility |
 |------|---------|---------------|
 | **Interviewer** | `/dev-team-interview` | Discover product requirements through structured and exploratory questioning with specialist expertise |
-| **Cookbook Analyzer** | `/dev-team-analyze <target>` | Reverse-engineer an artifact into cookbook format — codebase into cookbook project |
+| **Cookbook Analyzer** | `/dev-team-create-project-from-code <target>` | Reverse-engineer an artifact into cookbook format — codebase into cookbook project |
 | **Cookbook Project Generator** | `/dev-team-generate <target>` | Improve a cookbook project through specialist review — review recipes, suggest changes, apply approved improvements |
 | **Project Builder** | `/dev-team-build <target>` | Build working code from a cookbook project — scaffold, generate, augment with specialists, compile, test |
 | **Linter** | `/dev-team-lint <target>` | Evaluate any artifact against cookbook standards — skills, rules, agents, recipes, implementations — produce PASS/WARN/FAIL report with specialist findings |
@@ -67,14 +67,14 @@ The three lint checklists currently live as skill reference files. They need to 
 
 **Files:**
 - Rename: `skills/interview/` → `skills/interview/` (already verb — no change needed, just update SKILL.md name field)
-- Rename: `skills/analyze/` → `skills/analyze/`
+- Rename: `skills/analyze/` → `skills/create-project-from-code/`
 - Rename: `skills/generate/` → `skills/generate/`
 - Rename: `skills/build/` → `skills/build/`
 - Modify: `.claude-plugin/plugin.json` — update skill references if listed
 - Modify: `CLAUDE.md` — update skill command references
 
-- [ ] **Step 1:** Rename `skills/analyze/` directory to `skills/analyze/`
-- [ ] **Step 2:** Update `skills/analyze/SKILL.md` frontmatter: `name: dev-team-analyze`, update description to mention `<target>` argument
+- [ ] **Step 1:** Rename `skills/analyze/` directory to `skills/create-project-from-code/`
+- [ ] **Step 2:** Update `skills/create-project-from-code/SKILL.md` frontmatter: `name: dev-team-create-project-from-code`, update description to mention `<target>` argument
 - [ ] **Step 3:** Rename `skills/generate/` directory to `skills/generate/`
 - [ ] **Step 4:** Update `skills/generate/SKILL.md` frontmatter: `name: dev-team-generate`
 - [ ] **Step 5:** Rename `skills/build/` directory to `skills/build/`
@@ -227,6 +227,6 @@ Only after the dev-team lint skill is working.
 3. **Lint an agent:** Run `/dev-team-lint path/to/some/agent.md` — should auto-detect as agent, run S/C/B/A series checks
 4. **Lint a recipe:** Run `/dev-team-lint path/to/some/recipe.md` — should run structural checks + domain specialist review
 5. **Lint an implementation:** Run `/dev-team-lint path/to/impl/ --recipe path/to/recipe.md` — should run guideline + recipe conformance checks
-6. **Renamed skills work:** Run `/dev-team-analyze`, `/dev-team-generate`, `/dev-team-build` — verify they invoke correctly
+6. **Renamed skills work:** Run `/dev-team-create-project-from-code`, `/dev-team-generate`, `/dev-team-build` — verify they invoke correctly
 7. **Cookbook skills removed:** Verify `/lint-skill`, `/lint-rule` etc. no longer exist in cookbook
 8. **plan-cookbook-recipe delegation:** Run `/plan-cookbook-recipe` and verify compliance phase delegates to dev-team if available

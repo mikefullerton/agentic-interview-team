@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add `--test-mode` with unified test logging to all four skills (interview, analyze, generate, build) and extend the Vitest harness with specs for each.
+**Goal:** Add `--test-mode` with unified test logging to all four skills (interview, create-project-from-code, generate, build) and extend the Vitest harness with specs for each.
 
 **Architecture:** A shared test-mode contract (`tests/test-mode-spec.md`) defines common behavior and log schema. Each skill references it. The existing Vitest harness in `tests/harness/` is extended with a generic `runSkill()` function, a unified log parser, and skill-agnostic assertions. New E2E specs verify each skill's output.
 
@@ -116,18 +116,18 @@ Plus event-specific fields documented below.
 Skills write test log events by appending a JSON line to `test-log.jsonl` in the project output directory using the Write tool. Example:
 
 At each phase boundary:
-- Before starting Phase 1: write `{"skill": "analyze", "phase": "architecture-scan", "event": "phase_started", "timestamp": "<now>"}`
-- After completing Phase 1: write `{"skill": "analyze", "phase": "architecture-scan", "event": "phase_completed", "duration_ms": <elapsed>, "timestamp": "<now>"}`
+- Before starting Phase 1: write `{"skill": "create-project-from-code", "phase": "architecture-scan", "event": "phase_started", "timestamp": "<now>"}`
+- After completing Phase 1: write `{"skill": "create-project-from-code", "phase": "architecture-scan", "event": "phase_completed", "duration_ms": <elapsed>, "timestamp": "<now>"}`
 
 At each agent interaction:
-- Before spawning: write `{"skill": "analyze", "phase": "architecture-scan", "event": "agent_spawned", "agent": "codebase-scanner", "timestamp": "<now>"}`
-- After return: write `{"skill": "analyze", "phase": "architecture-scan", "event": "agent_completed", "agent": "codebase-scanner", "status": "success", "timestamp": "<now>"}`
+- Before spawning: write `{"skill": "create-project-from-code", "phase": "architecture-scan", "event": "agent_spawned", "agent": "codebase-scanner", "timestamp": "<now>"}`
+- After return: write `{"skill": "create-project-from-code", "phase": "architecture-scan", "event": "agent_completed", "agent": "codebase-scanner", "status": "success", "timestamp": "<now>"}`
 
 At each file write:
-- After persisting: write `{"skill": "analyze", "phase": "recipe-generation", "event": "file_written", "path": "app/ui/file-tree-browser.md", "file_type": "recipe", "timestamp": "<now>"}`
+- After persisting: write `{"skill": "create-project-from-code", "phase": "recipe-generation", "event": "file_written", "path": "app/ui/file-tree-browser.md", "file_type": "recipe", "timestamp": "<now>"}`
 
 At the end:
-- Write `{"skill": "analyze", "phase": "summary", "event": "test_complete", "phases_completed": 5, "agents_spawned": 8, "files_written": 12, "errors": 0, "timestamp": "<now>"}`
+- Write `{"skill": "create-project-from-code", "phase": "summary", "event": "test_complete", "phases_completed": 5, "agents_spawned": 8, "files_written": 12, "errors": 0, "timestamp": "<now>"}`
 ```
 
 Write this to `tests/test-mode-spec.md`.
@@ -534,14 +534,14 @@ Add these functions at the end of `tests/harness/lib/fixtures.ts`:
 
 ```typescript
 /**
- * Get the target repo path for analyze tests.
+ * Get the target repo path for create-project-from-code tests.
  * Reads from TEST_TARGET_REPO env var, or falls back to a default.
  */
 export function getTargetRepo(): string {
   const envPath = process.env.TEST_TARGET_REPO;
   if (envPath) return resolve(envPath);
   throw new Error(
-    "TEST_TARGET_REPO env var must be set to a git repo path for analyze tests"
+    "TEST_TARGET_REPO env var must be set to a git repo path for create-project-from-code tests"
   );
 }
 
@@ -599,7 +599,7 @@ git push
 Add these scripts to the `"scripts"` object in `tests/harness/package.json`:
 
 ```json
-"test:analyze:smoke": "vitest run --config vitest.e2e.config.ts specs/analyze-smoke.test.ts",
+"test:create-project-from-code:smoke": "vitest run --config vitest.e2e.config.ts specs/create-project-from-code-smoke.test.ts",
 "test:generate:smoke": "vitest run --config vitest.e2e.config.ts specs/generate-smoke.test.ts",
 "test:build:smoke": "vitest run --config vitest.e2e.config.ts specs/build-smoke.test.ts",
 "test:all:smoke": "vitest run --config vitest.e2e.config.ts specs/*-smoke.test.ts"
@@ -609,20 +609,20 @@ Add these scripts to the `"scripts"` object in `tests/harness/package.json`:
 
 ```bash
 git add tests/harness/package.json
-git commit -m "Add test scripts for analyze, generate, and build smoke tests"
+git commit -m "Add test scripts for create-project-from-code, generate, and build smoke tests"
 git push
 ```
 
 ---
 
-### Task 7: Add --test-mode to analyze skill
+### Task 7: Add --test-mode to create-project-from-code skill
 
 **Files:**
-- Modify: `skills/analyze/SKILL.md`
+- Modify: `skills/create-project-from-code/SKILL.md`
 
 - [ ] **Step 1: Add Test Mode section**
 
-Add this section before the `## Error Handling` section at the end of `skills/analyze/SKILL.md`:
+Add this section before the `## Error Handling` section at the end of `skills/create-project-from-code/SKILL.md`:
 
 ```markdown
 ## Test Mode
@@ -658,7 +658,7 @@ Read the contract file at the start of test mode to understand the unified log s
    End:
    - `test_complete` summary
 
-3. **Target path.** The `--target <path>` flag (or first positional arg) specifies the repo to analyze. In test mode, this is required.
+3. **Target path.** The `--target <path>` flag (or first positional arg) specifies the repo to create-project-from-code. In test mode, this is required.
 
 4. **No profile updates.** Don't modify any user data.
 
@@ -676,17 +676,17 @@ argument-hint: <repo-path> [--output <path>] [--config <path>] [--test-mode] [--
 - [ ] **Step 3: Commit**
 
 ```bash
-git add skills/analyze/SKILL.md
-git commit -m "Add --test-mode with unified logging to analyze skill"
+git add skills/create-project-from-code/SKILL.md
+git commit -m "Add --test-mode with unified logging to create-project-from-code skill"
 git push
 ```
 
 ---
 
-### Task 8: Write analyze smoke test
+### Task 8: Write create-project-from-code smoke test
 
 **Files:**
-- Create: `tests/harness/specs/analyze-smoke.test.ts`
+- Create: `tests/harness/specs/create-project-from-code-smoke.test.ts`
 
 - [ ] **Step 1: Write the test spec**
 
@@ -723,7 +723,7 @@ import { parseLog, testSummary } from "../lib/log-parser.js";
 import { existsSync, readdirSync, rmSync } from "fs";
 import { join } from "path";
 
-describe("analyze smoke test", () => {
+describe("create-project-from-code smoke test", () => {
   let result: RunResult;
   let outputDir: string;
   let configPath: string;
@@ -742,12 +742,12 @@ describe("analyze smoke test", () => {
       rmSync(outputDir, { recursive: true, force: true });
     }
 
-    console.log("[analyze-smoke] Starting analyze run...");
-    console.log(`[analyze-smoke] target: ${targetRepo}`);
-    console.log(`[analyze-smoke] output: ${outputDir}`);
+    console.log("[create-project-from-code-smoke] Starting analyze run...");
+    console.log(`[create-project-from-code-smoke] target: ${targetRepo}`);
+    console.log(`[create-project-from-code-smoke] output: ${outputDir}`);
 
     result = await runSkill({
-      skillName: "analyze",
+      skillName: "create-project-from-code",
       cwd: targetRepo,
       configPath,
       targetPath: targetRepo,
@@ -755,7 +755,7 @@ describe("analyze smoke test", () => {
       timeout: 900_000, // 15 minutes
     });
 
-    console.log(`[analyze-smoke] Completed. exitCode: ${result.exitCode}`);
+    console.log(`[create-project-from-code-smoke] Completed. exitCode: ${result.exitCode}`);
   }, 960_000);
 
   it("completes without error", () => {
@@ -791,7 +791,7 @@ describe("analyze smoke test", () => {
       return results;
     }
     const recipes = findMdFiles(appDir);
-    console.log(`[analyze-smoke] recipes found: ${recipes.length}`);
+    console.log(`[create-project-from-code-smoke] recipes found: ${recipes.length}`);
     expect(recipes.length).toBeGreaterThanOrEqual(1);
   });
 
@@ -801,7 +801,7 @@ describe("analyze smoke test", () => {
 
   it("writes test log with expected events", () => {
     const events = parseLog(outputDir);
-    console.log(`[analyze-smoke] log events: ${events.length}`);
+    console.log(`[create-project-from-code-smoke] log events: ${events.length}`);
 
     expect(events.length).toBeGreaterThanOrEqual(1);
     expect(expectAgentSpawned(events, "codebase-scanner")).toBe(true);
@@ -812,13 +812,13 @@ describe("analyze smoke test", () => {
 });
 ```
 
-Write this to `tests/harness/specs/analyze-smoke.test.ts`.
+Write this to `tests/harness/specs/create-project-from-code-smoke.test.ts`.
 
 - [ ] **Step 2: Commit**
 
 ```bash
-git add tests/harness/specs/analyze-smoke.test.ts
-git commit -m "Add analyze smoke test spec"
+git add tests/harness/specs/create-project-from-code-smoke.test.ts
+git commit -m "Add create-project-from-code smoke test spec"
 git push
 ```
 
@@ -1309,7 +1309,7 @@ git push
 
 - [ ] **Step 1: Increase timeout for build tests**
 
-The current 16-minute timeout is fine for interview/analyze/generate, but build tests need 30+ minutes. Update the config to use a longer timeout:
+The current 16-minute timeout is fine for interview/create-project-from-code/generate, but build tests need 30+ minutes. Update the config to use a longer timeout:
 
 ```typescript
 import { defineConfig } from "vitest/config";
@@ -1346,10 +1346,10 @@ git push
 After all tasks are complete, verify the infrastructure works:
 
 1. **Type check:** `cd tests/harness && npx tsc --noEmit` — should pass with no errors
-2. **Run analyze smoke test:**
+2. **Run create-project-from-code smoke test:**
    ```bash
    cd tests/harness
-   TEST_TARGET_REPO=~/projects/agentic-cookbook/agentic-cookbook npm run test:analyze:smoke
+   TEST_TARGET_REPO=~/projects/agentic-cookbook/agentic-cookbook npm run test:create-project-from-code:smoke
    ```
 3. **Run generate smoke test** (requires a cookbook project from a prior analyze run):
    ```bash

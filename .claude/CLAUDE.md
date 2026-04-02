@@ -7,7 +7,7 @@ A Claude Code plugin for multi-agent product discovery, analysis, and project bu
 | Role | Command | Responsibility |
 |------|---------|---------------|
 | **Interviewer** | `/dev-team-interview` | Discover product requirements through structured and exploratory questioning with specialist expertise |
-| **Cookbook Analyzer** | `/dev-team-analyze <target>` | Reverse-engineer an artifact into cookbook format — codebase into cookbook project |
+| **Cookbook Analyzer** | `/dev-team-create-project-from-code <target>` | Reverse-engineer an artifact into cookbook format — codebase into cookbook project |
 | **Cookbook Project Generator** | `/dev-team-generate <target>` | Improve a cookbook project through specialist review — review recipes, suggest changes, apply approved improvements |
 | **Project Builder** | `/dev-team-build <target>` | Build working code from a cookbook project — scaffold, generate, augment with specialists, compile, test |
 | **Linter** | `/dev-team-lint <target>` | Evaluate any artifact against cookbook standards — skills, rules, agents, recipes, implementations — produce PASS/WARN/FAIL report with specialist findings |
@@ -26,7 +26,7 @@ Three repos:
 agents/                    # 15 subagent definitions
 skills/
   interview/               # Product discovery interview
-  analyze/                 # Codebase → cookbook project
+  create-project-from-code/ # Codebase → cookbook project
   generate/                # Specialist recipe review
   build/                   # Cookbook project → working code
   lint/                    # Artifact linting against cookbook standards

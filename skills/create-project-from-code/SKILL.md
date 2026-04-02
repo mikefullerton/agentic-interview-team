@@ -1,20 +1,20 @@
 ---
-name: dev-team-analyze
-version: 0.1.0
+name: dev-team-create-project-from-code
+version: 0.1.1
 description: Reverse-engineers an existing codebase into a cookbook project — discovers architecture, matches recipe scopes, generates recipes, and scaffolds the project directory
 allowed-tools: Read, Glob, Grep, Agent, Write, Edit, AskUserQuestion, Bash(git *), Bash(mkdir *), Bash(ls *), Bash(date *), Bash(cat *), Bash(wc *)
 argument-hint: <repo-path> [--output <path>] [--config <path>] [--test-mode] [--target <path>]
 ---
 
-# Analyze Project v0.1.0
+# Create Project From Code v0.1.1
 
 ## Startup
 
-**First action**: If `$ARGUMENTS` is `--version`, print `analyze v0.1.0` and stop.
+**First action**: If `$ARGUMENTS` is `--version`, print `create-project-from-code v0.1.1` and stop.
 
-Otherwise, print `analyze v0.1.0` as the first line of output, then proceed.
+Otherwise, print `create-project-from-code v0.1.1` as the first line of output, then proceed.
 
-**Version check**: Run `${CLAUDE_PLUGIN_ROOT}/scripts/version-check.sh "${CLAUDE_SKILL_DIR}" "0.1.0"`. If it outputs a warning, print it and continue.
+**Version check**: Run `${CLAUDE_PLUGIN_ROOT}/scripts/version-check.sh "${CLAUDE_SKILL_DIR}" "0.1.1"`. If it outputs a warning, print it and continue.
 
 ## Overview
 
@@ -159,7 +159,7 @@ title: "Generation Summary — <project-name>"
 type: research
 created: <ISO 8601 datetime>
 modified: <ISO 8601 datetime>
-author: analyze
+author: create-project-from-code
 summary: "Automated analysis of <repo-name> into a cookbook project"
 ---
 

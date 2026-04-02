@@ -405,7 +405,7 @@ If the session is interrupted at any point, everything up to the last completed 
 ## Error Handling
 
 - **No `cookbook-project.json` found**: Ask user for the correct path.
-- **Empty component tree**: "This project has no recipes. Run `/dev-team-analyze` first."
+- **Empty component tree**: "This project has no recipes. Run `/dev-team-create-project-from-code` first."
 - **Scaffolder fails**: Report the error and stop. Can't generate code without a project skeleton.
 - **Code generator fails for a recipe**: Skip that recipe, note in summary, continue with others.
 - **Specialist pass fails**: Log which specialist failed for which recipe, continue with next specialist. Code from the previous pass is still on disk.

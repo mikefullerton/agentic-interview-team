@@ -40,7 +40,7 @@ research/
 
 ```
 skills/interview/SKILL.md     # Replace config/version boilerplate, reference test mode spec
-skills/analyze/SKILL.md       # Replace config/version boilerplate, reference test mode spec
+skills/create-project-from-code/SKILL.md       # Replace config/version boilerplate, reference test mode spec
 skills/generate/SKILL.md      # Replace config/version/assignment boilerplate, reference test mode spec
 skills/build/SKILL.md         # Replace config/version/assignment boilerplate, reference test mode spec
 skills/lint/SKILL.md          # Replace config/version/assignment boilerplate, reference test mode spec
@@ -422,7 +422,7 @@ This is the main optimization task. Each skill gets the same treatment:
 
 **Files:**
 - Modify: `skills/interview/SKILL.md`
-- Modify: `skills/analyze/SKILL.md`
+- Modify: `skills/create-project-from-code/SKILL.md`
 - Modify: `skills/generate/SKILL.md`
 - Modify: `skills/build/SKILL.md`
 - Modify: `skills/lint/SKILL.md`
@@ -460,7 +460,7 @@ Replace the **Test Mode** section with:
 When `$ARGUMENTS` contains `--test-mode`, follow the test mode contract in `${CLAUDE_PLUGIN_ROOT}/tests/test-mode-spec.md`.
 ```
 
-- [ ] **Step 3:** Apply the same config/version/test-mode replacements to `skills/analyze/SKILL.md`
+- [ ] **Step 3:** Apply the same config/version/test-mode replacements to `skills/create-project-from-code/SKILL.md`
 
 - [ ] **Step 4:** Update `skills/generate/SKILL.md` — same config/version/test-mode replacements, PLUS replace the specialist assignment section:
 
