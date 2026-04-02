@@ -91,6 +91,8 @@ export function hasValidFrontmatter(
  * Parse the test log (JSONL) and return events.
  */
 export interface TestLogEvent {
+  skill?: string;
+  phase?: string;
   event: string;
   specialist?: string;
   mode?: string;
