@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cookbook Project Viewer</title>
+<style>
+  :root {
+    --sidebar-width: 300px;
+    --header-height: 72px;
+    --bg: #fafafa;
+    --sidebar-bg: #ffffff;
+    --border: #e2e8f0;
+    --text: #1a202c;
+    --text-muted: #64748b;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --tag-bg: #e0f2fe;
+    --tag-text: #0369a1;
+    --code-bg: #f1f5f9;
+    --tree-hover: #f1f5f9;
+    --tree-active: #e0f2fe;
+    --badge-bg: #f0fdf4;
+    --badge-text: #166534;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* Header */
+  .header {
+    height: var(--header-height);
+    background: #ffffff;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 24px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+  }
+
+  .header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .header-meta {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .header-meta .badge {
+    background: var(--badge-bg);
+    color: var(--badge-text);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  .platform-tag {
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  /* Layout */
+  .container {
+    display: flex;
+    margin-top: var(--header-height);
+    height: calc(100vh - var(--header-height));
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .sidebar-tab {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted);
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+
+  .sidebar-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .search-box {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+  }
+
+  .search-box input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  }
+
+  .tree-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+  }
+
+  /* Tree */
+  .tree-node { user-select: none; }
+
+  .tree-row {
+    display: flex;
+    align-items: center;
+    padding: 4px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    gap: 4px;
+  }
+
+  .tree-row:hover { background: var(--tree-hover); }
+  .tree-row.active { background: var(--tree-active); font-weight: 500; }
+
+  .tree-toggle {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .tree-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+
+  .tree-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .tree-children { display: none; }
+  .tree-node.expanded > .tree-children { display: block; }
+
+  .tree-depth-1 .tree-row { padding-left: 24px; }
+  .tree-depth-2 .tree-row { padding-left: 40px; }
+  .tree-depth-3 .tree-row { padding-left: 56px; }
+  .tree-depth-4 .tree-row { padding-left: 72px; }
+
+  .hidden { display: none !important; }
+
+  /* Context list */
+  .context-list { padding: 8px 0; }
+
+  .context-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    gap: 8px;
+  }
+
+  .context-item:hover { background: var(--tree-hover); }
+  .context-item.active { background: var(--tree-active); font-weight: 500; }
+
+  /* Main content */
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 48px;
+    max-width: 900px;
+  }
+
+  /* Welcome */
+  .welcome { color: var(--text-muted); padding: 48px 0; text-align: center; }
+  .welcome h2 { font-size: 24px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .welcome p { font-size: 15px; max-width: 400px; margin: 0 auto; }
+
+  /* Recipe detail */
+  .recipe-header { margin-bottom: 24px; }
+  .recipe-header h2 { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+  .recipe-summary { font-size: 15px; color: var(--text-muted); margin-bottom: 12px; }
+
+  .recipe-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .recipe-meta .tag {
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .recipe-deps {
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+
+  .recipe-deps strong { color: #92400e; }
+
+  .dep-link {
+    color: var(--accent);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .dep-link:hover { color: var(--accent-hover); }
+
+  .recipe-path {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    margin-bottom: 16px;
+  }
+
+  hr.divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+  }
+
+  /* Rendered markdown */
+  .md-content h1 { font-size: 22px; font-weight: 600; margin: 24px 0 12px; }
+  .md-content h2 { font-size: 18px; font-weight: 600; margin: 20px 0 10px; }
+  .md-content h3 { font-size: 15px; font-weight: 600; margin: 16px 0 8px; }
+  .md-content h4 { font-size: 14px; font-weight: 600; margin: 14px 0 6px; }
+
+  .md-content p { margin: 8px 0; font-size: 14px; }
+
+  .md-content ul, .md-content ol { margin: 8px 0 8px 24px; font-size: 14px; }
+  .md-content li { margin: 4px 0; }
+
+  .md-content code {
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 13px;
+  }
+
+  .md-content pre {
+    background: var(--code-bg);
+    padding: 14px 18px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 12px 0;
+    line-height: 1.5;
+  }
+
+  .md-content pre code {
+    background: none;
+    padding: 0;
+    font-size: 13px;
+  }
+
+  .md-content blockquote {
+    border-left: 3px solid var(--accent);
+    padding: 4px 16px;
+    margin: 12px 0;
+    color: var(--text-muted);
+  }
+
+  .md-content strong { font-weight: 600; }
+  .md-content em { font-style: italic; }
+
+  .md-content a {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .md-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 13px;
+  }
+
+  .md-content th, .md-content td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+
+  .md-content th {
+    background: var(--code-bg);
+    font-weight: 600;
+  }
+
+  /* Overview panel */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .overview-card {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .overview-card h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .overview-card .value {
+    font-size: 28px;
+    font-weight: 600;
+  }
+
+  .overview-card .detail {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .desc-box {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<!-- PROJECT_DATA -->
+
+<div class="header">
+  <h1 id="project-title"></h1>
+  <div class="header-meta">
+    <span class="badge" id="project-version"></span>
+    <span id="project-platforms"></span>
+    <span id="project-author"></span>
+  </div>
+</div>
+
+<div class="container">
+  <div class="sidebar">
+    <div class="sidebar-tabs">
+      <button class="sidebar-tab active" data-tab="components" onclick="switchTab('components')">Components</button>
+      <button class="sidebar-tab" data-tab="context" onclick="switchTab('context')">Context</button>
+    </div>
+    <div class="search-box">
+      <input type="text" id="search-input" placeholder="Search components..." oninput="filterTree(this.value)">
+    </div>
+    <div class="tree-container" id="components-panel">
+      <div id="component-tree"></div>
+    </div>
+    <div class="context-list hidden" id="context-panel"></div>
+  </div>
+
+  <div class="main" id="main-content">
+    <div class="welcome" id="welcome-panel">
+      <h2 id="welcome-title">Cookbook Project</h2>
+      <p>Select a component from the sidebar to view its recipe, or browse the context files.</p>
+    </div>
+    <div id="detail-panel" class="hidden"></div>
+  </div>
+</div>
+
+<script>
+// Cookbook Project Viewer
+// All user content is escaped via escapeHtml() before DOM insertion.
+// Data source: local cookbook-project.json files only (no untrusted input).
+(function() {
+  var data = typeof PROJECT_DATA !== 'undefined' ? PROJECT_DATA : null;
+  if (!data) {
+    document.getElementById('welcome-title').textContent = 'No project data loaded';
+    return;
+  }
+
+  var project = data.project;
+  var components = data.components;
+  var context = data.context || {};
+
+  // Utility: escape HTML entities for safe text rendering
+  function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(text));
+    return div.innerHTML;
+  }
+
+  // Utility: set element content safely using DOM methods
+  function setContent(el, htmlContent) {
+    // Clear existing content
+    while (el.firstChild) el.removeChild(el.firstChild);
+    // Parse and append — all dynamic text has been escaped via escapeHtml()
+    var temp = document.createElement('template');
+    temp.innerHTML = htmlContent;
+    el.appendChild(temp.content.cloneNode(true));
+  }
+
+  // Header
+  document.getElementById('project-title').textContent = project.name || 'Untitled Project';
+  document.getElementById('project-version').textContent = 'v' + (project.version || '0.0.0');
+  document.getElementById('welcome-title').textContent = project.name || 'Cookbook Project';
+
+  var platformsEl = document.getElementById('project-platforms');
+  (project.platforms || []).forEach(function(p) {
+    var span = document.createElement('span');
+    span.className = 'platform-tag';
+    span.textContent = p;
+    platformsEl.appendChild(span);
+  });
+
+  document.getElementById('project-author').textContent = project.author ? 'by ' + project.author : '';
+
+  // Build tree
+  var activeRow = null;
+
+  function buildTree(nodes, container, depth) {
+    nodes.forEach(function(node) {
+      var el = document.createElement('div');
+      el.className = 'tree-node tree-depth-' + depth;
+      if (node.children && node.children.length > 0) el.classList.add('expanded');
+
+      var row = document.createElement('div');
+      row.className = 'tree-row';
+
+      var toggle = document.createElement('span');
+      toggle.className = 'tree-toggle';
+      if (node.children && node.children.length > 0) {
+        toggle.textContent = '\u25BE';
+        toggle.addEventListener('click', function(e) {
+          e.stopPropagation();
+          el.classList.toggle('expanded');
+          toggle.textContent = el.classList.contains('expanded') ? '\u25BE' : '\u25B8';
+        });
+      }
+
+      var icon = document.createElement('span');
+      icon.className = 'tree-icon';
+      icon.textContent = node.recipe ? '\uD83D\uDCC4' : '\uD83D\uDCC1';
+
+      var label = document.createElement('span');
+      label.className = 'tree-label';
+      label.textContent = node.key;
+
+      row.appendChild(toggle);
+      row.appendChild(icon);
+      row.appendChild(label);
+      el.appendChild(row);
+
+      row.addEventListener('click', function() {
+        if (activeRow) activeRow.classList.remove('active');
+        row.classList.add('active');
+        activeRow = row;
+        showComponent(node);
+      });
+
+      if (node.children && node.children.length > 0) {
+        var children = document.createElement('div');
+        children.className = 'tree-children';
+        buildTree(node.children, children, depth + 1);
+        el.appendChild(children);
+      }
+
+      container.appendChild(el);
+    });
+  }
+
+  buildTree(components, document.getElementById('component-tree'), 0);
+
+  // Context panel
+  var contextPanel = document.getElementById('context-panel');
+  Object.keys(context).forEach(function(key) {
+    var item = document.createElement('div');
+    item.className = 'context-item';
+    var clipIcon = document.createElement('span');
+    clipIcon.textContent = '\uD83D\uDCCB';
+    var nameSpan = document.createElement('span');
+    nameSpan.textContent = key;
+    item.appendChild(clipIcon);
+    item.appendChild(nameSpan);
+    item.addEventListener('click', function() {
+      var items = contextPanel.querySelectorAll('.context-item');
+      items.forEach(function(i) { i.classList.remove('active'); });
+      item.classList.add('active');
+      if (activeRow) { activeRow.classList.remove('active'); activeRow = null; }
+      showContext(key, context[key]);
+    });
+    contextPanel.appendChild(item);
+  });
+
+  // Show overview on load
+  showOverview();
+
+  function showOverview() {
+    var detail = document.getElementById('detail-panel');
+    var recipeCount = countRecipes(components);
+    var groupCount = countGroups(components);
+
+    var html = '<div class="overview-grid">';
+    html += '<div class="overview-card"><h3>Recipes</h3><div class="value">' + recipeCount + '</div><div class="detail">behavioral specifications</div></div>';
+    html += '<div class="overview-card"><h3>Components</h3><div class="value">' + (recipeCount + groupCount) + '</div><div class="detail">' + groupCount + ' groups, ' + recipeCount + ' with recipes</div></div>';
+    html += '<div class="overview-card"><h3>Platforms</h3><div class="value">' + escapeHtml((project.platforms || []).join(', ')) + '</div><div class="detail">' + (project.platforms || []).length + ' target platform(s)</div></div>';
+    html += '<div class="overview-card"><h3>Modified</h3><div class="value" style="font-size:18px">' + escapeHtml(project.modified || project.created || 'unknown') + '</div><div class="detail">created ' + escapeHtml(project.created || 'unknown') + '</div></div>';
+    html += '</div>';
+
+    if (project.description) {
+      html += '<div class="desc-box">' + escapeHtml(project.description) + '</div>';
+    }
+
+    setContent(detail, html);
+    detail.classList.remove('hidden');
+    document.getElementById('welcome-panel').classList.add('hidden');
+  }
+
+  function countRecipes(nodes) {
+    var count = 0;
+    nodes.forEach(function(n) {
+      if (n.recipe) count++;
+      if (n.children) count += countRecipes(n.children);
+    });
+    return count;
+  }
+
+  function countGroups(nodes) {
+    var count = 0;
+    nodes.forEach(function(n) {
+      if (!n.recipe && n.children && n.children.length > 0) count++;
+      if (n.children) count += countGroups(n.children);
+    });
+    return count;
+  }
+
+  // Show component detail
+  function showComponent(node) {
+    var detail = document.getElementById('detail-panel');
+    document.getElementById('welcome-panel').classList.add('hidden');
+    detail.classList.remove('hidden');
+
+    if (!node.recipe) {
+      var childCount = node.children ? node.children.length : 0;
+      setContent(detail, '<div class="recipe-header"><h2>' + escapeHtml(node.key) + '</h2>' +
+        '<p class="recipe-summary">Component group' + (node.description ? ' \u2014 ' + escapeHtml(node.description) : '') + '</p>' +
+        '<p style="color:var(--text-muted);font-size:13px">' + childCount + ' child component' + (childCount !== 1 ? 's' : '') + '</p></div>');
+      return;
+    }
+
+    var r = node.recipe;
+    var html = '<div class="recipe-header">';
+    html += '<h2>' + escapeHtml(r.title || node.key) + '</h2>';
+    if (r.summary) html += '<p class="recipe-summary">' + escapeHtml(r.summary) + '</p>';
+    html += '<div class="recipe-path">' + escapeHtml(node.recipePath || '') + '</div>';
+
+    html += '<div class="recipe-meta">';
+    (r.tags || []).forEach(function(t) { html += '<span class="tag">' + escapeHtml(t) + '</span>'; });
+    (r.platforms || []).forEach(function(p) { html += '<span class="tag" style="background:#f0fdf4;color:#166534">' + escapeHtml(p) + '</span>'; });
+    html += '</div>';
+
+    if (node.dependsOn && node.dependsOn.length > 0) {
+      html += '<div class="recipe-deps"><strong>Depends on:</strong> ';
+      html += node.dependsOn.map(function(d) {
+        return '<span class="dep-link" data-target="' + escapeHtml(d) + '">' + escapeHtml(d) + '</span>';
+      }).join(', ');
+      html += '</div>';
+    }
+
+    html += '</div><hr class="divider"><div class="md-content">' + renderMarkdown(r.body || '') + '</div>';
+    setContent(detail, html);
+
+    // Attach click handlers for dep-links
+    detail.querySelectorAll('.dep-link').forEach(function(link) {
+      link.addEventListener('click', function() {
+        navigateTo(link.getAttribute('data-target'));
+      });
+    });
+
+    detail.scrollTop = 0;
+  }
+
+  // Navigate to component by dot-path
+  function navigateTo(dotPath) {
+    var parts = dotPath.split('.');
+    var found = findNode(components, parts, 0);
+    if (found) {
+      if (activeRow) activeRow.classList.remove('active');
+      var rows = document.querySelectorAll('.tree-row');
+      rows.forEach(function(row) {
+        var labelEl = row.querySelector('.tree-label');
+        if (labelEl && labelEl.textContent === parts[parts.length - 1]) {
+          row.classList.add('active');
+          activeRow = row;
+          showComponent(found);
+        }
+      });
+    }
+  }
+  window.navigateTo = navigateTo;
+
+  function findNode(nodes, parts, idx) {
+    for (var i = 0; i < nodes.length; i++) {
+      if (nodes[i].key === parts[idx]) {
+        if (idx === parts.length - 1) return nodes[i];
+        if (nodes[i].children) return findNode(nodes[i].children, parts, idx + 1);
+      }
+    }
+    return null;
+  }
+
+  // Show context file
+  function showContext(key, content) {
+    var detail = document.getElementById('detail-panel');
+    document.getElementById('welcome-panel').classList.add('hidden');
+    detail.classList.remove('hidden');
+    setContent(detail, '<div class="recipe-header"><h2>' + escapeHtml(key) + '</h2></div>' +
+      '<hr class="divider"><div class="md-content">' + renderMarkdown(content) + '</div>');
+    detail.scrollTop = 0;
+  }
+
+  // Tab switching
+  window.switchTab = function(tab) {
+    document.querySelectorAll('.sidebar-tab').forEach(function(t) {
+      t.classList.toggle('active', t.dataset.tab === tab);
+    });
+    document.getElementById('components-panel').classList.toggle('hidden', tab !== 'components');
+    document.getElementById('context-panel').classList.toggle('hidden', tab !== 'context');
+  };
+
+  // Search / filter
+  window.filterTree = function(query) {
+    query = query.toLowerCase().trim();
+    var nodes = document.querySelectorAll('.tree-node');
+    if (!query) {
+      nodes.forEach(function(n) { n.classList.remove('hidden'); });
+      return;
+    }
+    nodes.forEach(function(n) {
+      var label = n.querySelector(':scope > .tree-row .tree-label');
+      if (!label) return;
+      var matches = label.textContent.toLowerCase().indexOf(query) >= 0;
+      var hasVisibleChild = false;
+      var children = n.querySelectorAll('.tree-node');
+      children.forEach(function(c) {
+        var cl = c.querySelector(':scope > .tree-row .tree-label');
+        if (cl && cl.textContent.toLowerCase().indexOf(query) >= 0) hasVisibleChild = true;
+      });
+      n.classList.toggle('hidden', !matches && !hasVisibleChild);
+      if (matches || hasVisibleChild) n.classList.add('expanded');
+    });
+  };
+
+  // Markdown renderer — all text passes through escapeHtml() via inline()
+  function renderMarkdown(text) {
+    if (!text) return '';
+    var lines = text.split('\n');
+    var html = '';
+    var inCode = false;
+    var inList = false;
+    var listType = '';
+    var inTable = false;
+    var tableRows = [];
+
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+
+      // Fenced code blocks
+      if (line.match(/^```/)) {
+        if (inCode) {
+          html += '</code></pre>';
+          inCode = false;
+        } else {
+          if (inList) { html += '</' + listType + '>'; inList = false; }
+          html += '<pre><code>';
+          inCode = true;
+        }
+        continue;
+      }
+      if (inCode) {
+        html += escapeHtml(line) + '\n';
+        continue;
+      }
+
+      // Tables
+      if (line.match(/^\|/)) {
+        if (!inTable) {
+          if (inList) { html += '</' + listType + '>'; inList = false; }
+          inTable = true;
+          tableRows = [];
+        }
+        if (line.match(/^\|[\s\-:|]+\|$/)) continue;
+        tableRows.push(line.split('|').filter(function(c, idx, arr) { return idx > 0 && idx < arr.length - 1; }).map(function(c) { return c.trim(); }));
+        continue;
+      } else if (inTable) {
+        html += renderTable(tableRows);
+        inTable = false;
+        tableRows = [];
+      }
+
+      // Headings
+      var hMatch = line.match(/^(#{1,6})\s+(.*)/);
+      if (hMatch) {
+        if (inList) { html += '</' + listType + '>'; inList = false; }
+        var level = hMatch[1].length;
+        html += '<h' + level + '>' + inline(hMatch[2]) + '</h' + level + '>';
+        continue;
+      }
+
+      // Blockquote
+      if (line.match(/^>\s?/)) {
+        if (inList) { html += '</' + listType + '>'; inList = false; }
+        html += '<blockquote><p>' + inline(line.replace(/^>\s?/, '')) + '</p></blockquote>';
+        continue;
+      }
+
+      // Unordered list
+      var ulMatch = line.match(/^(\s*)[-*+]\s+(.*)/);
+      if (ulMatch) {
+        if (!inList || listType !== 'ul') {
+          if (inList) html += '</' + listType + '>';
+          html += '<ul>';
+          inList = true;
+          listType = 'ul';
+        }
+        html += '<li>' + inline(ulMatch[2]) + '</li>';
+        continue;
+      }
+
+      // Ordered list
+      var olMatch = line.match(/^(\s*)\d+\.\s+(.*)/);
+      if (olMatch) {
+        if (!inList || listType !== 'ol') {
+          if (inList) html += '</' + listType + '>';
+          html += '<ol>';
+          inList = true;
+          listType = 'ol';
+        }
+        html += '<li>' + inline(olMatch[2]) + '</li>';
+        continue;
+      }
+
+      if (inList && line.trim() === '') {
+        html += '</' + listType + '>';
+        inList = false;
+      }
+
+      // Horizontal rule
+      if (line.match(/^---+$/)) {
+        html += '<hr class="divider">';
+        continue;
+      }
+
+      if (line.trim() === '') continue;
+
+      // Paragraph
+      if (inList) { html += '</' + listType + '>'; inList = false; }
+      html += '<p>' + inline(line) + '</p>';
+    }
+
+    if (inCode) html += '</code></pre>';
+    if (inList) html += '</' + listType + '>';
+    if (inTable) html += renderTable(tableRows);
+
+    return html;
+  }
+
+  function renderTable(rows) {
+    if (rows.length === 0) return '';
+    var h = '<table><thead><tr>';
+    rows[0].forEach(function(c) { h += '<th>' + inline(c) + '</th>'; });
+    h += '</tr></thead><tbody>';
+    for (var i = 1; i < rows.length; i++) {
+      h += '<tr>';
+      rows[i].forEach(function(c) { h += '<td>' + inline(c) + '</td>'; });
+      h += '</tr>';
+    }
+    h += '</tbody></table>';
+    return h;
+  }
+
+  function inline(text) {
+    text = escapeHtml(text);
+    text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+    text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    return text;
+  }
+})();
+</script>
+
+</body>
+</html>

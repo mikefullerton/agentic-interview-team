@@ -11,6 +11,7 @@ A Claude Code plugin for multi-agent product discovery, analysis, and project bu
 | **Cookbook Project Generator** | `/dev-team-generate <target>` | Improve a cookbook project through specialist review — review recipes, suggest changes, apply approved improvements |
 | **Project Builder** | `/dev-team-build <target>` | Build working code from a cookbook project — scaffold, generate, augment with specialists, compile, test |
 | **Linter** | `/dev-team-lint <target>` | Evaluate any artifact against cookbook standards — skills, rules, agents, recipes, implementations — produce PASS/WARN/FAIL report with specialist findings |
+| **Project Viewer** | `/dev-team-view-project <target>` | Generate a human-readable HTML view of a cookbook project and open it in the browser |
 
 ## Architecture
 
@@ -30,6 +31,7 @@ skills/
   generate/                # Specialist recipe review
   build/                   # Cookbook project → working code
   lint/                    # Artifact linting against cookbook standards
+  view-project/            # HTML project viewer
 research/
   specialists/             # 19 specialist question sets (13 domain + 6 platform)
   cookbook-specialist-mapping.md
