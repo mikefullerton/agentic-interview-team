@@ -1,20 +1,20 @@
 ---
 name: dev-team
-version: 0.2.1
+version: 0.3.0
 description: Multi-agent dev team for product discovery, project creation, specialist review, building, and linting. Subcommands: interview, create-project-from-code, generate, create-code-from-project, lint, view-project.
 allowed-tools: Read, Glob, Grep, Agent, Write, Edit, AskUserQuestion, Bash(git *), Bash(mkdir *), Bash(ls *), Bash(date *), Bash(cat *), Bash(wc *), Bash(uuidgen), Bash(chmod *), Bash(open *), WebFetch
 argument-hint: <command> [args...] — commands: interview, create-project-from-code, generate, create-code-from-project, lint, view-project
 ---
 
-# Dev Team v0.2.1
+# Dev Team v0.3.0
 
 ## Startup
 
-**First action**: If `$ARGUMENTS` is `--version`, print `dev-team v0.2.1` and stop.
+**First action**: If `$ARGUMENTS` is `--version`, print `dev-team v0.3.0` and stop.
 
-Otherwise, print `dev-team v0.2.1` as the first line of output.
+Otherwise, print `dev-team v0.3.0` as the first line of output.
 
-**Version check**: Run `${CLAUDE_PLUGIN_ROOT}/scripts/version-check.sh "${CLAUDE_SKILL_DIR}" "0.2.1"`. If it outputs a warning, print it and continue.
+**Version check**: Run `${CLAUDE_PLUGIN_ROOT}/scripts/version-check.sh "${CLAUDE_SKILL_DIR}" "0.3.0"`. If it outputs a warning, print it and continue.
 
 ## Configuration
 
@@ -25,6 +25,21 @@ Run: `${CLAUDE_PLUGIN_ROOT}/scripts/load-config.sh` with `--config <path>` if sp
 Extract `cookbook_repo`, `workspace_repo`, and `user_name` from the JSON output.
 
 If config doesn't exist and the subcommand is NOT `interview`: "I need a config file. Run `/dev-team interview` first to set one up, or create `~/.agentic-cookbook/dev-team/config.json` with `workspace_repo`, `cookbook_repo`, and `user_name` fields."
+
+## Execution Mode
+
+Applies to `create-project-from-code` and `create-code-from-project` subcommands.
+
+If `$ARGUMENTS` contains `--incremental`, set execution mode to **incremental**. Otherwise:
+
+If neither `--one-shot` nor `--incremental` is in `$ARGUMENTS`, ask the user:
+
+> "Run the full pipeline in one shot (no approval prompts between phases), or incrementally (review and approve each phase)? Default: one shot."
+
+- **One-shot** (default): Skip all inter-phase approval gates. Run each phase, persist results, proceed to the next without waiting. Still stop on errors and name conflicts.
+- **Incremental**: Pause between phases for user review and approval, as described in the workflow.
+
+Pass the execution mode to the workflow.
 
 ## Routing
 
@@ -44,7 +59,7 @@ Read the workflow file and follow its instructions. Pass the remaining arguments
 If no subcommand is provided or the subcommand is `help`, print:
 
 ```
-Dev Team v0.2.1 — Multi-agent product development
+Dev Team v0.3.0 — Multi-agent product development
 
 Commands:
   interview                    Product discovery interview
