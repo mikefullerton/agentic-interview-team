@@ -11,7 +11,7 @@ Single entry point: `/dev-team <command>`
 | `interview` | Interviewer | Discover product requirements through structured and exploratory questioning with specialist expertise |
 | `create-project-from-code` | Project Creator | Reverse-engineer a codebase into a cookbook project |
 | `generate` | Project Generator | Improve a cookbook project through specialist review |
-| `build` | Project Builder | Build working code from a cookbook project |
+| `create-code-from-project` | Project Builder | Build working code from a cookbook project |
 | `lint` | Linter | Evaluate any artifact against cookbook standards |
 | `view-project` | Viewer | Generate HTML view of a cookbook project |
 

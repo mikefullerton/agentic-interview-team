@@ -50,7 +50,7 @@ Started from the question: "I want to create an agent whose purpose is to interv
 
 ### Implementation Phase
 
-**Commits (in my-agentic-dev-team repo):**
+**Commits (in dev-team repo):**
 
 1. `7693069` — Design spec, research docs, directory structure
 2. `35f797d` — 18 specialist definitions with initial question sets (12 domain + 6 platform, ~230 structured questions + ~75 exploratory prompts)
@@ -71,7 +71,7 @@ Started from the question: "I want to create an agent whose purpose is to interv
 3. `2b25c8c` — Always commit and push rule
 4. `af14f5d` — Move CLAUDE.md to .claude/CLAUDE.md
 
-**Commits (in my-agentic-dev-team-tests repo):**
+**Commits (in dev-team-tests repo):**
 1. `830ef3f` — Initial setup (test config, directories)
 
 ### What Was Built
