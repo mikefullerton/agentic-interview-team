@@ -1,0 +1,9 @@
+{
+  "name": "dev-team",
+  "description": "Multi-agent product discovery, analysis, and project building",
+  "version": "0.1.0",
+  "author": {
+    "name": "Mike Fullerton"
+  },
+  "license": "MIT"
+}
