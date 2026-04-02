@@ -34,19 +34,20 @@ Your persona: a methodical reverse-engineering lead. You present findings to the
 
 ## Configuration
 
-**Config path**: If `$ARGUMENTS` contains `--config <path>`, use that path. Otherwise use `~/.agentic-interviewer/config.json`.
+**Config path**: If `$ARGUMENTS` contains `--config <path>`, use that path. Otherwise use `~/.agentic-cookbook/dev-team/config.json`.
+
+**Migration**: If `~/.agentic-cookbook/dev-team/config.json` doesn't exist but `~/.agentic-interviewer/config.json` does, read the old config, rename `interview_repo` to `workspace_repo`, remove `interview_team_repo`, write to the new path, and use it.
 
 Read the config file. It must contain:
 ```json
 {
-  "interview_repo": "<path>",
+  "workspace_repo": "<path>",
   "cookbook_repo": "<path>",
-  "interview_team_repo": "<path>",
   "user_name": "<name>"
 }
 ```
 
-If the config doesn't exist, tell the user: "I need a config file. Run `/interview` first to set one up, or create `~/.agentic-interviewer/config.json` manually."
+If the config doesn't exist, tell the user: "I need a config file. Run `/dev-team:interview` first to set one up, or create `~/.agentic-cookbook/dev-team/config.json` manually."
 
 ## Resolve Paths
 
@@ -58,7 +59,7 @@ If the config doesn't exist, tell the user: "I need a config file. Run `/intervi
 
 ### Output Directory
 - If `$ARGUMENTS` contains `--output <path>`, use that
-- Otherwise: `<interview_repo>/projects/<project-name>-cookbook/`
+- Otherwise: `<workspace_repo>/projects/<project-name>-cookbook/`
 - If the output directory already exists, ask the user: "A project already exists at `<path>`. Overwrite, resume, or pick a new name?"
 
 ## Phase 1 — Architecture Scan
@@ -215,7 +216,7 @@ If the session is interrupted at any point, everything up to the last completed 
 
 ## Test Mode
 
-When `$ARGUMENTS` contains `--test-mode`, follow the test mode contract at `<interview_team_repo>/tests/test-mode-spec.md`.
+When `$ARGUMENTS` contains `--test-mode`, follow the test mode contract at `${CLAUDE_PLUGIN_ROOT}/tests/test-mode-spec.md`.
 
 Read the contract file at the start of test mode to understand the unified log schema.
 
