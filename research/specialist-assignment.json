@@ -1,0 +1,62 @@
+{
+  "category-mappings": {
+    "recipe.ui": ["ui-ux-design", "accessibility"],
+    "recipe.infrastructure": ["software-architecture", "code-quality"],
+    "recipe.app": ["software-architecture", "development-process"]
+  },
+  "content-keywords": {
+    "auth": "security",
+    "tokens": "security",
+    "credentials": "security",
+    "network": "networking-api",
+    "API": "networking-api",
+    "endpoint": "networking-api",
+    "HTTP": "networking-api",
+    "storage": "data-persistence",
+    "persistence": "data-persistence",
+    "database": "data-persistence",
+    "cache": "data-persistence",
+    "logging": "devops-observability",
+    "analytics": "devops-observability",
+    "monitoring": "devops-observability",
+    "localization": "localization-i18n",
+    "i18n": "localization-i18n",
+    "RTL": "localization-i18n",
+    "test": "testing-qa",
+    "testing": "testing-qa",
+    "claude": "claude-code",
+    "skill": "claude-code",
+    "rule": "claude-code",
+    "agent": "claude-code",
+    "hook": "claude-code",
+    "MCP": "claude-code"
+  },
+  "platform-mappings": {
+    "ios": ["platform-ios-apple"],
+    "macos": ["platform-ios-apple"],
+    "android": ["platform-android"],
+    "windows": ["platform-windows"],
+    "web": ["platform-web-frontend", "platform-web-backend"]
+  },
+  "tier-order": [
+    "software-architecture",
+    "reliability",
+    "data-persistence",
+    "networking-api",
+    "security",
+    "ui-ux-design",
+    "accessibility",
+    "localization-i18n",
+    "testing-qa",
+    "devops-observability",
+    "code-quality",
+    "development-process",
+    "claude-code",
+    "platform-ios-apple",
+    "platform-android",
+    "platform-windows",
+    "platform-web-frontend",
+    "platform-web-backend",
+    "platform-database"
+  ]
+}
