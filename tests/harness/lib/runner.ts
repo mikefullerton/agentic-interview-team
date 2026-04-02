@@ -180,3 +180,151 @@ export async function runInterview(
     );
   });
 }
+
+export interface SkillRunOptions {
+  /** Skill name — matches the directory name under skills/ */
+  skillName: string;
+  /** Working directory for the claude invocation */
+  cwd: string;
+  /** Path to the test config file */
+  configPath: string;
+  /** Target path — repo for analyze, cookbook project for generate/build */
+  targetPath: string;
+  /** Additional arguments to pass to the skill */
+  extraArgs?: string[];
+  /** Timeout in ms (default: 10 minutes) */
+  timeout?: number;
+}
+
+/**
+ * Run any skill in test mode.
+ *
+ * Reads the skill's SKILL.md and sends it as the prompt with $ARGUMENTS and
+ * $CLAUDE_SKILL_DIR substituted. This avoids needing the skill installed in
+ * the target project.
+ */
+export async function runSkill(opts: SkillRunOptions): Promise<RunResult> {
+  const timeout = opts.timeout ?? DEFAULT_TIMEOUT;
+  const targetAbsolute = resolve(opts.targetPath);
+  const configAbsolute = resolve(opts.configPath);
+  const root = repoRoot();
+
+  // Set up harness log
+  const logDir = join(root, "tests/harness/.logs");
+  if (!existsSync(logDir)) mkdirSync(logDir, { recursive: true });
+  const logFile = join(logDir, `run-${opts.skillName}-${Date.now()}.log`);
+
+  log(logFile, `=== Skill Test Run: ${opts.skillName} ===`);
+  log(logFile, `cwd: ${opts.cwd}`);
+  log(logFile, `config: ${configAbsolute}`);
+  log(logFile, `target: ${targetAbsolute}`);
+  log(logFile, `extraArgs: ${(opts.extraArgs ?? []).join(" ")}`);
+  log(logFile, `repoRoot: ${root}`);
+
+  // Read SKILL.md and strip YAML frontmatter (starts with --- which claude CLI
+  // interprets as a CLI flag)
+  const skillPath = join(root, `skills/${opts.skillName}/SKILL.md`);
+  log(logFile, `Reading skill from: ${skillPath}`);
+  let skillContent = readFileSync(skillPath, "utf-8");
+
+  // Strip frontmatter — everything between first --- and second ---
+  const fmMatch = skillContent.match(/^---\n[\s\S]*?\n---\n/);
+  if (fmMatch) {
+    log(logFile, `Stripping frontmatter (${fmMatch[0].length} chars)`);
+    skillContent = skillContent.slice(fmMatch[0].length);
+  }
+
+  // Build the arguments string
+  const argsString = [
+    targetAbsolute,
+    "--test-mode",
+    `--config ${configAbsolute}`,
+    ...(opts.extraArgs ?? []),
+  ].join(" ");
+
+  log(logFile, `Arguments: ${argsString}`);
+
+  // Substitute variables in the skill content
+  const skillDir = join(root, `skills/${opts.skillName}`);
+  let prompt = skillContent
+    .replace(/\$ARGUMENTS/g, argsString)
+    .replace(/\$\{ARGUMENTS\}/g, argsString)
+    .replace(/\$CLAUDE_SKILL_DIR/g, skillDir)
+    .replace(/\$\{CLAUDE_SKILL_DIR\}/g, skillDir);
+
+  // Append explicit execution instruction
+  const testModeSpecPath = join(root, "tests/test-mode-spec.md");
+  prompt += `\n\n---\n\n## EXECUTE NOW\n\nYou are running in test mode. Execute the skill above immediately with these arguments: ${argsString}\n\nThe interview team repo is at: ${root}\nThe skill directory is at: ${skillDir}\n\nIMPORTANT: You MUST:\n1. Read the config file at ${configAbsolute}\n2. Follow the test-mode specification at ${testModeSpecPath}\n3. Auto-approve all prompts — do not pause for user input\n4. Write test-log.jsonl with structured events\n5. Run all phases to completion\n\nStart by reading the config file NOW.\n`;
+
+  log(logFile, `Prompt length: ${prompt.length} chars`);
+
+  const args = [
+    "-p", prompt,
+    "--output-format", "json",
+    "--dangerously-skip-permissions",
+    "--max-turns", "80",
+  ];
+
+  log(logFile, `Launching claude with args: ${args.filter(a => a !== prompt).join(" ")}`);
+  log(logFile, "Waiting for claude to complete...");
+
+  return new Promise((resolvePromise) => {
+    const proc = execFile(
+      "claude",
+      args,
+      {
+        cwd: opts.cwd,
+        timeout,
+        maxBuffer: 1024 * 1024 * 10, // 10MB
+        env: {
+          ...process.env,
+          // Ensure Claude can find the skill directory
+          CLAUDE_SKILL_DIR: skillDir,
+        },
+      },
+      (error, stdout, stderr) => {
+        log(logFile, `claude exited. error: ${error?.message ?? "none"}, code: ${error?.code ?? "0"}`);
+        log(logFile, `stdout length: ${stdout?.length ?? 0}`);
+        log(logFile, `stderr length: ${stderr?.length ?? 0}`);
+
+        if (stderr) {
+          log(logFile, `STDERR:\n${stderr.slice(0, 2000)}`);
+        }
+        if (stdout) {
+          log(logFile, `STDOUT (first 2000 chars):\n${stdout.slice(0, 2000)}`);
+        }
+
+        if (error && !stdout) {
+          log(logFile, `FAILED: ${error.message}`);
+          resolvePromise({
+            output: stderr || error.message,
+            exitCode: typeof error.code === "number" ? error.code : 1,
+            raw: stdout || "",
+          });
+          return;
+        }
+
+        try {
+          const parsed = JSON.parse(stdout);
+          log(logFile, `Parsed JSON output. result length: ${parsed.result?.length ?? 0}`);
+          log(logFile, `Full result:\n${parsed.result?.slice(0, 5000) ?? "(no result)"}`);
+          resolvePromise({
+            output: parsed.result ?? "",
+            exitCode: 0,
+            raw: stdout,
+          });
+        } catch {
+          log(logFile, `Could not parse JSON. Raw output used.`);
+          resolvePromise({
+            output: stdout || stderr || "",
+            exitCode: typeof error?.code === "number" ? error.code : 0,
+            raw: stdout,
+          });
+        }
+      }
+    );
+
+    // Reference proc to satisfy linter
+    void proc;
+  });
+}
