@@ -404,6 +404,53 @@ summary: "Built <project-name> from <N> recipes with <M> specialist passes"
 <suggestions based on results — e.g., fix failing tests, address remaining build errors, add missing requirements>
 ```
 
+## Build Transcript
+
+Query the DB for all messages from this run and write the full transcript:
+
+```
+${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT timestamp, agent_type, specialist_domain, message FROM messages WHERE workflow_run_id=$RUN_ID ORDER BY timestamp"
+```
+
+Write to `<output>/context/build-log/build-transcript.md`:
+
+```markdown
+---
+title: "Build Transcript — <project-name>"
+type: transcript
+created: <ISO 8601 datetime>
+author: create-code-from-project
+workflow_run_id: <RUN_ID>
+---
+
+# Build Transcript
+
+## Run Info
+- **Project:** <project-name>
+- **Platforms:** <platforms>
+- **Build System:** <build-system>
+- **Specialists:** <list of specialists assigned>
+- **Started:** <timestamp>
+- **Completed:** <timestamp>
+
+## Transcript
+
+| Time | Agent | Specialist | Message |
+|------|-------|------------|---------|
+| <for each message row from the DB query, one table row> |
+
+## Summary
+- **Recipes built:** <N>
+- **Specialist passes:** <M> total
+- **MUST requirements implemented:** <N> of <M>
+- **Code review issues:** <N> found, <M> fixed
+- **Build result:** <success/failure> in <N> attempts
+- **Tests:** <passed>/<total>
+- **Findings:** <N> FAIL, <M> WARN
+```
+
+Also log the transcript file as an artifact: `db-artifact.sh write --project $PROJECT_ID --run $RUN_ID --path <file> --category transcript`
+
 Copy `cookbook-project.json` into the output directory (if not already there), annotating it with build metadata:
 - Add `"build"` section with date, version, result, test results
 

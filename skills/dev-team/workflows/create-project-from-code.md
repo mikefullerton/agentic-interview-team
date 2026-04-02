@@ -194,6 +194,50 @@ Present the summary to the user:
 - The output path
 - "Your cookbook project is at `<output>`. Run `/dev-team generate <output>` to have specialists review and improve each recipe."
 
+## Phase 6 — Write Transcript
+
+Query the DB for all messages from this run and write the full transcript to the project:
+
+```
+${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT timestamp, agent_type, specialist_domain, message FROM messages WHERE workflow_run_id=$RUN_ID ORDER BY timestamp"
+```
+
+Write to `<output>/context/research/analysis-transcript.md`:
+
+```markdown
+---
+title: "Analysis Transcript — <project-name>"
+type: transcript
+created: <ISO 8601 datetime>
+author: create-project-from-code
+workflow_run_id: <RUN_ID>
+---
+
+# Analysis Transcript
+
+## Run Info
+- **Source:** <repo-path>
+- **Output:** <output-path>
+- **Started:** <timestamp>
+- **Completed:** <timestamp>
+
+## Transcript
+
+| Time | Agent | Specialist | Message |
+|------|-------|------------|---------|
+| <for each message row from the DB query, one table row> |
+
+## Summary
+- **Scopes found:** <N> (<breakdown by confidence>)
+- **Recipes generated:** <N>
+- **MUST requirements:** <N total across all recipes>
+- **SHOULD requirements:** <N total>
+- **Sections needing review:** <N> (list which recipes + which sections)
+- **Errors:** <N> (list any failed agents or scopes)
+```
+
+Also log the transcript file as an artifact: `db-artifact.sh write --project $PROJECT_ID --run $RUN_ID --path <file> --category transcript`
+
 ## Aggressive Persistence
 
 Follow the interview system's persistence pattern:
