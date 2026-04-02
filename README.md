@@ -1,63 +1,74 @@
 # My Agentic Dev Team
 
-A multi-agent product discovery interview system that helps users fully scope products they want to build through structured and exploratory questioning.
+A Claude Code plugin for multi-agent product discovery, analysis, and project building. Distributed via the **agentic-cookbook** marketplace.
 
-## How It Works
+## Skills
 
-A meeting leader skill orchestrates a team of specialists — domain experts (security, accessibility, UI/UX, architecture, etc.) and platform experts (iOS, Windows, Android, web, database). Each specialist has a paired analyst that deeply analyzes every answer to surface insights, gaps, and new questions.
+| Skill | Command | Description |
+|-------|---------|-------------|
+| **interview** | `/dev-team:interview` | Product discovery — structured and exploratory questioning to fully scope a product |
+| **analyze-project** | `/dev-team:analyze-project` | Reverse-engineer a codebase into a cookbook project |
+| **generate-project** | `/dev-team:generate-project` | Specialist review and improvement of cookbook recipes |
+| **build-project** | `/dev-team:build-project` | Build working code from a cookbook project |
 
-The system produces a folder of timestamped markdown transcripts and analyses that an LLM consumes when planning and building the product.
+## Installation
+
+```bash
+claude plugin marketplace add ~/projects/agentic-cookbook
+claude plugin install dev-team@agentic-cookbook
+```
+
+## Setup
+
+On first run, `/dev-team:interview` creates `~/.agentic-cookbook/dev-team/config.json`:
+
+```json
+{
+  "workspace_repo": "<path to your workspace repo>",
+  "cookbook_repo": "<path to agentic-cookbook>",
+  "user_name": "<your name>",
+  "authorized_repos": []
+}
+```
+
+If you have an existing config at `~/.agentic-interviewer/config.json`, it will be migrated automatically.
 
 ## Architecture
 
-```
-┌──────────────────────────────────────────┐
-│          Meeting Leader (Skill)          │
-│  Orchestrates, talks to user, writes     │
-│  transcripts, maintains checklist        │
-└──────────┬──────────┬──────────┬─────────┘
-           │          │          │
-    ┌──────▼──┐ ┌─────▼────┐ ┌──▼──────────┐
-    │Transcript│ │Specialist│ │ Specialist  │
-    │Analyzer  │ │Interviewer│ │  Analyst   │
-    │          │ │(per domain)│ │(per domain)│
-    └──────────┘ └──────────┘ └─────────────┘
-```
+Each skill orchestrates a team of specialist agents — domain experts (security, accessibility, UI/UX, architecture, etc.) and platform experts (iOS, Windows, Android, web, database).
 
-## Three Repos
+### Three Repos
 
 | Repo | Purpose |
 |------|---------|
-| **my-agentic-dev-team** (this) | The system — agents, skills, specialist research |
+| **dev-team** (this plugin) | The system — agents, skills, specialist research |
 | **agentic-cookbook** | Upstream knowledge — principles, guidelines, compliance |
-| **User's interview repo** | Per-user data — profiles, transcripts, analyses, knowledge |
+| **Workspace repo** | Per-user data — profiles, transcripts, analyses, project builds |
 
-## Specialists
+### Specialists
 
-### Domain (12)
-Security, Accessibility, Reliability, UI/UX & Design, Software Architecture, Testing & QA, Networking & API, Code Quality, DevOps & Observability, Localization & I18n, Development Process, Data & Persistence
+**Domain (12):** Security, Accessibility, Reliability, UI/UX & Design, Software Architecture, Testing & QA, Networking & API, Code Quality, DevOps & Observability, Localization & I18n, Development Process, Data & Persistence
 
-### Platform (6)
-iOS / Apple Platforms, Windows, Android, Web Frontend, Web Backend / Services, Database
-
-## Getting Started
-
-1. Clone this repo and the agentic-cookbook as peers
-2. Create a personal interview repo
-3. Run `/interview` from any project directory
-4. On first run, the skill creates `~/.agentic-interviewer/config.json`
+**Platform (6):** iOS / Apple Platforms, Windows, Android, Web Frontend, Web Backend / Services, Database
 
 ## Repository Structure
 
 ```
-agents/                    # Subagent definitions
-skills/interview/          # The meeting leader skill
-rules/                     # (future)
+.claude-plugin/            # Plugin manifest
+agents/                    # 14 subagent definitions
+skills/
+  interview/               # Product discovery interview
+  analyze-project/         # Codebase → cookbook project
+  generate-project/        # Specialist recipe review
+  build-project/           # Cookbook project → working code
 research/
-  specialists/             # 18 specialist question sets
+  specialists/             # 18 specialist question sets (12 domain + 6 platform)
   cookbook-specialist-mapping.md
-  agent-patterns.md
-  conversational-patterns.md
 planning/
   design-spec.md           # Full design specification
+tests/                     # Test harness and personas
 ```
+
+## Local Development
+
+Symlinks in `.claude/` point to top-level dirs for local testing (gitignored). To test locally without installing the plugin, `cd` into this repo and invoke `/interview`.

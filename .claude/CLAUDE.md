@@ -1,49 +1,53 @@
 # My Agentic Dev Team
 
-A multi-agent product discovery interview system. Helps users fully scope products they want to build through structured and exploratory questioning.
+A Claude Code plugin for multi-agent product discovery, analysis, and project building. Distributed via the **agentic-cookbook** marketplace.
+
+## Skills
+
+- `/dev-team:interview` — Product discovery interview
+- `/dev-team:analyze-project` — Reverse-engineer codebase into cookbook project
+- `/dev-team:generate-project` — Specialist recipe review
+- `/dev-team:build-project` — Build working code from cookbook project
 
 ## Architecture
 
 Three repos:
-- **This repo** — the interview system (agents, skills, specialist research)
+- **This repo (plugin)** — agents, skills, specialist research
 - **agentic-cookbook** — upstream knowledge (principles, guidelines, compliance)
-- **User's interview repo** — per-user data (profiles, transcripts, analyses, knowledge)
+- **Workspace repo** — per-user data (profiles, transcripts, analyses, project builds)
 
 ## Repository Structure
 
 ```
-agents/                  # Subagent definitions
-  transcript-analyzer.md   # Recommends specialists, identifies gaps
-  specialist-interviewer.md # Generates domain-specific questions
-  specialist-analyst.md     # Deep analysis of answers
+.claude-plugin/            # Plugin manifest
+agents/                    # 14 subagent definitions
 skills/
-  interview/
-    SKILL.md               # The meeting leader — main entry point
-rules/
+  interview/               # Product discovery interview
+  analyze-project/         # Codebase → cookbook project
+  generate-project/        # Specialist recipe review
+  build-project/           # Cookbook project → working code
 research/
   specialists/             # 18 specialist question sets (12 domain + 6 platform)
   cookbook-specialist-mapping.md
-  agent-patterns.md
-  conversational-patterns.md
 planning/
   design-spec.md           # Full design specification
+tests/                     # Test harness and personas
 ```
 
 ## Local Testing
 
 Symlinks in `.claude/` point to top-level dirs for local testing. These are gitignored.
 
-To test: `cd` into this repo and invoke `/interview`.
+To test locally: `cd` into this repo and invoke `/interview`.
 
 ## Config
 
-System config: `~/.agentic-interviewer/config.json`
+System config: `~/.agentic-cookbook/dev-team/config.json`
 
 ```json
 {
-  "interview_repo": "<path to user's interview repo>",
+  "workspace_repo": "<path to workspace repo>",
   "cookbook_repo": "<path to agentic-cookbook>",
-  "interview_team_repo": "<path to this repo>",
   "user_name": "<user name>",
   "authorized_repos": []
 }
