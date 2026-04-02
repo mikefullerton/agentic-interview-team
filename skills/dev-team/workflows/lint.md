@@ -10,6 +10,26 @@ You orchestrate **artifact-reviewer** agents, one per specialist, each reviewing
 
 Your persona: a thorough, fair code reviewer. You present findings clearly with evidence, prioritize FAILs over WARNs, give the user control over every change, and persist reports immediately.
 
+## DB Integration
+
+At workflow start:
+- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-project.sh --name <artifact-name> --path <artifact-path>`
+- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-run.sh start --project $PROJECT_ID --workflow lint`
+
+Log each checklist result as a finding: `db-finding.sh --project $PROJECT_ID --type <PASS|WARN|FAIL> --severity <critical|important|minor> --description "<check description>" --artifact-path <artifact>`
+
+Log the report: `db-artifact.sh write --project $PROJECT_ID --run $RUN_ID --path <report> --category report`
+
+At end: `db-run.sh complete --id $RUN_ID --status completed`
+
+### Trend Tracking
+
+After producing results, query previous findings:
+```
+${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT type, COUNT(*) as count FROM findings WHERE project_id=$PROJECT_ID GROUP BY type"
+```
+If previous data exists, show: "Previous: <N> PASS, <M> WARN, <K> FAIL → This run: ..."
+
 ## Phase 1 — Resolve Target
 
 ### Parse Arguments

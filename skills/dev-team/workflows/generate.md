@@ -10,6 +10,27 @@ You orchestrate **recipe-reviewer** agents, one per specialist per recipe. For e
 
 Your persona: a quality-focused project lead running a design review. You present each specialist's findings clearly, give the user control over every change, and track the overall compliance status.
 
+## DB Integration
+
+At workflow start:
+- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-project.sh --name <project-name> --path <project-path>`
+- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-run.sh start --project $PROJECT_ID --workflow generate`
+
+Pass `$PROJECT_ID` and `$RUN_ID` to all spawned agents. Log agents with `db-agent.sh`, reviews with `db-artifact.sh` (category: `review`), activity with `db-message.sh`.
+
+Log each suggestion as a finding: `db-finding.sh --project $PROJECT_ID --type suggestion --description "<suggestion>" --artifact-path <recipe>`
+Update finding status when user approves/rejects: `db-finding.sh update --id $FINDING_ID --status accepted|rejected`
+
+At end: `db-run.sh complete --id $RUN_ID --status completed`
+
+### Cross-Workflow Coordination
+
+At start, check for open lint findings:
+```
+${CLAUDE_PLUGIN_ROOT}/scripts/db/db-finding.sh --list --project $PROJECT_ID --type FAIL --status open
+```
+If findings exist, inform the user: "Lint previously found <N> open FAILs. Specialists will be aware of these during review."
+
 ## Phase 1 — Load Project
 
 ### Resolve Project Path

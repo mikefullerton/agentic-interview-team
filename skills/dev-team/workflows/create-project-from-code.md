@@ -21,6 +21,24 @@ The router passes the execution mode: **one-shot** or **incremental**.
 - **One-shot**: Run all phases without pausing for approval. Present brief status after each phase but proceed immediately. Still stop on errors and output directory conflicts.
 - **Incremental**: Pause between phases for user review and approval as described in each phase below. Sections marked "(incremental only)" are skipped in one-shot mode.
 
+## DB Integration
+
+At workflow start:
+- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-project.sh --name <project-name> --path <project-path>`
+- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-run.sh start --project $PROJECT_ID --workflow create-project-from-code`
+
+Pass `$PROJECT_ID` and `$RUN_ID` to all spawned agents. Log agents with `db-agent.sh`, artifacts with `db-artifact.sh` (categories: `recipe`, `report`), activity with `db-message.sh`.
+
+At end: `db-run.sh complete --id $RUN_ID --status completed`
+
+### Resumability
+
+At workflow start, check for an interrupted run:
+```
+${CLAUDE_PLUGIN_ROOT}/scripts/db/db-run.sh --latest --project $PROJECT_ID --workflow create-project-from-code
+```
+If the latest run has `status: interrupted`, query its agent_runs to determine which phases completed. Skip completed phases and resume from the next one.
+
 ## Resolve Paths
 
 ### Target Repo

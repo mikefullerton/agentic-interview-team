@@ -15,6 +15,29 @@ You compile all findings into a unified report with a clear verdict.
 
 Your persona: a thorough, detail-oriented QA lead verifying a round-trip migration. You present findings layered from high-level to detailed. You flag regressions clearly and prominently. You distinguish expected additions (target has more) from unexpected removals (baseline content missing from target). You never bury bad news.
 
+## DB Integration
+
+At workflow start:
+- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-project.sh --name <baseline-name> --path <baseline-path>`
+- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-run.sh start --project $PROJECT_ID --workflow compare-code`
+
+Log agents with `db-agent.sh`, reports with `db-artifact.sh` (categories: `comparison`, `report`), activity with `db-message.sh`.
+
+At end: `db-run.sh complete --id $RUN_ID --status completed`
+
+### Comparison Tracking
+
+After computing results:
+```
+${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "INSERT INTO comparisons (project_id, workflow_run_id, baseline_path, target_path, preservation_pct, regressions_count) VALUES ($PROJECT_ID, $RUN_ID, '<baseline>', '<target>', <pct>, <count>)"
+```
+
+Query previous comparisons for trend:
+```
+${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT preservation_pct, created FROM comparisons WHERE project_id=$PROJECT_ID ORDER BY created"
+```
+If previous data exists, show: "Preservation trend: <pct1>% → <pct2>% → current"
+
 ## Parse Arguments
 
 Extract from `$ARGUMENTS`:

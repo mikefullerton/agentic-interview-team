@@ -1,20 +1,20 @@
 ---
 name: dev-team
-version: 0.5.0
+version: 0.6.0
 description: Multi-agent dev team for product discovery, project creation, specialist review, building, linting, alignment, and code comparison. Subcommands: interview, create-project-from-code, generate, create-code-from-project, lint, align-specialists, compare-code, view-project.
 allowed-tools: Read, Glob, Grep, Agent, Write, Edit, AskUserQuestion, Bash(git *), Bash(mkdir *), Bash(ls *), Bash(date *), Bash(cat *), Bash(wc *), Bash(uuidgen), Bash(chmod *), Bash(open *), WebFetch
 argument-hint: <command> [args...] — commands: interview, create-project-from-code, generate, create-code-from-project [--no-swiftui], lint, align-specialists, compare-code, view-project
 ---
 
-# Dev Team v0.5.0
+# Dev Team v0.6.0
 
 ## Startup
 
-**First action**: If `$ARGUMENTS` is `--version`, print `dev-team v0.5.0` and stop.
+**First action**: If `$ARGUMENTS` is `--version`, print `dev-team v0.6.0` and stop.
 
-Otherwise, print `dev-team v0.5.0` as the first line of output.
+Otherwise, print `dev-team v0.6.0` as the first line of output.
 
-**Version check**: Run `${CLAUDE_PLUGIN_ROOT}/scripts/version-check.sh "${CLAUDE_SKILL_DIR}" "0.5.0"`. If it outputs a warning, print it and continue.
+**Version check**: Run `${CLAUDE_PLUGIN_ROOT}/scripts/version-check.sh "${CLAUDE_SKILL_DIR}" "0.6.0"`. If it outputs a warning, print it and continue.
 
 ## Configuration
 
@@ -23,6 +23,8 @@ Otherwise, print `dev-team v0.5.0` as the first line of output.
 Run: `${CLAUDE_PLUGIN_ROOT}/scripts/load-config.sh` with `--config <path>` if specified. If the script fails (exit code 1), the error message tells the user what's wrong.
 
 Extract `cookbook_repo`, `workspace_repo`, and `user_name` from the JSON output.
+
+**Database**: Run `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-init.sh` to ensure the shared database exists.
 
 If config doesn't exist and the subcommand is NOT `interview`: "I need a config file. Run `/dev-team interview` first to set one up, or create `~/.agentic-cookbook/dev-team/config.json` with `workspace_repo`, `cookbook_repo`, and `user_name` fields."
 
@@ -61,7 +63,7 @@ Read the workflow file and follow its instructions. Pass the remaining arguments
 If no subcommand is provided or the subcommand is `help`, print:
 
 ```
-Dev Team v0.5.0 — Multi-agent product development
+Dev Team v0.6.0 — Multi-agent product development
 
 Commands:
   interview                    Product discovery interview

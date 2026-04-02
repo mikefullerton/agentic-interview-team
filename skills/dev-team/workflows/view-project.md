@@ -12,6 +12,16 @@ Your job:
 3. Inject the data into the HTML viewer template
 4. Write the result to a temp file and open it in the default browser
 
+## DB Integration
+
+This workflow is read-only — it does not log runs to the DB. Query the DB to enrich the HTML view:
+
+- Recent workflow runs: `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT workflow, status, started, completed FROM workflow_runs WHERE project_id=$PROJECT_ID ORDER BY started DESC LIMIT 10"`
+- Open findings: `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-finding.sh --list --project $PROJECT_ID --status open`
+- Comparison trends: `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT preservation_pct, created FROM comparisons WHERE project_id=$PROJECT_ID ORDER BY created"`
+
+Include this data in the HTML output if available. If the DB doesn't exist or has no data for this project, skip enrichment gracefully.
+
 ## Phase 1 — Load Project
 
 ### Resolve Project Path

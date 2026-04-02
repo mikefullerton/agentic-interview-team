@@ -35,6 +35,31 @@ If `--no-swiftui` is NOT present (default):
 
 Pass this preference to the **code-generator** and **specialist-code-pass** agents as part of their input context, so they know which UI framework to target.
 
+## DB Integration
+
+At workflow start:
+- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-project.sh --name <project-name> --path <project-path>`
+- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-run.sh start --project $PROJECT_ID --workflow create-code-from-project`
+
+Pass `$PROJECT_ID` and `$RUN_ID` to all spawned agents. Log agents with `db-agent.sh`, build logs with `db-artifact.sh` (categories: `build-log`, `report`), activity with `db-message.sh`.
+
+At end: `db-run.sh complete --id $RUN_ID --status completed`
+
+### Resumability
+
+At workflow start, check for an interrupted run:
+```
+${CLAUDE_PLUGIN_ROOT}/scripts/db/db-run.sh --latest --project $PROJECT_ID --workflow create-code-from-project
+```
+If the latest run has `status: interrupted`, query its agent_runs to determine which phases and specialist passes completed. Skip completed work and resume.
+
+### Specialist Tracking
+
+After specialist assignment is approved, log each assignment:
+```
+${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "INSERT INTO specialist_assignments (project_id, workflow_run_id, recipe_path, specialist, tier, approved) VALUES ($PROJECT_ID, $RUN_ID, '<recipe>', '<specialist>', <tier>, 1)"
+```
+
 ## Phase 1 — Load Project
 
 ### Resolve Project Path
