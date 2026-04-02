@@ -30,21 +30,21 @@ Your persona: a seasoned engineering project lead who has shipped many products.
 
 ## Configuration
 
-**Config path**: If `$ARGUMENTS` contains `--config <path>`, use that path instead of the default. Otherwise use `~/.agentic-interviewer/config.json`.
+**Config path**: If `$ARGUMENTS` contains `--config <path>`, use that path instead of the default. Otherwise use `~/.agentic-cookbook/dev-team/config.json`.
+
+**Migration**: If `~/.agentic-cookbook/dev-team/config.json` doesn't exist but `~/.agentic-interviewer/config.json` does, read the old config, rename `interview_repo` to `workspace_repo`, remove `interview_team_repo`, write to `~/.agentic-cookbook/dev-team/config.json`, and use it.
 
 On first run, check for the config file. If it doesn't exist:
 
-1. Ask the user: "Where is your interview repo? This is where transcripts, analyses, and your profile will be stored."
+1. Ask the user: "Where is your workspace repo? This is where transcripts, analyses, and your profile will be stored."
 2. Ask: "Where is your local clone of the agentic-cookbook? I use it to inform my specialists' questions."
-3. Ask: "Where is your local clone of the my-agentic-dev-team repo? I need it for specialist question sets and agent definitions."
-4. Ask: "What name should I use for you?"
-5. Create `~/.agentic-interviewer/config.json`:
+3. Ask: "What name should I use for you?"
+4. Create `~/.agentic-cookbook/dev-team/config.json`:
 
 ```json
 {
-  "interview_repo": "<user-provided-path>",
+  "workspace_repo": "<user-provided-path>",
   "cookbook_repo": "<user-provided-path>",
-  "interview_team_repo": "<user-provided-path>",
   "user_name": "<user-provided-name>",
   "authorized_repos": []
 }
@@ -119,8 +119,8 @@ After structured questions for a topic area are covered, shift to exploration:
 Use the Agent tool to spawn specialist subagents. **Every agent invocation MUST include these paths from config** so agents can access all three repos:
 
 - `cookbook_repo` — path to the agentic-cookbook (principles, guidelines, compliance)
-- `interview_team_repo` — path to this repo (specialist question sets, agent definitions)
-- `interview_repo` — path to the user's interview repo (transcripts, analyses, profile)
+- The plugin root (`${CLAUDE_PLUGIN_ROOT}`) provides specialist question sets and agent definitions
+- `workspace_repo` — path to the user's workspace repo (transcripts, analyses, profile)
 
 ### Transcript Analyzer
 Spawn the transcript analyzer (`agents/transcript-analyzer.md`) with:
@@ -133,7 +133,7 @@ Spawn the transcript analyzer (`agents/transcript-analyzer.md`) with:
 ### Specialist Interviewer
 Spawn `agents/specialist-interviewer.md` with:
 - The paths to all three repos
-- The specialist domain and question set path (`<interview_team_repo>/research/specialists/<domain>.md`)
+- The specialist domain and question set path (`${CLAUDE_PLUGIN_ROOT}/research/specialists/<domain>.md`)
 - The relevant cookbook guideline paths for this domain (e.g., `<cookbook_repo>/cookbook/guidelines/security/` for the security specialist)
 - Current transcript for context
 - The user's profile
@@ -156,7 +156,7 @@ Spawn `agents/specialist-analyst.md` with:
 ### Transcript Files
 After each exchange, write a transcript file:
 
-**Path:** `<interview_repo>/projects/<project>/transcript/<timestamp>-<slug>.md`
+**Path:** `<workspace_repo>/projects/<project>/transcript/<timestamp>-<slug>.md`
 **Timestamp format:** `YYYY-MM-DD-HH-MM-SS`
 
 ```yaml
@@ -188,7 +188,7 @@ specialist: <specialist-domain>
 ### Analysis Files
 After the analyst runs, write an analysis file:
 
-**Path:** `<interview_repo>/projects/<project>/analysis/<timestamp>-<slug>-analysis.md`
+**Path:** `<workspace_repo>/projects/<project>/analysis/<timestamp>-<slug>-analysis.md`
 
 ```yaml
 ---
@@ -230,7 +230,7 @@ specialist: <specialist-domain>
 ```
 
 ### Checklist
-Maintain `<interview_repo>/projects/<project>/checklist.md`:
+Maintain `<workspace_repo>/projects/<project>/checklist.md`:
 
 ```markdown
 # Interview Checklist — <project-name>
@@ -258,7 +258,7 @@ When the user asks for a summary:
 1. Read all transcript and analysis files for the current project
 2. Produce a summary organized by topic area
 3. Present to the user
-4. If the user approves, write the summary to `<interview_repo>/projects/<project>/summary-<timestamp>.md`
+4. If the user approves, write the summary to `<workspace_repo>/projects/<project>/summary-<timestamp>.md`
 5. Update the checklist with any newly covered items
 
 Do NOT automatically hand off to planning. A separate skill handles that.
@@ -271,7 +271,7 @@ After each session, update the user's profile with anything new learned:
 - Decision-making patterns observed
 - Platform expertise demonstrated
 
-Write updates to `<interview_repo>/profiles/<user_name>/profile.md`.
+Write updates to `<workspace_repo>/profiles/<user_name>/profile.md`.
 
 ## Contextual Profile Usage
 
@@ -284,7 +284,7 @@ Do NOT dump the full profile. Only surface what's relevant to the current topic.
 
 ## Repo Access
 
-If the interview repo config has `authorized_repos`, the skill can read those repos for context:
+If the workspace repo config has `authorized_repos`, the skill can read those repos for context:
 - Check the project's codebase for existing architecture, dependencies, patterns
 - Notice changes since the last interview session
 - Reference actual code when asking questions
@@ -298,11 +298,11 @@ When `$ARGUMENTS` contains `--test-mode`, the skill runs in automated testing mo
 ### Arguments
 - `--persona <path>` — path to a persona file for the simulated user (required in test mode)
 - `--max-exchanges <n>` — stop after N question-answer exchanges (required in test mode)
-- `--config <path>` — path to test config (should point interview_repo at a test output directory)
+- `--config <path>` — path to test config (should point workspace_repo at a test output directory)
 
 ### Behavior Changes
 1. **No real user interaction.** Instead of asking the user questions via AskUserQuestion, spawn the `agents/simulated-user.md` agent with the persona file and the question. Use the simulated user's response as the answer.
-2. **Flow logging.** Follow the unified log schema defined in `<interview_team_repo>/tests/test-mode-spec.md`. Write events to `<interview_repo>/projects/<project>/test-log.jsonl`. Each line is a JSON object with base fields `skill`, `phase`, `event`, `timestamp`:
+2. **Flow logging.** Follow the unified log schema defined in `${CLAUDE_PLUGIN_ROOT}/tests/test-mode-spec.md`. Write events to `<workspace_repo>/projects/<project>/test-log.jsonl`. Each line is a JSON object with base fields `skill`, `phase`, `event`, `timestamp`:
    - `{"skill": "interview", "phase": "interview-loop", "event": "specialist_invoked", "specialist": "<domain>", "mode": "structured|exploratory", "timestamp": "..."}`
    - `{"skill": "interview", "phase": "interview-loop", "event": "question_asked", "specialist": "<domain>", "question_id": "<id>", "timestamp": "..."}`
    - `{"skill": "interview", "phase": "interview-loop", "event": "answer_received", "transcript_file": "<filename>", "timestamp": "..."}`
