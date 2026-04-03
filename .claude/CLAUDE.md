@@ -38,6 +38,8 @@ plugins/
         workflows/         # One workflow file per subcommand
     scripts/               # Shell scripts for deterministic operations
       db/                  # Database shell script API
+services/
+  dashboard/               # Live workflow dashboard (Flask, read-only)
 docs/
   planning/                # Design specs and plans
   research/                # Specialist mapping and assignment rules

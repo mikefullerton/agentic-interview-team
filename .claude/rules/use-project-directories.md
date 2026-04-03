@@ -6,6 +6,7 @@ The plugin lives in `plugins/dev-team/`. Plugin content goes there. Docs and tes
 - **Specialist definitions** go in `plugins/dev-team/specialists/`
 - **Skills** go in `plugins/dev-team/skills/<skill-name>/`
 - **Scripts** go in `plugins/dev-team/scripts/`
+- **Services** go in `services/<service-name>/`
 - **Design specs and planning documents** go in `docs/planning/`
 - **Research and specialist data** go in `docs/research/`
 - **Tests** go in `tests/`
