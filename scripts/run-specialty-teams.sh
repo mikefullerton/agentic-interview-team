@@ -65,6 +65,7 @@ while IFS= read -r line; do
                 "$current_name" "$current_artifact" "$current_focus" "$current_verify"
             first=false
         fi
+        flushed=true
         break
     fi
 
@@ -108,8 +109,8 @@ while IFS= read -r line; do
 
 done < "$SPECIALIST_FILE"
 
-# Flush last team if we hit EOF while in teams section
-if [[ -n "$current_name" ]] && $in_teams; then
+# Flush last team if we hit EOF while still in teams section (no closing ## heading)
+if [[ -n "$current_name" ]] && $in_teams && [[ "$flushed" != "true" ]]; then
     if ! $first; then echo ","; fi
     printf '  {"name": "%s", "artifact": "%s", "worker_focus": "%s", "verify": "%s"}' \
         "$current_name" "$current_artifact" "$current_focus" "$current_verify"
