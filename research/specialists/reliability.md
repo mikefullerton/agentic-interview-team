@@ -1,42 +1,32 @@
 # Reliability & Error Handling Specialist
 
-## Domain Coverage
+## Role
 Fail fast, idempotency, error categorization, retry strategies, timeout handling, graceful degradation, state recovery, data integrity, circuit breakers, monitoring.
+
+## Persona
+(coming)
 
 ## Cookbook Sources
 - `principles/fail-fast.md`
 - `principles/idempotency.md`
 - `compliance/reliability.md`
 
-## Structured Questions
+## Specialty Teams
 
-1. How will you categorize errors — network, validation, permission, database? Typed errors or generic exceptions? Retryable vs. non-retryable?
+### fail-fast
+- **Artifact**: `principles/fail-fast.md`
+- **Worker focus**: Invalid state detected and surfaced immediately at the point of origin; assertions and preconditions in debug builds; input validation at system boundaries; typed errors returned rather than swallowed; no empty catch blocks; fail gracefully with clear messages in production, loudly in debug
+- **Verify**: No empty catch blocks; typed error returns at system boundaries; debug builds use assertions/preconditions; no silent swallowing of exceptions; production error paths produce user-visible messages
 
-2. For network calls, what's your retry strategy? Exponential backoff? How many retries? Different for reads vs. writes?
+### idempotency
+- **Artifact**: `principles/idempotency.md`
+- **Worker focus**: User actions and system operations safe to repeat without duplicate side effects; buttons debounced or disabled during async operations; idempotency keys on API calls with side effects; database migrations safe to run multiple times; state transitions check current state before applying
+- **Verify**: Submit buttons disabled or debounced during in-flight requests; idempotency keys present on write API calls; migration scripts use IF NOT EXISTS or equivalent guards; state transition logic reads current state before writing
 
-3. For API calls that create or update data, do you have idempotency keys? How will you store and manage them?
-
-4. What are your default timeouts — API calls, database queries, file I/O? Will the system be in a consistent state after a timeout?
-
-5. When an operation fails, what does the user see? Generic message or specific? Correlation ID for debugging?
-
-6. While a network request is in flight, what happens to the submit button? Race conditions if user clicks multiple times?
-
-7. If your app crashes mid-operation, what state is lost? Can it recover? Payment submitted but confirmation didn't arrive — what happens on restart?
-
-8. If the network goes down, does the app queue operations, show offline message, or fail immediately? Reconciliation when back online?
-
-9. At what layer do you validate data — client, API gateway, business logic, database? Duplicate at each layer?
-
-10. If a database query fails, how do you distinguish "data doesn't exist" vs. "query failed"?
-
-11. If an external API dependency is down, does your entire app fail or degrade gracefully?
-
-12. What metrics will you track — error rates, latency, retry counts, timeouts? How will you be alerted?
-
-13. How will you detect data corruption — checksums, validation rules, periodic integrity checks?
-
-14. If a downstream service repeatedly fails, will you implement a circuit breaker?
+### reliability-compliance
+- **Artifact**: `compliance/reliability.md`
+- **Worker focus**: 8 compliance checks — error-recovery, graceful-degradation, fault-tolerance, state-recovery, idempotent-operations, timeout-handling, data-integrity, health-observability
+- **Verify**: Each compliance check has a status (passed/failed/partial/n-a) with evidence; transient errors retried without user intervention; external dependency failure degrades gracefully (no crash); timed-out operations leave system in consistent state; persistent components emit health metrics
 
 ## Exploratory Prompts
 

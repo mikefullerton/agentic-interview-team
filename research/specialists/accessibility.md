@@ -1,37 +1,26 @@
 # Accessibility Specialist
 
-## Domain Coverage
-Screen reader support, keyboard navigation, dynamic type/font scaling, color contrast, reduced motion, touch/click targets, platform accessibility APIs, focus management, semantic markup, color independence.
+## Role
+Platform accessibility APIs, screen readers, keyboard navigation, font scaling, contrast, reduced motion, touch targets, focus management, semantic markup.
+
+## Persona
+(coming)
 
 ## Cookbook Sources
-- `guidelines/accessibility/`
+- `guidelines/accessibility/accessibility.md`
 - `compliance/accessibility.md`
 
-## Structured Questions
+## Specialty Teams
 
-1. How are you planning to test screen reader compatibility? VoiceOver (iOS), TalkBack (Android), ARIA (web), Narrator (Windows)? Plans for `aria-live` regions for dynamic content?
+### accessibility
+- **Artifact**: `guidelines/accessibility/accessibility.md`
+- **Worker focus**: Semantic roles and labels on all interactive elements; full screen reader support (VoiceOver, TalkBack, Narrator, ARIA); keyboard and switch control navigation; Dynamic Type/font scaling without layout breakage; WCAG AA contrast (4.5:1 text, 3:1 large text); meaningful focus order; platform accessibility display settings (reduced motion, high contrast, color inversion, bold text, grayscale)
+- **Verify**: Every interactive element has a semantic role and accessible label; layouts tested at 2x font scale without clipping or overflow; contrast ratios verified at 4.5:1 for normal text; `prefers-reduced-motion` / `accessibilityReduceMotion` honored; platform-specific APIs used (SwiftUI environment keys, Android `AccessibilityManager`, ARIA roles + `aria-live`, Windows `AutomationProperties`)
 
-2. Will all features be accessible via keyboard only? What's your focus order strategy? Visible focus indicators?
-
-3. How will your UI respond when users increase system font size? Responsive font sizing or fixed pixels? At what size does your layout break?
-
-4. What color palette are you using? Tested contrast ratios against WCAG AA (4.5:1)? Plan for high-contrast mode?
-
-5. Does your app use animations — transitions, parallax, autoplaying carousels? What happens when "reduce motion" is enabled?
-
-6. What's the minimum size of interactive elements? At least 44x44pt or 48x48dp? How do you handle elements that must be smaller?
-
-7. Are you using native accessibility APIs from day one or retrofitting later?
-
-8. If your app has modal dialogs, how will you trap focus inside them? After closing a modal, where does focus go?
-
-9. Semantic HTML elements (button, nav, main, form) or generic divs with ARIA? Do you understand the difference between `role` and `aria-label`?
-
-10. How will you handle images — alt text on all? For icon-only buttons, `aria-label` or visible text?
-
-11. Does your design rely on color alone to convey status, errors, or required fields? Icons, borders, text labels alongside colors?
-
-12. What's your accessibility testing strategy — automated tools (axe, Lighthouse), manual screen reader testing, or user testing with people who have disabilities?
+### accessibility-compliance
+- **Artifact**: `compliance/accessibility.md`
+- **Worker focus**: 8 compliance checks — screen-reader-support, keyboard-navigable, dynamic-type-support, contrast-ratio, touch-target-size, reduced-motion, focus-management, semantic-markup
+- **Verify**: Each compliance check has a status (passed/failed/partial/n-a) with evidence; touch targets verified at ≥44x44pt (Apple) or ≥48x48dp (Android); modal dialogs trap and restore focus; web components use correct ARIA roles, states, and properties
 
 ## Exploratory Prompts
 
