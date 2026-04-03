@@ -27,17 +27,15 @@ Three repos:
 ## Repository Structure
 
 ```
-plugins/
-  dev-team/                # The complete plugin
-    plugin.json            # Plugin manifest
-    agents/                # 19 subagent definitions
-    specialists/           # 19 specialist definitions (13 domain + 6 platform)
-    skills/
-      dev-team/            # Single skill with subcommand routing
-        SKILL.md           # Router
-        workflows/         # One workflow file per subcommand
-    scripts/               # Shell scripts for deterministic operations
-      db/                  # Database shell script API
+.claude-plugin/            # Plugin manifest
+agents/                    # 19 subagent definitions
+specialists/               # 19 specialist definitions (13 domain + 6 platform)
+skills/
+  dev-team/                # Single skill with subcommand routing
+    SKILL.md               # Router
+    workflows/             # One workflow file per subcommand
+scripts/                   # Shell scripts for deterministic operations
+  db/                      # Database shell script API
 services/
   dashboard/               # Live workflow dashboard (Flask, read-only)
 docs/

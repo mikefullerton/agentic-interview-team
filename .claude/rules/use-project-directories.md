@@ -1,11 +1,11 @@
 # Use Project Directories
 
-The plugin lives in `plugins/dev-team/`. Plugin content goes there. Docs and tests stay at the repo root:
+This project has its own directory structure:
 
-- **Agent definitions** go in `plugins/dev-team/agents/`
-- **Specialist definitions** go in `plugins/dev-team/specialists/`
-- **Skills** go in `plugins/dev-team/skills/<skill-name>/`
-- **Scripts** go in `plugins/dev-team/scripts/`
+- **Agent definitions** go in `agents/`
+- **Specialist definitions** go in `specialists/`
+- **Skills** go in `skills/<skill-name>/`
+- **Scripts** go in `scripts/`
 - **Services** go in `services/<service-name>/`
 - **Design specs and planning documents** go in `docs/planning/`
 - **Research and specialist data** go in `docs/research/`
