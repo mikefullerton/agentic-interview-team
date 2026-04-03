@@ -1,6 +1,5 @@
-# Local Claude Code setup (symlinks to top-level dirs)
-.claude/skills/
-.claude/agents/
+# Local Claude Code setup (old symlinks — no longer used)
+# .claude/skills/ and .claude/agents/ are now real files, not symlinks
 
 # Dependencies
 node_modules/
