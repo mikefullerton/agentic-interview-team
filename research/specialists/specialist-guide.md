@@ -1,107 +1,119 @@
 # Specialist Guide
 
-The canonical reference for what a specialist is, how specialist question sets are structured, and how specialists participate in the three dev-team workflows.
+The canonical reference for the specialty-team architecture — how specialists are structured, how specialty-teams work, and how specialists participate in dev-team workflows.
 
-## What Is a Specialist?
+## Architecture
 
-A specialist is a domain-expert lens applied across three workflows: interview, recipe review, and code augmentation. Each specialist owns a slice of the cookbook — specific guidelines, principles, compliance checks, and research — and uses that knowledge to ask better questions, catch domain-specific gaps, and add domain concerns to generated code.
+```
+Specialist (role + persona)
+  └── manages N specialty-teams, one at a time
+        └── Specialty-Team (focused on ONE guideline/principle/rule)
+              ├── Worker — does the work for this artifact
+              ├── Verifier — checks the work, independent of worker
+              └── Loop until verifier signs off
+```
 
-Specialists do not work in isolation. They are invoked by the meeting leader (interview), the generate skill (recipe review), and the build skill (code augmentation). They receive context, do focused work, and return structured output.
+### Specialty-Team
 
-## Question Set Format
+The atomic unit. A worker-verifier pair that is an absolute expert on ONE cookbook artifact (a single guideline, principle, or rule).
+
+- **Worker** — receives the cookbook artifact, the target (transcript/code/recipe), and the mode. Produces work product. Uses `agents/specialty-team-worker.md`.
+- **Verifier** — receives the cookbook artifact and the worker's output. Checks completeness and correctness. Returns PASS or FAIL with specifics. Uses `agents/specialty-team-verifier.md`.
+- **Independence** — the worker cannot affect what the verifier checks. The verifier cannot influence what the worker does. This is checks-and-balances.
+- **Loop** — if the verifier returns FAIL, the worker gets the failure reasons and retries. Max 3 iterations, then escalate to the specialist with the failure details.
+
+### Specialist
+
+An organizer. A specialist holds a role and persona, manages a list of specialty-teams, and runs them one at a time.
+
+- **Role** — what this specialist covers (e.g., "Auth, transport security, token handling, input validation, secure storage, sensitive data, privacy, dependency security, CORS, CSP, user safety")
+- **Persona** — (coming) shapes how the specialist communicates, prioritizes, and aggregates
+- **Team manifest** — the list of specialty-teams this specialist manages. Each cookbook artifact the specialist owns = one specialty-team.
+- **Iteration** — a deterministic script (`scripts/run-specialty-teams.sh`) parses the manifest and outputs the team list. The orchestrating agent walks the list one at a time.
+- **Aggregation** — after all teams complete, the specialist aggregates findings into a unified report
+- **Sign-off** — the specialist cannot sign off until every specialty-team's verifier has signed off (or escalated after max iterations)
+
+### Key Principle
+
+The specialty-teams ARE the specialist's skill set. The specialist doesn't "know" security — it manages the specialty-teams for authentication, authorization, token-handling, CORS, CSP, etc. Each team is the real expert. The specialist is the manager.
+
+## Specialist File Format
 
 Every specialist file in `research/specialists/` follows this structure:
 
-### Domain Coverage
+```markdown
+# <Name> Specialist
 
-One to two sentences defining the specialist's scope. This is the quick filter for "does this specialist care about X?"
+## Role
+<1-2 sentences defining scope>
 
-### Cookbook Sources
+## Persona
+(coming)
 
-Explicit file paths to the cookbook content this specialist owns. These are the authoritative references the specialist reads during all three workflows. List every relevant directory or file — no implicit discovery.
+## Cookbook Sources
+<explicit file paths — same as before, used for alignment checking>
 
-Categories:
-- **Guidelines** — `guidelines/<topic>/` directories
-- **Principles** — individual `principles/<name>.md` files
-- **Compliance** — `compliance/<category>.md` files
-- **Research** — `research/developer-tools/<area>/` files
-- **Recipes** — `recipes/<area>/` files (for review and augmentation context)
-- **Rules** — `rules/<name>.md` files (for authoring-focused specialists)
+## Specialty Teams
 
-### Structured Questions
+### <team-name>
+- **Artifact**: `<path to one cookbook artifact>`
+- **Worker focus**: <what this team cares about — mode-independent>
+- **Verify**: <acceptance criteria — what the verifier checks>
 
-Ten to fifteen methodical questions that cover the specialist's domain systematically. These serve as:
-- **Interview mode**: A checklist the specialist-interviewer works through, adapting each question to what's been discussed
-- **Recipe review mode**: A checklist of concerns the recipe-reviewer checks against each recipe
-- **Code augmentation mode**: A mental model for what the specialist-code-pass agent should look for
+### <next-team>
+...
+```
 
-Each question should be specific enough to elicit a concrete answer, not vague enough to get a hand-wave. Bad: "How will you handle errors?" Good: "When a network request fails mid-sync, does the operation retry, roll back, or leave partial state? How does the user know what happened?"
+### Rules for Specialty Teams
 
-### Exploratory Prompts
+1. **One team per cookbook artifact.** If a specialist owns `guidelines/security/authentication.md`, that's one team named `authentication`.
+2. **Worker focus is mode-independent.** It describes what this team cares about, not how it operates. The mode (interview/analysis/generation/review) determines the how.
+3. **Verify criteria are concrete.** Not "check auth is good" but "auth method chosen, PKCE for public clients, no implicit flow."
+4. **Every artifact gets a team.** If a specialist lists a cookbook source in `## Cookbook Sources`, there must be a corresponding specialty-team. If it's a directory reference (e.g., `guidelines/security/`), every file in that directory gets its own team.
 
-Three to five "why" and "what-if" questions that push thinking beyond the checklist. These are used in exploratory interview mode to follow threads and surface things the user hasn't considered.
+## Modes
 
-Exploratory prompts should be genuinely curious, not leading. They probe assumptions, test mental models, and surface hidden complexity.
+The same specialty-team pipeline runs in all four modes. The worker's behavior changes per mode:
 
-## Three Participation Modes
+| Mode | Worker receives | Worker produces | Verifier checks |
+|------|----------------|-----------------|-----------------|
+| **interview** | Artifact + transcript | One question + why it matters | Question addresses artifact's core concern; not already answered |
+| **analysis** | Artifact + source code | Findings per requirement (present/absent/violation/n-a) | Every requirement has a finding with evidence |
+| **generation** | Artifact + generated code + recipe | Code additions/modifications | Code satisfies requirements; compiles; additive only |
+| **review** | Artifact + recipe | Coverage status per requirement + suggestions | Every requirement mapped to recipe content or flagged |
 
-### 1. Interview (specialist-interviewer agent)
+## Execution Flow
 
-The specialist generates one question at a time for the meeting leader to pass to the user. Two modes:
+1. The orchestrating workflow (interview, create-project-from-code, create-code-from-project, generate, lint) determines which specialists to assign
+2. For each specialist, the orchestrator runs `scripts/run-specialty-teams.sh <specialist-file>` to get the team manifest as JSON
+3. The orchestrator walks the team list one at a time:
+   a. Spawn worker agent with: mode, artifact, target, worker focus
+   b. Spawn verifier agent with: artifact, worker output, verify criteria
+   c. If FAIL and iterations < 3: feed failure back to worker, retry
+   d. If PASS: record result
+   e. If FAIL after 3: record escalation
+4. After all teams complete, the specialist aggregates results
+5. Specialist signs off (or reports escalations)
 
-- **Structured**: Work through the question set methodically, skipping questions already answered, adapting each to the transcript context
-- **Exploratory**: Follow threads from previous answers, ask "why" and "what-if" questions, surface implications the user hasn't considered
-
-Output: One question with specialist attribution, context for why it matters, and (in exploratory mode) what thread is being followed.
-
-Key constraint: Questions must be specific to what's been discussed. Generic questions waste the user's time. Reference previous answers. Show the team is listening.
-
-### 2. Recipe Review (recipe-reviewer agent)
-
-The specialist evaluates a generated recipe through their domain lens:
-
-- Check whether the recipe addresses each concern from the structured questions
-- Compare requirements against cookbook guidelines and compliance checks
-- Identify gaps, suggest specific improvements with rationale
-- Flag cross-domain issues when critical
-
-Output: Structured review with compliance gaps, missing sections, actionable suggestions (with cookbook references), and questions that need user input.
-
-Key constraint: Suggestions must be specific and surgical. "Add a MUST requirement for X" not "security needs work." Reference the cookbook source that justifies each suggestion.
-
-### 3. Code Augmentation (specialist-code-pass agent)
-
-The specialist surgically adds domain concerns to generated code:
-
-- Add code (methods, properties, imports, modifiers)
-- Wrap existing code (error handling, validation, guards)
-- Annotate existing code (accessibility labels, logging, analytics)
-
-Output: Updated source files plus an augmentation report listing changes, recipe requirements addressed, and cookbook guidelines applied.
-
-Key constraints:
-- **Additive only** — do not delete code from previous passes
-- **Must compile** — code must compile before and after the pass
-- **Stay in your lane** — add your domain's concerns, not someone else's (but flag critical cross-domain issues)
+The iteration is deterministic — a script walking a list. The LLM cost is in the worker-verifier calls (small, focused). The specialist doesn't need to hold all teams in context at once.
 
 ## Specialist Assignment
 
-The rules for assigning specialists to recipes are defined in `research/specialist-assignment.md`. This single reference is used by the generate, build, and lint skills. The machine-readable mappings are in `research/specialist-assignment.json`, and a shell script at `scripts/assign-specialists.sh` automates the assignment.
+Unchanged. The rules in `research/specialist-assignment.md` and `research/specialist-assignment.json` determine which specialists are assigned to a recipe or codebase. The shell script `scripts/assign-specialists.sh` automates this.
 
 ## Cross-Domain Responsibilities
 
-Each specialist stays focused on their domain. However, when a specialist notices a critical issue outside their lane, they flag it rather than ignoring it:
+Each specialty-team stays focused on its ONE artifact. However, workers are expected to flag critical cross-domain issues they notice:
 
-- A security specialist reviewing a recipe notices no rate limiting on a login form — flags it
-- A UI specialist augmenting code notices user input flowing to a database query unsanitized — flags it
-- An accessibility specialist in an interview hears the user describe a custom gesture with no alternative — flags it
+- A security worker reviewing auth notices no rate limiting — flags it
+- A UI worker generating form code notices unsanitized input — flags it
 
-The flag goes to the meeting leader (interview), the review output (recipe review), or the augmentation report's "Deferred" section (code augmentation). The specialist does not fix it themselves.
+Flags go to the specialist's aggregation report under a "Cross-Domain Flags" section. The specialist does not fix them — the appropriate specialist's teams handle their own domain.
 
 ## Adding a New Specialist
 
 1. Create `research/specialists/<domain>.md` following the format above
-2. Add the specialist to the roster in `research/cookbook-specialist-mapping.md`
-3. Map cookbook sources (guidelines, principles, compliance, research) to the specialist
-4. Add a domain-specific section to `agents/specialist-code-pass.md` describing what the specialist adds during code augmentation
-5. Test: run the specialist through each workflow mode to verify the questions are specific enough, the cookbook sources are correct, and the code augmentation guidance produces compilable results
+2. Define specialty-teams — one per cookbook artifact the specialist owns
+3. Add the specialist to `research/cookbook-specialist-mapping.md`
+4. Test: run one specialty-team in each mode to verify the worker focus and verify criteria produce good results
+5. Run `align-specialists` to confirm coverage maps are clean
