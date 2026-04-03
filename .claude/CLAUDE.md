@@ -27,19 +27,21 @@ Three repos:
 ## Repository Structure
 
 ```
-plugins/                   # Plugin manifest
-agents/                    # 19 subagent definitions
-specialists/               # 19 specialist definitions (13 domain + 6 platform)
-skills/
-  dev-team/                # Single skill with subcommand routing
-    SKILL.md               # Router
-    workflows/             # One workflow file per subcommand
-scripts/                   # Shell scripts for deterministic operations
-  db/                      # Database shell script API (db-init, db-project, db-run, etc.)
-docs/
-  planning/                # Design specs and plans
-  research/                # Specialist mapping and assignment rules
-tests/                     # Test harness and personas
+plugins/
+  dev-team/                # The complete plugin
+    plugin.json            # Plugin manifest
+    agents/                # 19 subagent definitions
+    specialists/           # 19 specialist definitions (13 domain + 6 platform)
+    skills/
+      dev-team/            # Single skill with subcommand routing
+        SKILL.md           # Router
+        workflows/         # One workflow file per subcommand
+    scripts/               # Shell scripts for deterministic operations
+      db/                  # Database shell script API
+    docs/
+      planning/            # Design specs and plans
+      research/            # Specialist mapping and assignment rules
+    tests/                 # Test harness and personas
 ```
 
 ## Local Testing

@@ -51,21 +51,23 @@ Each specialist manages **specialty-teams** — worker-verifier pairs focused on
 ## Repository Structure
 
 ```
-plugins/                   # Plugin manifest
-agents/                    # 19 subagent definitions
-specialists/               # 19 specialist definitions (13 domain + 6 platform)
-skills/
-  dev-team/                # Single skill with subcommand routing
-    SKILL.md               # Router
-    workflows/             # One workflow file per subcommand
-scripts/                   # Shell scripts for deterministic operations
-  db/                      # Database shell script API
-docs/
-  planning/                # Design specs and plans
-  research/                # Specialist mapping and assignment rules
-tests/                     # Test harness and personas
+plugins/
+  dev-team/                # The complete plugin
+    plugin.json            # Plugin manifest
+    agents/                # 19 subagent definitions
+    specialists/           # 19 specialist definitions (13 domain + 6 platform)
+    skills/
+      dev-team/            # Single skill with subcommand routing
+        SKILL.md           # Router
+        workflows/         # One workflow file per subcommand
+    scripts/               # Shell scripts for deterministic operations
+      db/                  # Database shell script API
+    docs/
+      planning/            # Design specs and plans
+      research/            # Specialist mapping and assignment rules
+    tests/                 # Test harness and personas
 ```
 
 ## Local Development
 
-To test locally, `cd` into this repo and invoke `/dev-team interview`.
+To test locally, `cd` into `plugins/dev-team/` and invoke `/dev-team interview`.
