@@ -7,6 +7,9 @@ Structured logging, analytics, tight feedback loops, performance compliance, deb
 - `guidelines/logging/`
 - `principles/tight-feedback-loops.md`
 - `compliance/performance.md`
+- `guidelines/feature-management/feature-flags.md`
+- `guidelines/feature-management/ab-testing.md`
+- `guidelines/feature-management/debug-mode.md`
 
 ## Structured Questions
 

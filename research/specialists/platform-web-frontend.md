@@ -4,7 +4,12 @@
 HTML/CSS/JS, frameworks (React, Vue, etc.), responsive design, browser APIs, progressive enhancement, web accessibility (WCAG), performance, bundling.
 
 ## Cookbook Sources
-- Cross-cutting: UI guidelines, accessibility, security (CORS, CSP), networking
+- `guidelines/ui/`
+- `guidelines/accessibility/accessibility.md`
+- `guidelines/security/cors.md`
+- `guidelines/security/content-security-policy.md`
+- `guidelines/networking/`
+- `compliance/platform-compliance.md`
 
 ## Structured Questions
 

@@ -4,7 +4,12 @@
 APIs, middleware, scaling, deployment, databases, authentication services, caching layers, message queues, microservices vs. monolith.
 
 ## Cookbook Sources
-- Cross-cutting: networking guidelines, security guidelines, reliability compliance, access patterns compliance
+- `guidelines/networking/`
+- `guidelines/security/`
+- `guidelines/language/python/`
+- `compliance/reliability.md`
+- `compliance/access-patterns.md`
+- `compliance/security.md`
 
 ## Structured Questions
 

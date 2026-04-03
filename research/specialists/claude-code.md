@@ -30,25 +30,18 @@ Claude Code plugin architecture, skill/rule/agent/hook authoring, MCP server des
 - `recipes/autonomous-dev-bots/pr-review-pipeline.md`
 
 ### Research
-- `research/developer-tools/claude/claude-plugin-format.md`
-- `research/developer-tools/claude/hooks-patterns.md`
-- `research/developer-tools/claude/mcp-servers.md`
-- `research/developer-tools/claude/memory-and-context-tools.md`
-- `research/developer-tools/claude/claude-integration-guide.md`
-- `research/developer-tools/claude/rule-optimization.md`
-- `research/developer-tools/claude/skill-testing-landscape.md`
-- `research/developer-tools/claude/plugins-and-skills-catalog.md`
-- `research/developer-tools/claude/self-healing-research-summary.md`
-- `research/developer-tools/claude/terminal-progress-and-status-line.md`
-- `research/developer-tools/claude/yolo-per-session-design.md`
-- `research/developer-tools/claude/dangerously-skip-permissions-bugs.md`
-
-### Rules (authoring reference)
-- `rules/skill-authoring.md`
-- `rules/skill-versioning.md`
-- `rules/extension-authoring.md`
-- `rules/permissions.md`
-- `rules/authoring-ground-rules.md`
+- `appendix/research/developer-tools/claude/claude-plugin-format.md`
+- `appendix/research/developer-tools/claude/hooks-patterns.md`
+- `appendix/research/developer-tools/claude/mcp-servers.md`
+- `appendix/research/developer-tools/claude/memory-and-context-tools.md`
+- `appendix/research/developer-tools/claude/claude-integration-guide.md`
+- `appendix/research/developer-tools/claude/rule-optimization.md`
+- `appendix/research/developer-tools/claude/skill-testing-landscape.md`
+- `appendix/research/developer-tools/claude/plugins-and-skills-catalog.md`
+- `appendix/research/developer-tools/claude/self-healing-research-summary.md`
+- `appendix/research/developer-tools/claude/terminal-progress-and-status-line.md`
+- `appendix/research/developer-tools/claude/yolo-per-session-design.md`
+- `appendix/research/developer-tools/claude/dangerously-skip-permissions-bugs.md`
 
 ## Conventions
 
