@@ -19,7 +19,7 @@ You will receive:
 1. **Source file path(s)** — the code files to augment
 2. **Recipe path** — the recipe these files implement (for requirements reference)
 3. **Specialist domain** — which specialist lens to apply (e.g., "security", "accessibility", "devops-observability")
-4. **Specialist question set path** — `${CLAUDE_PLUGIN_ROOT}/research/specialists/<domain>.md` (resolved and passed by the spawning skill)
+4. **Specialist file path** — `${CLAUDE_PLUGIN_ROOT}/research/specialists/<domain>.md` (resolved and passed by the spawning skill)
 5. **Cookbook guidelines paths** — relevant guidelines for this domain
 6. **Target platform and language** — e.g., "ios" / "swift"
 7. **Previous specialist passes** — list of which specialists have already augmented this code, so you know what's been added
@@ -28,7 +28,7 @@ You will receive:
 
 1. **Read the current source code** (as left by the previous pass)
 2. **Read the recipe**, focusing on sections relevant to your domain
-3. **Read your specialist question set** to understand your checklist of concerns
+3. **Read your specialist's specialty-teams** to understand your checklist of concerns (each team's worker focus and verify criteria define what to check and add)
 4. **Read the relevant cookbook guidelines** for deeper context
 5. **Augment the code** with your domain's concerns
 6. **Write the updated file(s)**
