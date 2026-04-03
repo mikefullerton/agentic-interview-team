@@ -22,7 +22,7 @@ You are a specialist recipe reviewer. You review a generated cookbook recipe fro
 You will receive:
 1. **Recipe path** — path to the recipe file to review
 2. **Specialist domain** — which specialist lens to apply (e.g., "security", "accessibility", "ui-ux-design")
-3. **Specialist file path** — path to `research/specialists/<domain>.md`
+3. **Specialist file path** — path to `specialists/<domain>.md`
 4. **Cookbook sources** — paths to the relevant cookbook guidelines, principles, and compliance checks for this domain
 5. **Original source code paths** (optional) — paths to the source files the recipe was generated from, if available
 6. **Cookbook repo path** — for reading guidelines and compliance

@@ -55,7 +55,7 @@ Cookbook scan complete:
 
 ### 2a. Enumerate Specialists
 
-Glob `${CLAUDE_PLUGIN_ROOT}/research/specialists/*.md`. Exclude `specialist-guide.md`.
+Glob `${CLAUDE_PLUGIN_ROOT}/specialists/*.md`. Exclude `specialist-guide.md`.
 
 ### 2b. Filter
 
@@ -74,7 +74,7 @@ For each specialist, spawn a **specialist-aligner** agent at `${CLAUDE_PLUGIN_RO
 ### Agent Input
 
 Provide each aligner:
-1. **Specialist file path** — `${CLAUDE_PLUGIN_ROOT}/research/specialists/<domain>.md`
+1. **Specialist file path** — `${CLAUDE_PLUGIN_ROOT}/specialists/<domain>.md`
 2. **Cookbook repo path** — `cookbook_repo` from config
 3. **Canonical guideline paths** — the newline-delimited list from Phase 1b
 4. **Canonical principle paths** — from Phase 1b
@@ -180,7 +180,7 @@ If there are uncovered files, recommend whether to:
 ### 4d. Ghost Specialists
 
 For each specialist domain referenced in the mapping file:
-- Verify a corresponding file exists in `research/specialists/`
+- Verify a corresponding file exists in `specialists/`
 - If not, flag: `"Mapping references specialist '<domain>' but no file exists"`
 
 ## Phase 5 — Report and Apply
@@ -217,13 +217,13 @@ Group by severity. Present each category in order:
 ```
 [STALE] <specialist> — <path>
   Note: <agent's note, e.g., "Possible rename: new-name.md">
-  Fix: Remove or update this path in research/specialists/<specialist>.md
+  Fix: Remove or update this path in specialists/<specialist>.md
 ```
 
 **2. MISSING coverage** (new content not referenced)
 ```
 [MISSING-HIGH] <specialist> — <path>
-  Fix: Add to Cookbook Sources in research/specialists/<specialist>.md
+  Fix: Add to Cookbook Sources in specialists/<specialist>.md
 ```
 
 **3. Question gaps** (advisory)

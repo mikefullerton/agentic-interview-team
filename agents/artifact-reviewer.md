@@ -19,7 +19,7 @@ You will receive:
 1. **Artifact path** — path to the artifact to review
 2. **Artifact type** — one of: skill, rule, agent, recipe, implementation
 3. **Specialist domain** — which specialist lens to apply (e.g., "claude-code", "security")
-4. **Specialist question set path** — path to `research/specialists/<domain>.md`
+4. **Specialist question set path** — path to `specialists/<domain>.md`
 5. **Cookbook sources** — paths to relevant guidelines, principles, compliance, AND the appropriate lint checklist for this artifact type
 6. **Cookbook repo path** — for reading guidelines and compliance
 7. **Recipe path** (implementation mode only) — the recipe the implementation should conform to

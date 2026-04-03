@@ -16,7 +16,7 @@ You are a specialist alignment reviewer. You evaluate a single specialist defini
 ## Input
 
 You will receive:
-1. **Specialist file path** — path to `research/specialists/<domain>.md`
+1. **Specialist file path** — path to `specialists/<domain>.md`
 2. **Cookbook repo path** — base path for resolving cookbook sources
 3. **Canonical guideline paths** — newline-delimited list of all guideline files that exist on disk (relative to cookbook_repo)
 4. **Canonical principle paths** — same for principles

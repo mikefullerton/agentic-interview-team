@@ -95,7 +95,7 @@ Provide each reviewer:
 1. **Artifact path** — the file or directory to review
 2. **Artifact type** — skill, rule, agent, recipe, or implementation
 3. **Specialist domain** — the specialist's domain name
-4. **Specialist question set path** — `${CLAUDE_PLUGIN_ROOT}/research/specialists/<domain>.md`
+4. **Specialist question set path** — `${CLAUDE_PLUGIN_ROOT}/specialists/<domain>.md`
 5. **Cookbook sources** — from the specialist's question set file, under "Cookbook Sources" — the relevant guidelines, principles, and compliance paths for this domain
 6. **Cookbook repo path** — `cookbook_repo` from config
 7. **Recipe path** — if implementation mode, the recipe the code should conform to

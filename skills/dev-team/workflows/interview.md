@@ -125,7 +125,7 @@ Spawn the transcript analyzer (`agents/transcript-analyzer.md`) with:
 ### Specialist Interviewer
 Spawn `agents/specialist-interviewer.md` with:
 - The paths to all three repos
-- The specialist domain and question set path (`${CLAUDE_PLUGIN_ROOT}/research/specialists/<domain>.md`)
+- The specialist domain and question set path (`${CLAUDE_PLUGIN_ROOT}/specialists/<domain>.md`)
 - The relevant cookbook guideline paths for this domain (e.g., `<cookbook_repo>/cookbook/guidelines/security/` for the security specialist)
 - Current transcript for context
 - The user's profile

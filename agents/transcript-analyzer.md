@@ -19,7 +19,7 @@ You will receive:
 1. **Repo paths** — cookbook repo, interview team repo, and user interview repo
 2. The path to the project's transcript and analysis directories
 3. The path to the project's checklist
-4. The path to the specialist roster (research/specialists/ directory in the interview team repo)
+4. The path to the specialist roster (specialists/ directory in the interview team repo)
 5. The current interview context (what topic is being discussed, what phase we're in)
 
 You have direct read access to the **agentic-cookbook** repo. Use it to:

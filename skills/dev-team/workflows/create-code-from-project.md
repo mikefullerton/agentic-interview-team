@@ -211,7 +211,7 @@ Provide:
 - **Source file path(s)** — the code files just generated (or augmented by previous pass)
 - **Recipe path**
 - **Specialist domain**
-- **Specialist question set path** — `${CLAUDE_PLUGIN_ROOT}/research/specialists/<domain>.md`
+- **Specialist question set path** — `${CLAUDE_PLUGIN_ROOT}/specialists/<domain>.md`
 - **Cookbook guidelines paths** — relevant guidelines for this domain (use cookbook-specialist-mapping)
 - **Target platform and language**
 - **UI framework preference** — "SwiftUI" or "AppKit" (macOS) / "UIKit" (iOS) based on `--no-swiftui` flag (Apple platforms only)

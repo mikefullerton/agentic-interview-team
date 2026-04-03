@@ -33,8 +33,8 @@ skills/
   dev-team/                # Single skill with subcommand routing
     SKILL.md               # Router
     workflows/             # One workflow file per subcommand
+specialists/               # 19 specialist definitions (13 domain + 6 platform)
 research/
-  specialists/             # 19 specialist question sets (13 domain + 6 platform)
   cookbook-specialist-mapping.md
 scripts/                   # Shell scripts for deterministic operations
   db/                      # Database shell script API (db-init, db-project, db-run, etc.)

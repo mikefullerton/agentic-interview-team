@@ -39,7 +39,7 @@ The specialty-teams ARE the specialist's skill set. The specialist doesn't "know
 
 ## Specialist File Format
 
-Every specialist file in `research/specialists/` follows this structure:
+Every specialist file in `specialists/` follows this structure:
 
 ```markdown
 # <Name> Specialist
@@ -112,7 +112,7 @@ Flags go to the specialist's aggregation report under a "Cross-Domain Flags" sec
 
 ## Adding a New Specialist
 
-1. Create `research/specialists/<domain>.md` following the format above
+1. Create `specialists/<domain>.md` following the format above
 2. Define specialty-teams — one per cookbook artifact the specialist owns
 3. Add the specialist to `research/cookbook-specialist-mapping.md`
 4. Test: run one specialty-team in each mode to verify the worker focus and verify criteria produce good results
