@@ -16,6 +16,6 @@ When designing or modifying database tables, follow these rules:
 
 7. **Flexible tables over predicted columns** — When you can't predict all uses, use a general table with a `type` column (e.g., `paths` table instead of `repo_path`, `project_path` columns).
 
-8. **Separate tables over sparse nullable columns** — If a column would be NULL for most rows, the data belongs in a child table where every row is meaningful. Test: if a column only applies to one type/category of row, it's a separate table.
+8. **Separate tables when warranted** — Use a separate table when: (a) the data is one-to-many (a row can have multiple values, like gate options), or (b) the data is written in a later step by a different actor (like interpretations added after findings). A nullable column is fine if it's set at the same time as the rest of the row and only ever holds one value.
 
 9. **Tables serve searching** — SQL tables are structured data in service of searching. Design for queries, not document storage.
