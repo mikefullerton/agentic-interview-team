@@ -198,3 +198,46 @@ describe("run-specialty-teams.sh", () => {
     expect(authTeam.verify.length).toBeGreaterThan(0);
   });
 });
+
+const specialistFiles = readdirSync(SPECIALISTS_DIR).filter((f) =>
+  f.endsWith(".md")
+);
+
+describe("specialist manifest integrity", () => {
+  describe.each(specialistFiles)("specialists/%s", (filename) => {
+    const content = readFileSync(join(SPECIALISTS_DIR, filename), "utf-8");
+
+    it("has a ## Manifest section", () => {
+      expect(content).toContain("## Manifest");
+    });
+
+    it("manifest paths resolve to existing files", () => {
+      const manifestMatch = content.match(
+        /## Manifest\n([\s\S]*?)(?=\n## |\n*$)/
+      );
+      expect(
+        manifestMatch,
+        `${filename} missing ## Manifest section`
+      ).not.toBeNull();
+
+      const paths = manifestMatch![1]
+        .split("\n")
+        .filter((l) => l.startsWith("- "))
+        .map((l) => l.replace(/^- /, ""));
+
+      expect(paths.length).toBeGreaterThan(0);
+
+      for (const p of paths) {
+        const fullPath = join(REPO_ROOT, p);
+        expect(
+          existsSync(fullPath),
+          `${filename} references missing file: ${p}`
+        ).toBe(true);
+      }
+    });
+
+    it("no longer has embedded ## Specialty Teams section", () => {
+      expect(content).not.toContain("## Specialty Teams");
+    });
+  });
+});
