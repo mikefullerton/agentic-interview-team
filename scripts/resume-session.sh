@@ -21,20 +21,21 @@ if [[ -z "$PLAYBOOK" ]]; then
   exit 1
 fi
 
-# Find sessions for this playbook. Filter for those with status "running" (never completed)
+# Find sessions for this playbook that were never completed or abandoned
 ALL_SESSIONS=$("$ARBITRATOR" session list --playbook "$PLAYBOOK" 2>/dev/null || echo "[]")
 
-# Filter to only sessions with latest state = "running"
+SESSION_BASE="${ARBITRATOR_SESSION_BASE:-${HOME}/.agentic-cookbook/dev-team/sessions}"
 SESSIONS="[]"
 for session in $(echo "$ALL_SESSIONS" | jq -c '.[]'); do
   SESSION_ID=$(echo "$session" | jq -r '.session_id')
-  SESSION_DIR="$HOME/.agentic-cookbook/dev-team/sessions/$SESSION_ID"
+  SESSION_DIR="${SESSION_BASE}/${SESSION_ID}"
 
   if [[ -d "$SESSION_DIR/state" ]]; then
     LATEST_STATE_FILE=$(find "$SESSION_DIR/state" -name "*.json" | sort | tail -1)
     if [[ -n "$LATEST_STATE_FILE" ]]; then
       LATEST_STATE=$(jq -r '.state' "$LATEST_STATE_FILE")
-      if [[ "$LATEST_STATE" == "running" ]]; then
+      # A session is interrupted if its latest state is NOT a terminal state
+      if [[ "$LATEST_STATE" != "completed" && "$LATEST_STATE" != "abandoned" ]]; then
         SESSIONS=$(echo "$SESSIONS" | jq --argjson obj "$session" '. + [$obj]')
       fi
     fi
