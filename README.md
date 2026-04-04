@@ -1,6 +1,7 @@
-# The Agentic Cookbook Dev Team
 
-### Under active development and not ready for general use yet, stay tuned!!
+** WARNING: Under active development and not ready for general use yet, stay tuned!! **
+
+# The Agentic Cookbook Dev Team
 
 A Claude Code plugin for multi-agent product discovery, analysis, and project building. Distributed via the **agentic-cookbook** marketplace.
 
