@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dev Team — Multi-Agent Development Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0c0f;
+  --surface: #14141a;
+  --surface-hover: #1c1c24;
+  --border: #2a2a36;
+  --border-accent: #3d3d50;
+  --text: #e8e6e3;
+  --text-muted: #8a8a9a;
+  --text-dim: #5a5a6a;
+  --accent: #c4a35a;
+  --accent-dim: rgba(196, 163, 90, 0.15);
+  --green: #5cb270;
+  --green-dim: rgba(92, 178, 112, 0.12);
+  --red: #d45454;
+  --yellow: #d4a754;
+  --blue: #5a8fd4;
+  --mono: 'DM Mono', monospace;
+  --serif: 'Instrument Serif', serif;
+  --sans: 'Manrope', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-padding-top: var(--header-h, 280px); }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: var(--accent-dim); color: var(--accent); }
+
+.grain {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  z-index: 9999;
+}
+
+header {
+  padding: 80px 0 60px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(196,163,90,0.04) 0%, var(--bg) 100%);
+  position: sticky; top: 0; z-index: 210;
+}
+
+.dev-stamp {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.9rem; font-weight: 700;
+  letter-spacing: 0.2em; color: var(--red);
+  border: 3px solid var(--red);
+  padding: 6px 20px;
+  transform: rotate(-4deg);
+  opacity: 0.85; margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+header h1 {
+  font-family: var(--serif);
+  font-size: 4rem; font-weight: 400;
+  letter-spacing: -0.02em; color: var(--text);
+  margin-bottom: 12px;
+}
+
+header h1 em { color: var(--accent); font-style: italic; }
+
+header .tagline {
+  font-family: var(--mono);
+  font-size: 0.8rem; color: var(--text-muted);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+header .version {
+  margin-top: 20px;
+  font-family: var(--mono);
+  font-size: 0.95rem; letter-spacing: 0.04em;
+}
+
+header .version a {
+  color: var(--accent) !important;
+  opacity: 0.6; transition: opacity 0.2s; text-decoration: none;
+}
+header .version a:hover { opacity: 1; }
+
+/* Sidebar nav */
+.hamburger-btn {
+  display: none; position: fixed;
+  left: 12px; top: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-size: 1.3rem; padding: 4px 10px;
+  cursor: pointer; z-index: 201; line-height: 1;
+}
+.hamburger-btn:hover { color: var(--text); border-color: var(--accent); }
+
+nav {
+  position: fixed;
+  top: var(--header-h, 280px); left: 0; z-index: 200;
+  width: 200px;
+  height: calc(100vh - var(--header-h, 280px));
+  background: rgba(12, 12, 15, 0.96);
+  backdrop-filter: blur(12px);
+  border-right: 1px solid var(--border);
+  padding: 24px 0; overflow-y: auto;
+  display: flex; flex-direction: column;
+}
+
+nav .nav-links { display: flex; flex-direction: column; }
+
+nav a {
+  display: block; padding: 8px 20px;
+  font-family: var(--mono);
+  font-size: 0.7rem; color: var(--text-muted);
+  text-decoration: none; letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-left: 2px solid transparent;
+  white-space: nowrap; transition: all 0.2s;
+}
+nav a:hover { color: var(--text); border-left-color: var(--accent); }
+
+.nav-divider {
+  display: block; height: 1px;
+  margin: 8px 20px; border-top: 1px solid var(--border-accent);
+}
+
+header { margin-left: 0; }
+.container { max-width: 960px; margin: 0 auto; padding: 0 40px 0 240px; }
+footer { margin-left: 200px; }
+
+@media (max-width: 767px) {
+  .hamburger-btn { display: block; position: fixed; z-index: 9998; }
+  nav {
+    top: 0; height: 100vh; z-index: 9997;
+    padding-top: 56px;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+  nav.nav-open { transform: translateX(0); }
+  header { margin-left: 0; position: relative; }
+  .container { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+  footer { margin-left: 0; }
+  html { scroll-padding-top: 0; }
+  section { scroll-margin-top: 0; }
+}
+
+section {
+  padding: 60px 0;
+  border-bottom: 1px solid var(--border);
+  scroll-margin-top: var(--header-h, 280px);
+}
+section:last-child { border-bottom: none; }
+
+h2 {
+  font-family: var(--serif);
+  font-size: 2.2rem; font-weight: 400;
+  margin-bottom: 12px; color: var(--text);
+}
+h2 .num {
+  font-family: var(--mono);
+  font-size: 0.7rem; color: var(--accent);
+  vertical-align: super; margin-right: 8px;
+  letter-spacing: 0.05em;
+}
+
+h3 {
+  font-family: var(--sans);
+  font-size: 1rem; font-weight: 600;
+  color: var(--text); margin: 30px 0 10px;
+}
+
+p { margin-bottom: 16px; color: var(--text-muted); }
+p strong { color: var(--text); font-weight: 500; }
+
+.lead {
+  font-size: 1.05rem; color: var(--text-muted);
+  margin-bottom: 30px; line-height: 1.8;
+}
+
+.story {
+  max-width: 720px; margin: 0 auto 0;
+  padding: 40px 48px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: var(--sans);
+  font-size: 0.92rem; line-height: 1.85;
+  color: var(--text-muted);
+}
+.story p { font-family: var(--sans); font-size: 0.92rem; line-height: 1.85; }
+
+table {
+  width: 100%; border-collapse: collapse;
+  margin: 16px 0; font-size: 0.85rem;
+}
+th {
+  text-align: left; padding: 10px 14px;
+  font-family: var(--mono); font-size: 0.7rem;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-accent);
+}
+td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+}
+td:first-child { color: var(--text); font-family: var(--mono); font-size: 0.85rem; }
+
+code {
+  font-family: var(--mono); font-size: 0.85em;
+  background: var(--surface); padding: 2px 6px;
+  border-radius: 3px; color: var(--accent);
+}
+
+pre {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; padding: 20px; margin: 16px 0;
+  overflow-x: auto; font-family: var(--mono);
+  font-size: 0.8rem; line-height: 1.6; color: var(--text-muted);
+}
+pre code { background: none; padding: 0; color: inherit; }
+
+details {
+  border: 1px solid var(--border);
+  border-radius: 6px; margin: 12px 0;
+  background: var(--surface);
+}
+details[open] { border-color: var(--border-accent); }
+summary {
+  padding: 14px 18px;
+  font-family: var(--sans); font-size: 0.9rem;
+  font-weight: 500; color: var(--text);
+  cursor: pointer; list-style: none;
+  display: flex; align-items: center; gap: 10px;
+}
+summary::-webkit-details-marker { display: none; }
+summary::before {
+  content: '\25B6'; font-size: 0.6rem;
+  color: var(--text-dim); transition: transform 0.2s;
+}
+details[open] summary::before { transform: rotate(90deg); }
+summary:hover { background: var(--surface-hover); }
+.detail-body { padding: 0 18px 18px; }
+
+.tag {
+  display: inline-block; font-family: var(--mono);
+  font-size: 0.6rem; letter-spacing: 0.08em;
+  text-transform: uppercase; padding: 2px 8px;
+  border-radius: 3px; margin-left: auto;
+}
+.tag-domain { background: var(--accent-dim); color: var(--accent); }
+.tag-platform { background: rgba(90, 143, 212, 0.15); color: var(--blue); }
+.tag-pm { background: var(--green-dim); color: var(--green); }
+.tag-arch { background: rgba(90, 143, 212, 0.15); color: var(--blue); }
+.tag-comm { background: rgba(212, 167, 84, 0.15); color: var(--yellow); }
+.tag-data { background: var(--green-dim); color: var(--green); }
+.tag-agent { background: rgba(212, 84, 84, 0.12); color: var(--red); }
+
+.diagram {
+  font-family: var(--mono); font-size: 0.8rem;
+  line-height: 2; padding: 24px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; margin: 20px 0;
+  white-space: pre; overflow-x: auto;
+}
+.diagram .highlight { color: var(--text); font-weight: 500; }
+.diagram .dim { color: var(--text-dim); }
+.diagram .accent { color: var(--accent); }
+.diagram .green { color: var(--green); }
+
+.stat-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px; margin: 24px 0;
+}
+.stat {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; padding: 20px; text-align: center;
+}
+.stat .num { font-family: var(--serif); font-size: 2.2rem; color: var(--accent); display: block; }
+.stat .label { font-family: var(--mono); font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; }
+
+a.gh { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(196,163,90,0.3); }
+a.gh:hover { border-bottom-color: var(--accent); }
+
+footer {
+  text-align: center; padding: 40px 20px;
+  font-family: var(--mono); font-size: 0.7rem;
+  color: var(--text-dim); border-top: 1px solid var(--border);
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<button class="hamburger-btn" aria-label="Toggle navigation">&#9776;</button>
+
+<header>
+  <div class="dev-stamp">In Development</div>
+  <h1><em>Dev</em> Team</h1>
+  <div class="tagline">Multi-Agent Development Pipeline for Claude Code</div>
+  <div class="version"><a href="https://github.com/agentic-cookbook/dev-team">github</a></div>
+</header>
+
+<nav>
+  <div class="nav-links">
+    <a href="#overview">Overview</a>
+    <a href="#commands">Commands</a>
+    <a href="#pipeline">Pipeline</a>
+    <span class="nav-divider"></span>
+    <a href="#specialists">Specialists</a>
+    <a href="#agents">Agents</a>
+    <span class="nav-divider"></span>
+    <a href="#arbitrator">Arbitrator</a>
+    <a href="#project-storage">Project Storage</a>
+    <a href="#data-flow">Data Flow</a>
+    <span class="nav-divider"></span>
+    <a href="#configuration">Configuration</a>
+    <a href="#file-map">File Map</a>
+    <a href="#tests">Tests</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- Overview -->
+<section id="overview">
+  <h2><span class="num">01</span>Overview</h2>
+
+  <div class="story">
+    <p>Dev Team is a Claude Code plugin that gives you a multi-agent team for building software. You describe what you want to build, and specialists in security, accessibility, architecture, performance, and 16 other domains analyze, review, and build it &mdash; each bringing structured expertise from the <a href="https://github.com/agentic-cookbook/cookbook" class="gh">agentic-cookbook</a>.</p>
+    <p>The system works through three repos: the <strong>cookbook</strong> holds principles and guidelines, <strong>dev-team</strong> (this plugin) provides the agents and orchestration, and your <strong>workspace repo</strong> stores the project data.</p>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat"><span class="num">20</span><span class="label">Specialists</span></div>
+    <div class="stat"><span class="num">212</span><span class="label">Specialty Teams</span></div>
+    <div class="stat"><span class="num">18</span><span class="label">Agents</span></div>
+    <div class="stat"><span class="num">8</span><span class="label">Commands</span></div>
+    <div class="stat"><span class="num">122</span><span class="label">Contract Tests</span></div>
+  </div>
+</section>
+
+<!-- Commands -->
+<section id="commands">
+  <h2><span class="num">02</span>Commands</h2>
+  <p class="lead">Single entry point: <code>/dev-team &lt;command&gt;</code>. Each command is a workflow run by a team-lead.</p>
+
+  <table>
+    <tr><th>Command</th><th>Lead</th><th>What It Does</th></tr>
+    <tr><td>/dev-team interview</td><td>interview</td><td>Discover product requirements through structured and exploratory questioning with specialist expertise</td></tr>
+    <tr><td>/dev-team create-project-from-code</td><td>analysis</td><td>Reverse-engineer a codebase into a cookbook project</td></tr>
+    <tr><td>/dev-team generate</td><td>review</td><td>Improve a cookbook project through specialist review</td></tr>
+    <tr><td>/dev-team create-code-from-project</td><td>build</td><td>Build working code from a cookbook project</td></tr>
+    <tr><td>/dev-team lint</td><td>audit</td><td>Evaluate any artifact against cookbook standards</td></tr>
+    <tr><td>/dev-team align-specialists</td><td>audit</td><td>Review specialist-cookbook alignment after guideline changes</td></tr>
+    <tr><td>/dev-team compare-code</td><td>analysis</td><td>Compare two code projects for round-trip verification</td></tr>
+    <tr><td>/dev-team view-project</td><td>&mdash;</td><td>Generate HTML view of a cookbook project (read-only)</td></tr>
+  </table>
+</section>
+
+<!-- Pipeline -->
+<section id="pipeline">
+  <h2><span class="num">03</span>Pipeline</h2>
+  <p class="lead">How a workflow runs end-to-end. The team-lead is the only component that talks to the user. All other communication flows through the arbitrator.</p>
+
+  <div class="diagram"><span class="accent">User</span> invokes <span class="highlight">/dev-team &lt;command&gt;</span>
+  <span class="dim">&rarr;</span> <span class="highlight">Skill Router</span> loads config, inits DB, routes to workflow
+    <span class="dim">&rarr;</span> <span class="highlight">Team-Lead</span> runs the workflow, talks to user
+      <span class="dim">&rarr;</span> Team-Lead dispatches <span class="highlight">Specialists</span> via arbitrator
+        <span class="dim">&rarr;</span> Specialist reads assignment
+          <span class="dim">&rarr;</span> <span class="highlight">Specialty-Teams</span> run (worker-verifier loop, max 3 retries)
+          <span class="dim">&rarr;</span> <span class="highlight">Specialist-Persona</span> writes interpretations
+        <span class="dim">&rarr;</span> Specialist returns <span class="green">result</span> via arbitrator
+      <span class="dim">&rarr;</span> Team-Lead aggregates results
+    <span class="dim">&rarr;</span> Team-Lead presents <span class="green">report</span> to user</div>
+
+  <details>
+    <summary>Team-Leads <span class="tag tag-arch">5 types</span></summary>
+    <div class="detail-body">
+      <p>Each team-lead type runs a specific category of workflow and has its own persona.</p>
+      <table>
+        <tr><th>Type</th><th>Workflows</th></tr>
+        <tr><td>interview</td><td>Product discovery and requirements gathering</td></tr>
+        <tr><td>analysis</td><td>Codebase analysis, project creation, code comparison</td></tr>
+        <tr><td>review</td><td>Specialist review and recipe improvement</td></tr>
+        <tr><td>build</td><td>Code generation from cookbook projects</td></tr>
+        <tr><td>audit</td><td>Linting, alignment checking</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>Interaction Contract &mdash; 5 Message Types <span class="tag tag-comm">communication</span></summary>
+    <div class="detail-body">
+      <table>
+        <tr><th>Type</th><th>Direction</th><th>Description</th></tr>
+        <tr><td>Question</td><td>Lead &rarr; User</td><td>Open-ended, needs thoughtful answer</td></tr>
+        <tr><td>Answer</td><td>User &rarr; Lead</td><td>Response to a question</td></tr>
+        <tr><td>Gate</td><td>Lead &rarr; User</td><td>Options presented, work pauses until verdict</td></tr>
+        <tr><td>Verdict</td><td>User &rarr; Lead</td><td>Selected option from a gate</td></tr>
+        <tr><td>Notification</td><td>Lead &rarr; User</td><td>One-way status update, no response needed</td></tr>
+      </table>
+      <h3>Gate Categories</h3>
+      <p><strong>flow</strong> &mdash; normal checkpoint (assignment approval, suggestion approve/reject). <strong>error</strong> &mdash; something broke (retry, skip, abort). <strong>conflict</strong> &mdash; specialists disagree (pick a direction).</p>
+      <h3>Notification Attributes</h3>
+      <p><strong>Severity:</strong> info, warning, error. <strong>Category:</strong> progress, result, briefing.</p>
+    </div>
+  </details>
+</section>
+
+<!-- Specialists -->
+<section id="specialists">
+  <h2><span class="num">04</span>Specialists</h2>
+  <p class="lead">20 specialists, each with a role, persona, cookbook sources, and a manifest of specialty-teams. Each specialty-team is a worker-verifier pair focused on one cookbook artifact.</p>
+
+  <details>
+    <summary>Domain Specialists (13) <span class="tag tag-domain">domain</span></summary>
+    <div class="detail-body">
+      <table>
+        <tr><th>Specialist</th><th>Focus</th></tr>
+        <tr><td>accessibility</td><td>WCAG compliance, screen readers, keyboard navigation, color contrast</td></tr>
+        <tr><td>claude-code</td><td>Agentic development, Claude Code patterns, performance</td></tr>
+        <tr><td>code-quality</td><td>Simplicity, deletability, explicitness, linting, atomic commits</td></tr>
+        <tr><td>data-persistence</td><td>Storage, caching, migration, sync, offline-first</td></tr>
+        <tr><td>development-process</td><td>Git workflow, CI/CD, code review, documentation</td></tr>
+        <tr><td>devops-observability</td><td>Logging, metrics, tracing, alerting, deployment</td></tr>
+        <tr><td>localization-i18n</td><td>Internationalization, locale handling, RTL, pluralization</td></tr>
+        <tr><td>networking-api</td><td>REST design, error handling, pagination, authentication</td></tr>
+        <tr><td>reliability</td><td>Error handling, retry logic, circuit breakers, graceful degradation</td></tr>
+        <tr><td>security</td><td>Auth, transport, tokens, input validation, CORS, CSP, privacy</td></tr>
+        <tr><td>software-architecture</td><td>Modularity, dependency management, patterns, boundaries</td></tr>
+        <tr><td>testing-qa</td><td>Unit tests, integration tests, coverage, test design</td></tr>
+        <tr><td>ui-ux-design</td><td>Layout, typography, color, interaction, responsive design</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>Platform Specialists (6) <span class="tag tag-platform">platform</span></summary>
+    <div class="detail-body">
+      <table>
+        <tr><th>Specialist</th><th>Focus</th></tr>
+        <tr><td>platform-android</td><td>Android SDK, Kotlin, Jetpack Compose, lifecycle</td></tr>
+        <tr><td>platform-database</td><td>SQL, NoSQL, schema design, migrations, indexing</td></tr>
+        <tr><td>platform-ios-apple</td><td>Swift, SwiftUI, UIKit, Apple frameworks</td></tr>
+        <tr><td>platform-web-backend</td><td>Python, Node.js, API servers, middleware</td></tr>
+        <tr><td>platform-web-frontend</td><td>React, TypeScript, CSS, bundling, SSR</td></tr>
+        <tr><td>platform-windows</td><td>WinUI, .NET, MSIX, Windows APIs</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>Project Management (1) <span class="tag tag-pm">pm</span></summary>
+    <div class="detail-body">
+      <table>
+        <tr><th>Specialist</th><th>Focus</th></tr>
+        <tr><td>project-manager</td><td>Schedules, todos, issues, concerns, dependencies, decisions</td></tr>
+      </table>
+      <p>Manages dev-team-project data through the project-storage-provider. Has 6 specialty-teams: schedule, todos, issues, concerns, dependencies, decisions.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Specialty-Team Architecture <span class="tag tag-arch">architecture</span></summary>
+    <div class="detail-body">
+      <p>212 standalone files in <code>specialty-teams/&lt;category&gt;/&lt;name&gt;.md</code>. Each defines a worker-verifier pair.</p>
+      <div class="diagram"><span class="highlight">Specialist</span> dispatches <span class="highlight">Specialty-Team</span>
+  <span class="dim">&rarr;</span> <span class="highlight">Worker</span> reads cookbook artifact, produces findings
+  <span class="dim">&rarr;</span> <span class="highlight">Verifier</span> checks worker output
+      <span class="dim">&rarr;</span> <span class="green">PASS</span> &rarr; findings recorded
+      <span class="dim">&rarr;</span> <span class="red" style="color:var(--red)">FAIL</span> &rarr; retry (max 3) &rarr; escalate</div>
+      <p><strong>Isolation principle:</strong> Worker and verifier never see each other's instructions. This is a checks-and-balances design &mdash; the verifier can't be biased by the worker's approach.</p>
+      <h3>Specialty-Team File Format</h3>
+      <pre><code>---
+name: authentication
+description: OAuth 2.0/OIDC with PKCE, SSO, multi-client strategies
+artifact: guidelines/security/authentication.md
+version: 1.0.0
+---
+
+## Worker Focus
+OAuth 2.0/OIDC with PKCE for public clients, system browser
+for native apps, no implicit flow, SSO strategies
+
+## Verify
+No implicit flow; PKCE code_challenge present; system browser
+on native; no client_secret in public clients</code></pre>
+    </div>
+  </details>
+</section>
+
+<!-- Agents -->
+<section id="agents">
+  <h2><span class="num">05</span>Agents</h2>
+  <p class="lead">18 agent definitions in <code>agents/</code>. Each is a markdown file with instructions for a specific role.</p>
+
+  <details>
+    <summary>All Agents (18) <span class="tag tag-agent">agents</span></summary>
+    <div class="detail-body">
+      <table>
+        <tr><th>Agent</th><th>Purpose</th></tr>
+        <tr><td>specialty-team-worker</td><td>Reads one cookbook artifact, produces structured findings</td></tr>
+        <tr><td>specialty-team-verifier</td><td>Checks worker output for completeness, returns PASS/FAIL</td></tr>
+        <tr><td>transcript-analyzer</td><td>Analyzes interview transcripts for coverage and gaps</td></tr>
+        <tr><td>specialist-analyst</td><td>Analyzes user answers from a specialist perspective</td></tr>
+        <tr><td>code-generator</td><td>Generates source code from cookbook recipes</td></tr>
+        <tr><td>recipe-writer</td><td>Creates cookbook recipes from analyzed code</td></tr>
+        <tr><td>recipe-reviewer</td><td>Reviews recipes against cookbook standards</td></tr>
+        <tr><td>project-scaffolder</td><td>Creates project directory structure</td></tr>
+        <tr><td>project-assembler</td><td>Assembles cookbook project from components</td></tr>
+        <tr><td>scope-matcher</td><td>Matches code components to cookbook scopes</td></tr>
+        <tr><td>codebase-scanner</td><td>Scans and analyzes existing codebases</td></tr>
+        <tr><td>build-runner</td><td>Runs builds and reports results</td></tr>
+        <tr><td>smoke-tester</td><td>Runs smoke tests on generated code</td></tr>
+        <tr><td>code-comparator</td><td>Compares two code projects for differences</td></tr>
+        <tr><td>artifact-reviewer</td><td>Reviews artifacts against standards</td></tr>
+        <tr><td>specialist-aligner</td><td>Checks specialist-cookbook alignment</td></tr>
+        <tr><td>specialist-code-pass</td><td>Sequential specialist augmentation of code (v1, marked for absorption)</td></tr>
+        <tr><td>specialist-interviewer</td><td>Specialist-perspective interview questions (v1, marked for absorption)</td></tr>
+      </table>
+    </div>
+  </details>
+</section>
+
+<!-- Arbitrator -->
+<section id="arbitrator">
+  <h2><span class="num">06</span>Arbitrator</h2>
+  <p class="lead">Abstracted communication conduit between all participants. The arbitrator handles ALL data exchange &mdash; participants never know how storage works.</p>
+
+  <details>
+    <summary>API Overview <span class="tag tag-comm">communication</span></summary>
+    <div class="detail-body">
+      <p>Single entry point: <code>scripts/arbitrator.sh &lt;resource&gt; &lt;action&gt; [--flags]</code></p>
+      <p>Backend-swappable via <code>ARBITRATOR_BACKEND</code> env var (default: <code>markdown</code>). All commands output JSON to stdout, errors to stderr, exit 0/1. IDs are opaque strings.</p>
+      <table>
+        <tr><th>Resource</th><th>Actions</th><th>Purpose</th></tr>
+        <tr><td>session</td><td>create, get, list, add-path</td><td>Workflow run lifecycle</td></tr>
+        <tr><td>state</td><td>append, current, list</td><td>Append-only state transitions</td></tr>
+        <tr><td>message</td><td>send, list, get</td><td>Team-lead &harr; user interaction</td></tr>
+        <tr><td>gate-option</td><td>add</td><td>Choices for gate messages</td></tr>
+        <tr><td>result</td><td>create, get, list</td><td>Specialist output bundles</td></tr>
+        <tr><td>finding</td><td>create, list, get, link-artifact</td><td>Individual issues within results</td></tr>
+        <tr><td>interpretation</td><td>create, list</td><td>Persona translations of findings</td></tr>
+        <tr><td>artifact</td><td>create, list, link-state</td><td>Cookbook artifacts referenced</td></tr>
+        <tr><td>reference</td><td>create, list</td><td>Cookbook sources consulted</td></tr>
+        <tr><td>retry</td><td>create, list</td><td>Retry reasons</td></tr>
+        <tr><td>report</td><td>overview, specialist, finding, trace</td><td>Progressive disclosure queries</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>Markdown Backend <span class="tag tag-data">storage</span></summary>
+    <div class="detail-body">
+      <p>Stores JSON files in <code>~/.agentic-cookbook/dev-team/sessions/&lt;session-id&gt;/</code></p>
+      <pre><code>&lt;session-id&gt;/
+  session.json
+  paths.jsonl
+  state/          # append-only transitions
+  messages/       # chronological
+  gate-options/   # per-message choices
+  results/
+    &lt;specialist&gt;/
+      result.json
+      findings/
+      interpretations/
+      references/
+  artifacts/
+  retries/</code></pre>
+      <p><strong>58 contract tests</strong> validate the API regardless of backend.</p>
+    </div>
+  </details>
+</section>
+
+<!-- Project Storage -->
+<section id="project-storage">
+  <h2><span class="num">07</span>Project Storage</h2>
+  <p class="lead">Abstract CRUD API for dev-team-project data. A dev-team-project tracks project management concerns &mdash; schedules, tasks, issues &mdash; not code specifications.</p>
+
+  <details>
+    <summary>API Overview <span class="tag tag-data">storage</span></summary>
+    <div class="detail-body">
+      <p>Single entry point: <code>scripts/project-storage.sh &lt;resource&gt; &lt;action&gt; [--flags]</code></p>
+      <p>Backend-swappable via <code>PROJECT_STORAGE_BACKEND</code> env var (default: <code>markdown</code>). Full CRUD: create, get, list (with filters), update, delete.</p>
+      <table>
+        <tr><th>Resource</th><th>Actions</th><th>Purpose</th></tr>
+        <tr><td>project</td><td>init, status, link-cookbook, unlink-cookbook</td><td>Project lifecycle</td></tr>
+        <tr><td>milestone</td><td>create, get, list, update, delete</td><td>Schedule targets</td></tr>
+        <tr><td>todo</td><td>create, get, list, update, delete</td><td>Tasks with assignment and priority</td></tr>
+        <tr><td>issue</td><td>create, get, list, update, delete</td><td>Problems, blockers, risks</td></tr>
+        <tr><td>concern</td><td>create, get, list, update, delete</td><td>Items needing attention</td></tr>
+        <tr><td>dependency</td><td>create, get, list, update, delete</td><td>Internal and external dependencies</td></tr>
+        <tr><td>decision</td><td>create, get, list, update, delete</td><td>Choices with rationale</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>Markdown Backend <span class="tag tag-data">storage</span></summary>
+    <div class="detail-body">
+      <p>Items stored as markdown files with YAML frontmatter in <code>.dev-team-project/</code></p>
+      <pre><code>.dev-team-project/
+  manifest.json
+  schedule/       # milestone-NNNN-&lt;slug&gt;.md
+  todos/          # todo-NNNN-&lt;slug&gt;.md
+  issues/         # issue-NNNN-&lt;slug&gt;.md
+  concerns/       # concern-NNNN-&lt;slug&gt;.md
+  dependencies/   # dependency-NNNN-&lt;slug&gt;.md
+  decisions/      # decision-NNNN-&lt;slug&gt;.md</code></pre>
+      <p><strong>64 contract tests</strong> validate the API regardless of backend.</p>
+    </div>
+  </details>
+</section>
+
+<!-- Data Flow -->
+<section id="data-flow">
+  <h2><span class="num">08</span>Data Flow</h2>
+  <p class="lead">Two abstraction layers handle all data exchange. Neither reveals its storage implementation to callers.</p>
+
+  <div class="diagram"><span class="accent">Communication</span> (Arbitrator)
+  user <span class="dim">&harr;</span> <span class="highlight">team-lead</span> <span class="dim">(messages, gates, verdicts, notifications)</span>
+  team-lead <span class="dim">&harr;</span> <span class="highlight">specialist</span> <span class="dim">(assignments, results, state transitions)</span>
+  specialist <span class="dim">&harr;</span> <span class="highlight">specialty-team</span> <span class="dim">(findings, verifications, retries)</span>
+
+<span class="accent">Project Management</span> (Project-Storage-Provider)
+  <span class="highlight">project-manager</span> <span class="dim">&harr;</span> project-storage-provider <span class="dim">&harr;</span> <span class="green">.dev-team-project/</span></div>
+
+  <details>
+    <summary>Design Principles <span class="tag tag-arch">architecture</span></summary>
+    <div class="detail-body">
+      <p><strong>Arbitrator is communication only.</strong> It carries messages between participants. Domain-specific data goes through its own specialist and storage provider.</p>
+      <p><strong>Backends are swappable.</strong> Both the arbitrator and project-storage-provider use a dispatcher + backend pattern. The markdown backend is first; database backend comes later.</p>
+      <p><strong>Reports are queries, not stored types.</strong> Progressive disclosure: overview &rarr; specialist &rarr; finding detail &rarr; process trace. Designed for LLM consumption.</p>
+      <p><strong>Shell scripts for deterministic work.</strong> Orchestration, file management, and data operations are shell scripts. LLM agents handle judgment tasks only.</p>
+    </div>
+  </details>
+</section>
+
+<!-- Configuration -->
+<section id="configuration">
+  <h2><span class="num">09</span>Configuration</h2>
+  <p class="lead">Minimal config. Created on first run of <code>/dev-team interview</code>.</p>
+
+  <pre><code>~/.agentic-cookbook/dev-team/config.json
+
+{
+  "workspace_repo": "&lt;path to workspace repo&gt;",
+  "cookbook_repo": "&lt;path to agentic-cookbook&gt;",
+  "user_name": "&lt;user name&gt;",
+  "authorized_repos": []
+}</code></pre>
+</section>
+
+<!-- File Map -->
+<section id="file-map">
+  <h2><span class="num">10</span>File Map</h2>
+  <p class="lead">Repository structure at a glance.</p>
+
+  <pre><code>.claude-plugin/              Plugin manifest
+agents/                      18 agent definitions
+specialists/                 20 specialists (13 domain + 6 platform + 1 PM)
+specialty-teams/             212 specialty-team files in 20 categories
+skills/
+  dev-team/
+    SKILL.md                 Router (v0.6.0)
+    workflows/               One workflow file per subcommand
+scripts/
+  arbitrator.sh              Communication conduit dispatcher
+  arbitrator/markdown/       12 resource scripts
+  project-storage.sh         Project management storage dispatcher
+  project-storage/markdown/  8 scripts
+  db/                        Database shell script API
+  run-specialty-teams.sh     Parses specialist manifests to JSON
+services/
+  dashboard/                 Live workflow dashboard (Flask, port 9876)
+docs/
+  architecture.md            Single source of truth
+  specialist-spec.md         Formal specialist file specification
+  specialist-guide.md        How specialists and specialty-teams work</code></pre>
+</section>
+
+<!-- Tests -->
+<section id="tests">
+  <h2><span class="num">11</span>Tests</h2>
+  <p class="lead">Backend-agnostic contract tests validate APIs regardless of storage implementation.</p>
+
+  <table>
+    <tr><th>Suite</th><th>Tests</th><th>Coverage</th></tr>
+    <tr><td>tests/arbitrator/</td><td>58</td><td>All 11 arbitrator resources: session lifecycle, state transitions, messages, gates, results, findings, interpretations, artifacts, references, retries, reports, error handling</td></tr>
+    <tr><td>tests/project-storage/</td><td>64</td><td>All 7 project-storage resources: project lifecycle, milestones, todos, issues, concerns, dependencies, decisions, CRUD, filtering, error handling</td></tr>
+    <tr><td>tests/specialty-teams/</td><td>2330</td><td>File structure, frontmatter, content, script output, manifest integrity across 212 specialty-team files</td></tr>
+  </table>
+
+  <pre><code># Run arbitrator contract tests
+bash tests/arbitrator/run-contract-tests.sh
+
+# Run project-storage contract tests
+bash tests/project-storage/run-contract-tests.sh</code></pre>
+</section>
+
+</div>
+
+<footer>
+  <a href="https://github.com/agentic-cookbook/dev-team" style="color:var(--text-dim);text-decoration:none;">Dev Team</a> &middot; Multi-Agent Development Pipeline for Claude Code &middot; <a href="https://github.com/agentic-cookbook/dev-team/issues" style="color:var(--text-dim);text-decoration:none;">Issues</a>
+</footer>
+
+<script>
+function setHeaderHeight() {
+  var h = document.querySelector('header');
+  if (h) document.documentElement.style.setProperty('--header-h', h.offsetHeight + 'px');
+}
+setHeaderHeight();
+window.addEventListener('resize', setHeaderHeight);
+window.addEventListener('load', setHeaderHeight);
+
+var navEl = document.querySelector('nav');
+var hamburger = document.querySelector('.hamburger-btn');
+hamburger.addEventListener('click', function(e) {
+  e.stopPropagation();
+  navEl.classList.toggle('nav-open');
+});
+document.querySelectorAll('nav a').forEach(function(a) {
+  a.addEventListener('click', function(e) {
+    navEl.classList.remove('nav-open');
+    var target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      var h = document.querySelector('header');
+      var offset = target.offsetTop;
+      if (getComputedStyle(h).position === 'sticky') offset -= h.offsetHeight;
+      setTimeout(function() { window.scrollTo({ top: offset, behavior: 'smooth' }); }, 50);
+    }
+  });
+});
+document.addEventListener('click', function(e) {
+  if (navEl.classList.contains('nav-open') && !e.target.closest('nav') && !e.target.closest('.hamburger-btn')) {
+    navEl.classList.remove('nav-open');
+  }
+});
+</script>
+</body>
+</html>
