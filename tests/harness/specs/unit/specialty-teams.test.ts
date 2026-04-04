@@ -5,6 +5,7 @@
 
 import { describe, it, expect } from "vitest";
 import { readdirSync, readFileSync, statSync, existsSync } from "fs";
+import { execFileSync } from "child_process";
 import { join, basename } from "path";
 
 const REPO_ROOT = join(__dirname, "../../../..");
@@ -141,3 +142,59 @@ describe.each(teamFiles)(
     });
   }
 );
+
+describe("run-specialty-teams.sh", () => {
+  const RUN_SCRIPT = join(REPO_ROOT, "scripts", "run-specialty-teams.sh");
+
+  it("outputs valid JSON for a specialist with manifest", () => {
+    const result = execFileSync(
+      RUN_SCRIPT,
+      [join(SPECIALISTS_DIR, "accessibility.md")],
+      { encoding: "utf-8" }
+    );
+    const teams = JSON.parse(result);
+    expect(Array.isArray(teams)).toBe(true);
+    expect(teams.length).toBe(2);
+  });
+
+  it("each team has required fields", () => {
+    const result = execFileSync(
+      RUN_SCRIPT,
+      [join(SPECIALISTS_DIR, "accessibility.md")],
+      { encoding: "utf-8" }
+    );
+    const teams = JSON.parse(result);
+    for (const team of teams) {
+      expect(team).toHaveProperty("name");
+      expect(team).toHaveProperty("artifact");
+      expect(team).toHaveProperty("worker_focus");
+      expect(team).toHaveProperty("verify");
+    }
+  });
+
+  it("outputs correct team count for security specialist", () => {
+    const result = execFileSync(
+      RUN_SCRIPT,
+      [join(SPECIALISTS_DIR, "security.md")],
+      { encoding: "utf-8" }
+    );
+    const teams = JSON.parse(result);
+    expect(teams.length).toBe(15);
+  });
+
+  it("team fields match file content", () => {
+    const result = execFileSync(
+      RUN_SCRIPT,
+      [join(SPECIALISTS_DIR, "security.md")],
+      { encoding: "utf-8" }
+    );
+    const teams = JSON.parse(result);
+    const authTeam = teams.find(
+      (t: { name: string }) => t.name === "authentication"
+    );
+    expect(authTeam).toBeDefined();
+    expect(authTeam.artifact).toBe("guidelines/security/authentication.md");
+    expect(authTeam.worker_focus.length).toBeGreaterThan(0);
+    expect(authTeam.verify.length).toBeGreaterThan(0);
+  });
+});
