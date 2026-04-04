@@ -40,37 +40,14 @@ Clarity of status over optimistic reporting. Every blocker must be visible. Ever
 ### Cookbook (TBD)
 Project management recipes and guidelines will be added to the cookbook. Specialty-teams will be updated to reference them when available.
 
-## Specialty Teams
+## Manifest
 
-### schedule
-- **Artifact**: `.dev-team-project/schedule/`
-- **Worker focus**: Milestone definition, sequencing, target dates, dependency chains between milestones, status tracking; identify milestones that are at risk or blocked
-- **Verify**: Every milestone has a status and target date; dependency chains have no cycles; no milestone is blocked without a corresponding issue or concern
-
-### todos
-- **Artifact**: `.dev-team-project/todos/`
-- **Worker focus**: Task breakdown, assignment, prioritization; ensure tasks are specific and actionable; link tasks to milestones; identify blocked tasks and their blockers
-- **Verify**: Every todo has an assignee and priority; blocked todos reference a specific blocker; no todo is assigned to a nonexistent milestone
-
-### issues
-- **Artifact**: `.dev-team-project/issues/`
-- **Worker focus**: Problem identification, severity assessment, triage; link issues to specialist findings when applicable; track resolution status; escalate critical issues
-- **Verify**: Every issue has severity and status; critical issues have an owner or are escalated; resolved issues reference what resolved them
-
-### concerns
-- **Artifact**: `.dev-team-project/concerns/`
-- **Worker focus**: Risk identification, attention flagging; distinguish between concerns that need immediate action and those that need monitoring; link concerns to related project elements
-- **Verify**: Every concern has a status and a raiser; no concern sits in open status indefinitely without review
-
-### dependencies
-- **Artifact**: `.dev-team-project/dependencies/`
-- **Worker focus**: Internal and external dependency mapping; track availability and status of each dependency; flag at-risk or blocked dependencies that could affect milestones
-- **Verify**: Every dependency has a type and status; blocked or at-risk dependencies are linked to affected milestones or todos
-
-### decisions
-- **Artifact**: `.dev-team-project/decisions/`
-- **Worker focus**: Decision recording with full context; capture rationale, alternatives considered, and who decided; ensure decisions are findable and linked to the work they affect
-- **Verify**: Every decision has rationale and a decision-maker; alternatives are recorded; no decision contradicts a previous decision without acknowledging the change
+- specialty-teams/project-management/schedule.md
+- specialty-teams/project-management/todos.md
+- specialty-teams/project-management/issues.md
+- specialty-teams/project-management/concerns.md
+- specialty-teams/project-management/dependencies.md
+- specialty-teams/project-management/decisions.md
 
 ## Exploratory Prompts
 
