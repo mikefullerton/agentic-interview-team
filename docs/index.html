@@ -683,32 +683,84 @@ footer {
   <p><strong>Isolation principle:</strong> Worker and verifier never see each other's instructions. This is a checks-and-balances design &mdash; the verifier can't be biased by the worker's approach.</p>
 
   <details>
-    <summary>Categories (20) <span class="tag tag-arch">architecture</span></summary>
-    <div class="detail-body">
-      <table>
-        <tr><th>Category</th><th>Teams</th><th>Specialist</th></tr>
-        <tr><td>security</td><td>15</td><td>security</td></tr>
-        <tr><td>networking-api</td><td>18</td><td>networking-api</td></tr>
-        <tr><td>platform-web-backend</td><td>18</td><td>platform-web-backend</td></tr>
-        <tr><td>platform-web-frontend</td><td>14</td><td>platform-web-frontend</td></tr>
-        <tr><td>platform-ios-apple</td><td>14</td><td>platform-ios-apple</td></tr>
-        <tr><td>platform-android</td><td>10</td><td>platform-android</td></tr>
-        <tr><td>platform-windows</td><td>9</td><td>platform-windows</td></tr>
-        <tr><td>platform-database</td><td>10</td><td>platform-database</td></tr>
-        <tr><td>accessibility</td><td>10</td><td>accessibility</td></tr>
-        <tr><td>reliability</td><td>8</td><td>reliability</td></tr>
-        <tr><td>ui-ux-design</td><td>11</td><td>ui-ux-design</td></tr>
-        <tr><td>software-architecture</td><td>8</td><td>software-architecture</td></tr>
-        <tr><td>testing-qa</td><td>12</td><td>testing-qa</td></tr>
-        <tr><td>code-quality</td><td>7</td><td>code-quality</td></tr>
-        <tr><td>devops-observability</td><td>10</td><td>devops-observability</td></tr>
-        <tr><td>data-persistence</td><td>7</td><td>data-persistence</td></tr>
-        <tr><td>localization-i18n</td><td>8</td><td>localization-i18n</td></tr>
-        <tr><td>development-process</td><td>7</td><td>development-process</td></tr>
-        <tr><td>claude-code</td><td>10</td><td>claude-code</td></tr>
-        <tr><td>project-management</td><td>6</td><td>project-manager</td></tr>
-      </table>
-    </div>
+    <summary>accessibility (2) <span class="tag tag-domain">domain</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>accessibility</td></tr><tr><td>accessibility-compliance</td></tr></table></div>
+  </details>
+  <details>
+    <summary>claude-code (15) <span class="tag tag-domain">domain</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>agent-checklist</td></tr><tr><td>agent-structure-reference</td></tr><tr><td>authoring-skills-and-rules</td></tr><tr><td>design-for-deletion</td></tr><tr><td>explicit-over-implicit</td></tr><tr><td>manage-complexity-through-boundaries</td></tr><tr><td>performance</td></tr><tr><td>rule-checklist</td></tr><tr><td>rule-structure-reference</td></tr><tr><td>separation-of-concerns</td></tr><tr><td>simplicity</td></tr><tr><td>skill-checklist</td></tr><tr><td>skill-structure-reference</td></tr><tr><td>support-automation</td></tr><tr><td>yagni</td></tr></table></div>
+  </details>
+  <details>
+    <summary>code-quality (8) <span class="tag tag-domain">domain</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>atomic-commits</td></tr><tr><td>best-practices-compliance</td></tr><tr><td>bulk-operation-verification</td></tr><tr><td>design-for-deletion</td></tr><tr><td>explicit-over-implicit</td></tr><tr><td>linting</td></tr><tr><td>scope-discipline</td></tr><tr><td>simplicity</td></tr></table></div>
+  </details>
+  <details>
+    <summary>data-persistence (4) <span class="tag tag-domain">domain</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>idempotency</td></tr><tr><td>immutability</td></tr><tr><td>offline-and-connectivity</td></tr><tr><td>reliability-compliance</td></tr></table></div>
+  </details>
+  <details>
+    <summary>development-process (6) <span class="tag tag-domain">domain</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>ab-testing</td></tr><tr><td>debug-mode</td></tr><tr><td>feature-flags</td></tr><tr><td>make-it-work</td></tr><tr><td>small-reversible-decisions</td></tr><tr><td>yagni</td></tr></table></div>
+  </details>
+  <details>
+    <summary>devops-observability (7) <span class="tag tag-domain">domain</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>ab-testing</td></tr><tr><td>analytics</td></tr><tr><td>debug-mode</td></tr><tr><td>feature-flags</td></tr><tr><td>logging</td></tr><tr><td>performance-compliance</td></tr><tr><td>tight-feedback-loops</td></tr></table></div>
+  </details>
+  <details>
+    <summary>localization-i18n (3) <span class="tag tag-domain">domain</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>internationalization-compliance</td></tr><tr><td>localization</td></tr><tr><td>rtl-support</td></tr></table></div>
+  </details>
+  <details>
+    <summary>networking-api (11) <span class="tag tag-domain">domain</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>access-patterns-compliance</td></tr><tr><td>api-design</td></tr><tr><td>caching</td></tr><tr><td>error-responses</td></tr><tr><td>offline-and-connectivity</td></tr><tr><td>pagination</td></tr><tr><td>principle-of-least-astonishment</td></tr><tr><td>rate-limiting</td></tr><tr><td>real-time-communication</td></tr><tr><td>retry-and-resilience</td></tr><tr><td>timeouts</td></tr></table></div>
+  </details>
+  <details>
+    <summary>reliability (3) <span class="tag tag-domain">domain</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>fail-fast</td></tr><tr><td>idempotency</td></tr><tr><td>reliability-compliance</td></tr></table></div>
+  </details>
+  <details>
+    <summary>security (15) <span class="tag tag-domain">domain</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>authentication</td></tr><tr><td>authorization</td></tr><tr><td>content-security-policy</td></tr><tr><td>cors</td></tr><tr><td>dependency-security</td></tr><tr><td>input-validation</td></tr><tr><td>privacy</td></tr><tr><td>privacy-and-data-compliance</td></tr><tr><td>secure-storage</td></tr><tr><td>security-compliance</td></tr><tr><td>security-headers-checklist</td></tr><tr><td>sensitive-data</td></tr><tr><td>token-handling</td></tr><tr><td>transport-security</td></tr><tr><td>user-safety-compliance</td></tr></table></div>
+  </details>
+  <details>
+    <summary>software-architecture (8) <span class="tag tag-domain">domain</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>composition-over-inheritance</td></tr><tr><td>concurrency</td></tr><tr><td>concurrency-immutability</td></tr><tr><td>dependency-injection</td></tr><tr><td>manage-complexity-through-boundaries</td></tr><tr><td>open-source-preference</td></tr><tr><td>optimize-for-change</td></tr><tr><td>separation-of-concerns</td></tr></table></div>
+  </details>
+  <details>
+    <summary>testing-qa (12) <span class="tag tag-domain">domain</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>flaky-test-prevention</td></tr><tr><td>mutation-testing</td></tr><tr><td>post-generation-verification</td></tr><tr><td>properties-of-good-tests</td></tr><tr><td>property-based-testing</td></tr><tr><td>security-testing</td></tr><tr><td>test-data</td></tr><tr><td>test-doubles</td></tr><tr><td>test-pyramid</td></tr><tr><td>testing</td></tr><tr><td>the-testing-workflow</td></tr><tr><td>unit-test-patterns</td></tr></table></div>
+  </details>
+  <details>
+    <summary>ui-ux-design (17) <span class="tag tag-domain">domain</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>always-show-progress</td></tr><tr><td>animation-motion</td></tr><tr><td>color</td></tr><tr><td>data-display</td></tr><tr><td>feedback-patterns</td></tr><tr><td>form-design</td></tr><tr><td>iconography</td></tr><tr><td>layout</td></tr><tr><td>least-astonishment</td></tr><tr><td>platform-compliance</td></tr><tr><td>platform-design-languages</td></tr><tr><td>previews</td></tr><tr><td>spacing</td></tr><tr><td>state-design</td></tr><tr><td>touch-click-targets</td></tr><tr><td>typography</td></tr><tr><td>visual-hierarchy</td></tr></table></div>
+  </details>
+  <details>
+    <summary>platform-android (11) <span class="tag tag-platform">platform</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>background-tasks</td></tr><tr><td>deep-linking</td></tr><tr><td>font-scaling</td></tr><tr><td>handoff-and-continuity</td></tr><tr><td>native-controls</td></tr><tr><td>notifications</td></tr><tr><td>platform-compliance</td></tr><tr><td>search-integration</td></tr><tr><td>share-and-inter-app-data</td></tr><tr><td>shortcuts-and-automation</td></tr><tr><td>widgets-and-glanceable-surfaces</td></tr></table></div>
+  </details>
+  <details>
+    <summary>platform-database (3) <span class="tag tag-platform">platform</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>access-patterns-compliance</td></tr><tr><td>database</td></tr><tr><td>reliability-compliance</td></tr></table></div>
+  </details>
+  <details>
+    <summary>platform-ios-apple (12) <span class="tag tag-platform">platform</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>background-tasks</td></tr><tr><td>deep-linking</td></tr><tr><td>dynamic-type</td></tr><tr><td>handoff-and-continuity</td></tr><tr><td>native-controls</td></tr><tr><td>notifications</td></tr><tr><td>platform-compliance</td></tr><tr><td>prefer-explicit-apple-apis</td></tr><tr><td>search-integration</td></tr><tr><td>share-and-inter-app-data</td></tr><tr><td>shortcuts-and-automation</td></tr><tr><td>widgets-and-glanceable-surfaces</td></tr></table></div>
+  </details>
+  <details>
+    <summary>platform-web-backend (24) <span class="tag tag-platform">platform</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>access-patterns-compliance</td></tr><tr><td>api-design</td></tr><tr><td>caching</td></tr><tr><td>content-security-policy</td></tr><tr><td>cors</td></tr><tr><td>error-responses</td></tr><tr><td>offline-and-connectivity</td></tr><tr><td>pagination</td></tr><tr><td>python-dashboard-display-only</td></tr><tr><td>python-database</td></tr><tr><td>python-deterministic-ids</td></tr><tr><td>python-file-paths</td></tr><tr><td>python-no-external-deps</td></tr><tr><td>python-shell-scripts</td></tr><tr><td>python-type-hints</td></tr><tr><td>python-use-roadmaplib</td></tr><tr><td>python-web-services</td></tr><tr><td>python-yaml-frontmatter</td></tr><tr><td>rate-limiting</td></tr><tr><td>real-time-communication</td></tr><tr><td>reliability-compliance</td></tr><tr><td>retry-and-resilience</td></tr><tr><td>security-compliance</td></tr><tr><td>timeouts</td></tr></table></div>
+  </details>
+  <details>
+    <summary>platform-web-frontend (27) <span class="tag tag-platform">platform</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>accessibility</td></tr><tr><td>always-show-progress</td></tr><tr><td>animation-motion</td></tr><tr><td>api-design-client</td></tr><tr><td>caching</td></tr><tr><td>color</td></tr><tr><td>content-security-policy</td></tr><tr><td>cors</td></tr><tr><td>data-display</td></tr><tr><td>error-responses-client</td></tr><tr><td>feedback-patterns</td></tr><tr><td>form-design</td></tr><tr><td>iconography</td></tr><tr><td>layout</td></tr><tr><td>offline-and-connectivity</td></tr><tr><td>pagination-client</td></tr><tr><td>platform-compliance</td></tr><tr><td>platform-design-languages</td></tr><tr><td>rate-limiting-client</td></tr><tr><td>real-time-communication</td></tr><tr><td>retry-and-resilience-client</td></tr><tr><td>spacing</td></tr><tr><td>state-design</td></tr><tr><td>timeouts-client</td></tr><tr><td>touch-click-targets</td></tr><tr><td>typography</td></tr><tr><td>visual-hierarchy</td></tr></table></div>
+  </details>
+  <details>
+    <summary>platform-windows (18) <span class="tag tag-platform">platform</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>background-tasks</td></tr><tr><td>csharp-naming</td></tr><tr><td>deep-linking</td></tr><tr><td>dependency-injection</td></tr><tr><td>design-time-data</td></tr><tr><td>fluent-design</td></tr><tr><td>handoff-and-continuity-windows</td></tr><tr><td>high-dpi-display-scaling</td></tr><tr><td>msix-packaging</td></tr><tr><td>native-controls</td></tr><tr><td>notifications-windows</td></tr><tr><td>nullable-reference-types</td></tr><tr><td>platform-compliance</td></tr><tr><td>search-integration-windows</td></tr><tr><td>share-and-inter-app-data-windows</td></tr><tr><td>shortcuts-and-automation-windows</td></tr><tr><td>theming</td></tr><tr><td>windows-architecture</td></tr></table></div>
+  </details>
+  <details>
+    <summary>project-management (6) <span class="tag tag-pm">pm</span></summary>
+    <div class="detail-body"><table><tr><th>Team</th></tr><tr><td>concerns</td></tr><tr><td>decisions</td></tr><tr><td>dependencies</td></tr><tr><td>issues</td></tr><tr><td>schedule</td></tr><tr><td>todos</td></tr></table></div>
   </details>
 
   <details>
