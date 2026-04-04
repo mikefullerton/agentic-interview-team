@@ -51,13 +51,13 @@ At workflow start, check for an interrupted run:
 ```
 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db-run.sh --latest --project $PROJECT_ID --workflow create-code-from-project
 ```
-If the latest run has `status: interrupted`, query its agent_runs to determine which phases and specialist passes completed. Skip completed work and resume.
+If the latest run has `status: interrupted`, query its session_state to determine which phases and specialist passes completed. Skip completed work and resume.
 
 ### Specialist Tracking
 
 After specialist assignment is approved, log each assignment:
 ```
-${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "INSERT INTO specialist_assignments (project_id, workflow_run_id, recipe_path, specialist, tier, approved) VALUES ($PROJECT_ID, $RUN_ID, '<recipe>', '<specialist>', <tier>, 1)"
+${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "INSERT INTO specialist_assignments (project_id, session_id, recipe_path, specialist, tier, approved) VALUES ($PROJECT_ID, $RUN_ID, '<recipe>', '<specialist>', <tier>, 1)"
 ```
 
 ## Phase 1 — Load Project
@@ -409,7 +409,7 @@ summary: "Built <project-name> from <N> recipes with <M> specialist passes"
 Query the DB for all messages from this run and write the full transcript:
 
 ```
-${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT timestamp, agent_type, specialist_domain, message FROM messages WHERE workflow_run_id=$RUN_ID ORDER BY timestamp"
+${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT timestamp, agent_type, specialist_domain, message FROM messages WHERE session_id=$RUN_ID ORDER BY timestamp"
 ```
 
 Write to `<output>/context/build-log/build-transcript.md`:
@@ -420,7 +420,7 @@ title: "Build Transcript — <project-name>"
 type: transcript
 created: <ISO 8601 datetime>
 author: create-code-from-project
-workflow_run_id: <RUN_ID>
+session_id: <RUN_ID>
 ---
 
 # Build Transcript

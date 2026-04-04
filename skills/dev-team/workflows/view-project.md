@@ -21,10 +21,10 @@ Your job:
 
 This workflow is read-only — it does not log runs to the DB. Query the DB to enrich the HTML view:
 
-- Recent workflow runs: `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT workflow, status, started, completed FROM workflow_runs WHERE project_id=$PROJECT_ID ORDER BY started DESC LIMIT 20"`
+- Recent sessions: `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT workflow, status, started, completed FROM sessions WHERE project_id=$PROJECT_ID ORDER BY started DESC LIMIT 20"`
 - Open findings: `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-finding.sh --list --project $PROJECT_ID --status open`
 - Specialist assignments: `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT recipe_path, specialist, tier, approved FROM specialist_assignments WHERE project_id=$PROJECT_ID"`
-- Transcript messages: `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT m.timestamp, m.agent_type, m.specialist_domain, m.persona, m.message FROM messages m JOIN workflow_runs w ON m.workflow_run_id=w.id WHERE w.project_id=$PROJECT_ID ORDER BY m.timestamp"`
+- Transcript messages: `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT m.timestamp, m.agent_type, m.specialist_domain, m.persona, m.message FROM messages m JOIN sessions s ON m.session_id=s.id WHERE s.project_id=$PROJECT_ID ORDER BY m.timestamp"`
 - Transcript artifacts: `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-artifact.sh search --project $PROJECT_ID --category transcript`
 - Comparison trends: `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT preservation_pct, created FROM comparisons WHERE project_id=$PROJECT_ID ORDER BY created"`
 
@@ -156,7 +156,7 @@ If the database exists and has data for this project:
 ```
 
 ### Query DB for Timeline
-Query workflow_runs for this project to build a timeline:
+Query sessions for this project to build a timeline:
 ```json
 [
   { "workflow": "interview", "status": "completed", "started": "...", "completed": "..." },

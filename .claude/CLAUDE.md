@@ -54,7 +54,7 @@ To test locally: `cd` into this repo and invoke `/dev-team interview`.
 
 Shared state: `~/.agentic-cookbook/dev-team/dev-team.db` (SQLite)
 
-Tracks workflow runs, agent runs, findings, artifacts (full content), specialist assignments, comparisons, and agent activity messages. Accessed via shell scripts in `scripts/db/`.
+Tracks sessions, state transitions, findings, artifacts (full content), specialist assignments, comparisons, and agent activity messages. Accessed via shell scripts in `scripts/db/`.
 
 Key scripts: `db-init.sh` (create/migrate), `db-project.sh`, `db-run.sh`, `db-agent.sh`, `db-finding.sh`, `db-artifact.sh`, `db-message.sh`, `db-query.sh` (ad-hoc SQL), `db-cleanup.sh` (age out old runs).
 

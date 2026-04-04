@@ -1,6 +1,6 @@
 #!/bin/bash
 # db-artifact.sh — Write or query artifacts (stores full file content)
-# Usage: db-artifact.sh write --project <id> [--run <id>] [--agent-run <id>] --path <path> --category <cat> [--specialist <domain>]
+# Usage: db-artifact.sh write --project <id> [--run <id>] [--session-state <id>] --path <path> --category <cat> [--specialist <domain>]
 #        db-artifact.sh get --id <id>
 #        db-artifact.sh search --project <id> [--category <cat>] [--specialist <domain>] [--text <search>]
 
@@ -11,8 +11,8 @@ DB_PATH="${HOME}/.agentic-cookbook/dev-team/dev-team.db"
 
 ACTION="${1:-}"; shift || true
 PROJECT_ID=""
-RUN_ID=""
-AGENT_RUN_ID=""
+SESSION_ID=""
+SESSION_STATE_ID=""
 FILE_PATH=""
 CATEGORY=""
 SPECIALIST=""
@@ -22,8 +22,8 @@ SEARCH_TEXT=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --project) PROJECT_ID="$2"; shift 2 ;;
-    --run) RUN_ID="$2"; shift 2 ;;
-    --agent-run) AGENT_RUN_ID="$2"; shift 2 ;;
+    --run) SESSION_ID="$2"; shift 2 ;;
+    --session-state) SESSION_STATE_ID="$2"; shift 2 ;;
     --path) FILE_PATH="$2"; shift 2 ;;
     --category) CATEGORY="$2"; shift 2 ;;
     --specialist) SPECIALIST="$2"; shift 2 ;;
@@ -56,8 +56,8 @@ print(json.dumps(fm))
     CONTENT=$(awk 'BEGIN{n=0} /^---$/{n++; if(n==2){found=1; next}} found{print}' "$FILE_PATH")
     REL_PATH=$(basename "$FILE_PATH")
 
-    RUN_VAL="NULL"; [[ -n "$RUN_ID" ]] && RUN_VAL="$RUN_ID"
-    AR_VAL="NULL"; [[ -n "$AGENT_RUN_ID" ]] && AR_VAL="$AGENT_RUN_ID"
+    RUN_VAL="NULL"; [[ -n "$SESSION_ID" ]] && RUN_VAL="$SESSION_ID"
+    SS_VAL="NULL"; [[ -n "$SESSION_STATE_ID" ]] && SS_VAL="$SESSION_STATE_ID"
     SPEC_VAL="NULL"; [[ -n "$SPECIALIST" ]] && SPEC_VAL="'$SPECIALIST'"
 
     EXISTING=$(sqlite3 "$DB_PATH" "SELECT id, version FROM artifacts WHERE path='${FILE_PATH//\'/\'\'}' AND project_id=$PROJECT_ID ORDER BY version DESC LIMIT 1" 2>/dev/null || echo "")
@@ -73,7 +73,7 @@ print(json.dumps(fm))
       rm -f "$TMPFILE"
       echo "{\"id\": $OLD_ID, \"version\": $NEW_VERSION}"
     else
-      sqlite3 "$DB_PATH" "INSERT INTO artifacts (project_id, workflow_run_id, agent_run_id, path, relative_path, category, title, specialist, frontmatter_json, content, content_hash) VALUES ($PROJECT_ID, $RUN_VAL, $AR_VAL, '${FILE_PATH//\'/\'\'}', '$REL_PATH', '$CATEGORY', '${TITLE//\'/\'\'}', $SPEC_VAL, '${FRONTMATTER//\'/\'\'}', readfile('$TMPFILE'), '$HASH'); SELECT last_insert_rowid();" | tail -1 | awk '{print "{\"id\": "$1"}"}'
+      sqlite3 "$DB_PATH" "INSERT INTO artifacts (project_id, session_id, session_state_id, path, relative_path, category, title, specialist, frontmatter_json, content, content_hash) VALUES ($PROJECT_ID, $RUN_VAL, $SS_VAL, '${FILE_PATH//\'/\'\'}', '$REL_PATH', '$CATEGORY', '${TITLE//\'/\'\'}', $SPEC_VAL, '${FRONTMATTER//\'/\'\'}', readfile('$TMPFILE'), '$HASH'); SELECT last_insert_rowid();" | tail -1 | awk '{print "{\"id\": "$1"}"}'
       rm -f "$TMPFILE"
     fi
     ;;

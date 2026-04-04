@@ -37,7 +37,7 @@ At workflow start, check for an interrupted run:
 ```
 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db-run.sh --latest --project $PROJECT_ID --workflow create-project-from-code
 ```
-If the latest run has `status: interrupted`, query its agent_runs to determine which phases completed. Skip completed phases and resume from the next one.
+If the latest run has `status: interrupted`, query its session_state to determine which phases completed. Skip completed phases and resume from the next one.
 
 ## Resolve Paths
 
@@ -199,7 +199,7 @@ Present the summary to the user:
 Query the DB for all messages from this run and write the full transcript to the project:
 
 ```
-${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT timestamp, agent_type, specialist_domain, message FROM messages WHERE workflow_run_id=$RUN_ID ORDER BY timestamp"
+${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT timestamp, agent_type, specialist_domain, message FROM messages WHERE session_id=$RUN_ID ORDER BY timestamp"
 ```
 
 Write to `<output>/context/research/analysis-transcript.md`:
@@ -210,7 +210,7 @@ title: "Analysis Transcript — <project-name>"
 type: transcript
 created: <ISO 8601 datetime>
 author: create-project-from-code
-workflow_run_id: <RUN_ID>
+session_id: <RUN_ID>
 ---
 
 # Analysis Transcript

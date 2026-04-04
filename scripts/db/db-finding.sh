@@ -1,6 +1,6 @@
 #!/bin/bash
 # db-finding.sh — Record or update a finding
-# Usage: db-finding.sh --agent-run <id> --project <id> --type <type> --severity <sev> --description "<text>" [--artifact-path <path>]
+# Usage: db-finding.sh --session-state <id> --project <id> --type <type> --severity <sev> --description "<text>" [--artifact-path <path>]
 #        db-finding.sh update --id <id> --status <accepted|rejected|fixed>
 #        db-finding.sh --list --project <id> [--type <type>] [--status <status>]
 
@@ -10,7 +10,7 @@ DB_PATH="${HOME}/.agentic-cookbook/dev-team/dev-team.db"
 "$(dirname "$0")/db-init.sh" > /dev/null
 
 ACTION="create"
-AGENT_RUN_ID=""
+SESSION_STATE_ID=""
 PROJECT_ID=""
 TYPE=""
 SEVERITY=""
@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     update) ACTION="update"; shift ;;
     --list) ACTION="list"; shift ;;
-    --agent-run) AGENT_RUN_ID="$2"; shift 2 ;;
+    --session-state) SESSION_STATE_ID="$2"; shift 2 ;;
     --project) PROJECT_ID="$2"; shift 2 ;;
     --type) TYPE="$2"; shift 2 ;;
     --severity) SEVERITY="$2"; shift 2 ;;
@@ -37,10 +37,10 @@ done
 
 case "$ACTION" in
   create)
-    AR_VAL="NULL"; [[ -n "$AGENT_RUN_ID" ]] && AR_VAL="$AGENT_RUN_ID"
+    SS_VAL="NULL"; [[ -n "$SESSION_STATE_ID" ]] && SS_VAL="$SESSION_STATE_ID"
     SEV_VAL="NULL"; [[ -n "$SEVERITY" ]] && SEV_VAL="'$SEVERITY'"
     AP_VAL="NULL"; [[ -n "$ARTIFACT_PATH" ]] && AP_VAL="'${ARTIFACT_PATH//\'/\'\'}'"
-    sqlite3 "$DB_PATH" "INSERT INTO findings (agent_run_id, project_id, type, severity, description, artifact_path) VALUES ($AR_VAL, $PROJECT_ID, '$TYPE', $SEV_VAL, '${DESCRIPTION//\'/\'\'}', $AP_VAL); SELECT last_insert_rowid();" | tail -1 | awk '{print "{\"id\": "$1"}"}'
+    sqlite3 "$DB_PATH" "INSERT INTO findings (session_state_id, project_id, type, severity, description, artifact_path) VALUES ($SS_VAL, $PROJECT_ID, '$TYPE', $SEV_VAL, '${DESCRIPTION//\'/\'\'}', $AP_VAL); SELECT last_insert_rowid();" | tail -1 | awk '{print "{\"id\": "$1"}"}'
     ;;
   update)
     sqlite3 "$DB_PATH" "UPDATE findings SET status='$STATUS' WHERE id=$FINDING_ID"

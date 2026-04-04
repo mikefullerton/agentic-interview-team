@@ -29,7 +29,7 @@ At end: `db-run.sh complete --id $RUN_ID --status completed`
 
 After computing results:
 ```
-${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "INSERT INTO comparisons (project_id, workflow_run_id, baseline_path, target_path, preservation_pct, regressions_count) VALUES ($PROJECT_ID, $RUN_ID, '<baseline>', '<target>', <pct>, <count>)"
+${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "INSERT INTO comparisons (project_id, session_id, baseline_path, target_path, preservation_pct, regressions_count) VALUES ($PROJECT_ID, $RUN_ID, '<baseline>', '<target>', <pct>, <count>)"
 ```
 
 Query previous comparisons for trend:

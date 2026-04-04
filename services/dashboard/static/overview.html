@@ -292,7 +292,7 @@ select:focus, .search-input:focus { border-color: var(--accent); }
 
     function buildHeader() {
         var count = workflows.length;
-        var label = count === 1 ? '1 workflow run' : count + ' workflow runs';
+        var label = count === 1 ? '1 session' : count + ' sessions';
 
         return el('div', { className: 'header' }, [
             el('div', { className: 'header-top' }, [
@@ -423,7 +423,7 @@ select:focus, .search-input:focus { border-color: var(--accent); }
 
         if (workflows.length === 0) {
             return el('div', { className: 'empty-state' },
-                'No workflow runs yet. Start a workflow with /dev-team to see it here.');
+                'No sessions yet. Start a workflow with /dev-team to see it here.');
         }
 
         if (items.length === 0) {

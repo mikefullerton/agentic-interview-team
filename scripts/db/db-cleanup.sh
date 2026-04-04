@@ -1,9 +1,9 @@
 #!/bin/bash
-# db-cleanup.sh — Age out old workflow runs and associated data
+# db-cleanup.sh — Age out old sessions and associated data
 # Usage: db-cleanup.sh --older-than <duration>   e.g. 90d, 6m, 1y
 #
 # Cascading delete order:
-#   messages → artifacts → findings (via agent_runs) → agent_runs → workflow_runs
+#   messages → artifacts → findings (via session_state) → session_state → sessions
 # Does NOT delete projects.
 
 set -euo pipefail
@@ -46,55 +46,55 @@ esac
 
 CUTOFF="datetime('now', '${MODIFIER}')"
 
-# Collect IDs of workflow runs to delete
+# Collect IDs of sessions to delete
 STALE_RUNS=$(sqlite3 "$DB_PATH" \
-  "SELECT id FROM workflow_runs WHERE started < ${CUTOFF}")
+  "SELECT id FROM sessions WHERE started < ${CUTOFF}")
 
 if [[ -z "$STALE_RUNS" ]]; then
-  echo '{"deleted":{"messages":0,"artifacts":0,"findings":0,"agent_runs":0,"workflow_runs":0}}'
+  echo '{"deleted":{"messages":0,"artifacts":0,"findings":0,"session_state":0,"sessions":0}}'
   exit 0
 fi
 
-# Build an IN(...) clause from the stale run IDs
-RUN_IDS=$(echo "$STALE_RUNS" | paste -sd ',' -)
+# Build an IN(...) clause from the stale session IDs
+SESSION_IDS=$(echo "$STALE_RUNS" | paste -sd ',' -)
 
-# Collect agent_run IDs belonging to those workflow runs
-STALE_AGENT_RUNS=$(sqlite3 "$DB_PATH" \
-  "SELECT id FROM agent_runs WHERE workflow_run_id IN (${RUN_IDS})" || echo "")
-AGENT_IDS=""
-if [[ -n "$STALE_AGENT_RUNS" ]]; then
-  AGENT_IDS=$(echo "$STALE_AGENT_RUNS" | paste -sd ',' -)
+# Collect session_state IDs belonging to those sessions
+STALE_SESSION_STATES=$(sqlite3 "$DB_PATH" \
+  "SELECT id FROM session_state WHERE session_id IN (${SESSION_IDS})" || echo "")
+STATE_IDS=""
+if [[ -n "$STALE_SESSION_STATES" ]]; then
+  STATE_IDS=$(echo "$STALE_SESSION_STATES" | paste -sd ',' -)
 fi
 
 # Count before deleting
 MSG_COUNT=$(sqlite3 "$DB_PATH" \
-  "SELECT COUNT(*) FROM messages WHERE workflow_run_id IN (${RUN_IDS})")
+  "SELECT COUNT(*) FROM messages WHERE session_id IN (${SESSION_IDS})")
 ART_COUNT=$(sqlite3 "$DB_PATH" \
-  "SELECT COUNT(*) FROM artifacts WHERE workflow_run_id IN (${RUN_IDS})")
+  "SELECT COUNT(*) FROM artifacts WHERE session_id IN (${SESSION_IDS})")
 
 FIND_COUNT=0
-AR_COUNT=0
-if [[ -n "$AGENT_IDS" ]]; then
+SS_COUNT=0
+if [[ -n "$STATE_IDS" ]]; then
   FIND_COUNT=$(sqlite3 "$DB_PATH" \
-    "SELECT COUNT(*) FROM findings WHERE agent_run_id IN (${AGENT_IDS})")
-  AR_COUNT=$(sqlite3 "$DB_PATH" \
-    "SELECT COUNT(*) FROM agent_runs WHERE id IN (${AGENT_IDS})")
+    "SELECT COUNT(*) FROM findings WHERE session_state_id IN (${STATE_IDS})")
+  SS_COUNT=$(sqlite3 "$DB_PATH" \
+    "SELECT COUNT(*) FROM session_state WHERE id IN (${STATE_IDS})")
 fi
 
-RUN_COUNT=$(sqlite3 "$DB_PATH" \
-  "SELECT COUNT(*) FROM workflow_runs WHERE id IN (${RUN_IDS})")
+SESSION_COUNT=$(sqlite3 "$DB_PATH" \
+  "SELECT COUNT(*) FROM sessions WHERE id IN (${SESSION_IDS})")
 
 # Cascading deletes
 sqlite3 "$DB_PATH" <<SQL
-DELETE FROM messages  WHERE workflow_run_id IN (${RUN_IDS});
-DELETE FROM artifacts WHERE workflow_run_id IN (${RUN_IDS});
-$(if [[ -n "$AGENT_IDS" ]]; then
-  echo "DELETE FROM findings   WHERE agent_run_id IN (${AGENT_IDS});"
-  echo "DELETE FROM agent_runs WHERE id           IN (${AGENT_IDS});"
+DELETE FROM messages     WHERE session_id IN (${SESSION_IDS});
+DELETE FROM artifacts    WHERE session_id IN (${SESSION_IDS});
+$(if [[ -n "$STATE_IDS" ]]; then
+  echo "DELETE FROM findings      WHERE session_state_id IN (${STATE_IDS});"
+  echo "DELETE FROM session_state WHERE id               IN (${STATE_IDS});"
 fi)
-DELETE FROM workflow_runs WHERE id IN (${RUN_IDS});
+DELETE FROM sessions WHERE id IN (${SESSION_IDS});
 SQL
 
 cat <<JSON
-{"deleted":{"messages":${MSG_COUNT},"artifacts":${ART_COUNT},"findings":${FIND_COUNT},"agent_runs":${AR_COUNT},"workflow_runs":${RUN_COUNT}}}
+{"deleted":{"messages":${MSG_COUNT},"artifacts":${ART_COUNT},"findings":${FIND_COUNT},"session_state":${SS_COUNT},"sessions":${SESSION_COUNT}}}
 JSON

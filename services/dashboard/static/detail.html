@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Workflow Run — Dev-Team Dashboard</title>
+<title>Session — Dev-Team Dashboard</title>
 <style>
 :root {
     --bg: #0d1117; --surface: #161b22; --border: #30363d;
@@ -643,7 +643,7 @@ a:hover { text-decoration: underline; }
     function pollStatus() {
         fetchJSON('/api/v1/workflows/' + runId, function(err, data) {
             if (err) {
-                if (err.notFound) { stopPolling(); showError('Run not found', 'Workflow run #' + runId + ' does not exist.'); }
+                if (err.notFound) { stopPolling(); showError('Session not found', 'Session #' + runId + ' does not exist.'); }
                 return;
             }
             currentRun = data;
@@ -670,7 +670,7 @@ a:hover { text-decoration: underline; }
 
     function init() {
         if (isNaN(runId)) {
-            showError('Invalid URL', 'Could not determine workflow run ID from the URL.');
+            showError('Invalid URL', 'Could not determine session ID from the URL.');
             return;
         }
 
@@ -679,8 +679,8 @@ a:hover { text-decoration: underline; }
         // Initial fetch
         fetchJSON('/api/v1/workflows/' + runId, function(err, data) {
             if (err) {
-                if (err.notFound) { showError('Run not found', 'Workflow run #' + runId + ' does not exist.'); }
-                else { showError('Error', 'Failed to load workflow run.'); }
+                if (err.notFound) { showError('Session not found', 'Session #' + runId + ' does not exist.'); }
+                else { showError('Error', 'Failed to load session.'); }
                 return;
             }
             currentRun = data;

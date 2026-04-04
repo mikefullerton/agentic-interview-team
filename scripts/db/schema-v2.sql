@@ -5,8 +5,8 @@
 CREATE TABLE sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     creation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    playbook TEXT NOT NULL,
-    team_lead TEXT NOT NULL,
+    playbook_id TEXT NOT NULL, --this should be a foreign id key to a playbook table
+    team_lead_id TEXT NOT NULL, --this shooud be a foreign key id to a team_lead table
     user TEXT NOT NULL,
     machine TEXT NOT NULL
 );
