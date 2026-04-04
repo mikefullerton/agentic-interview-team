@@ -8,7 +8,7 @@ allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, Bash(ls *), Bash(
 
 # Create Specialist
 
-Scaffold a new specialist file that conforms to `docs/specialist-spec.md`.
+Scaffold a new specialist file that conforms to `plugins/dev-team/docs/specialist-spec.md`.
 
 ## Startup
 
@@ -22,7 +22,7 @@ Extract from `$ARGUMENTS`:
 
 If no name provided, ask: "What's the specialist domain name? (kebab-case, e.g., `infrastructure`)"
 
-Check if `specialists/<name>.md` already exists. If so, stop: "Specialist `<name>` already exists at `specialists/<name>.md`."
+Check if `plugins/dev-team/specialists/<name>.md` already exists. If so, stop: "Specialist `<name>` already exists at `plugins/dev-team/specialists/<name>.md`."
 
 ## Step 2 — Gather Domain Info
 
@@ -46,7 +46,7 @@ Build the complete list of artifact files that need specialty-teams.
 
 ## Step 4 — Generate Specialty-Team Files
 
-Create the directory `specialty-teams/<name>/`.
+Create the directory `plugins/dev-team/specialty-teams/<name>/`.
 
 For each artifact file:
 
@@ -61,7 +61,7 @@ For each artifact file:
 
 Present the draft teams to the user for review before writing.
 
-Write each team to `specialty-teams/<name>/<team-name>.md`:
+Write each team to `plugins/dev-team/plugins/dev-team/specialty-teams/<name>/<team-name>.md`:
 
 ```markdown
 ---
@@ -80,7 +80,7 @@ version: 1.0.0
 
 ## Step 5 — Write the Specialist File
 
-Write to `specialists/<name>.md` using this structure:
+Write to `plugins/dev-team/specialists/<name>.md` using this structure:
 
 ```markdown
 # <Title Case Name> Specialist
@@ -95,8 +95,8 @@ Write to `specialists/<name>.md` using this structure:
 <list of paths from Step 2>
 
 ## Manifest
-- specialty-teams/<name>/<team-name>.md
-- specialty-teams/<name>/<team-name>.md
+- plugins/dev-team/plugins/dev-team/specialty-teams/<name>/<team-name>.md
+- plugins/dev-team/plugins/dev-team/specialty-teams/<name>/<team-name>.md
 ...
 
 ## Exploratory Prompts
@@ -110,7 +110,7 @@ Generate 3-5 exploratory prompts based on the domain — these should be thought
 
 ## Step 6 — Validate
 
-Run the lint checks from `docs/specialist-spec.md` against the generated file:
+Run the lint checks from `plugins/dev-team/docs/specialist-spec.md` against the generated file:
 - S01-S06 structure checks (including manifest path resolution and team file validation)
 - C01-C06 content checks (if cookbook_repo is available)
 
@@ -120,18 +120,18 @@ Report any issues. Fix them before finalizing.
 
 Print:
 ```
-Created specialists/<name>.md
-Created specialty-teams/<name>/ (<N> team files)
+Created plugins/dev-team/specialists/<name>.md
+Created plugins/dev-team/specialty-teams/<name>/ (<N> team files)
   Role: <role summary>
   Teams: <N> specialty-teams
   Artifacts: <N> cookbook artifacts covered
   
-Run /lint-specialist specialists/<name>.md to validate.
+Run /lint-specialist plugins/dev-team/specialists/<name>.md to validate.
 ```
 
 ## Usage
 
 ```
 /create-specialist ai-ml
-/create-specialist infrastructure --from specialists/devops-observability.md
+/create-specialist infrastructure --from plugins/dev-team/specialists/devops-observability.md
 ```

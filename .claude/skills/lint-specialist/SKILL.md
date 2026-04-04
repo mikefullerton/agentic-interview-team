@@ -9,7 +9,7 @@ context: fork
 
 # Lint Specialist
 
-Validate specialist definition files against the formal spec at `docs/specialist-spec.md`.
+Validate specialist definition files against the formal spec at `plugins/dev-team/docs/specialist-spec.md`.
 
 ## Startup
 
@@ -18,7 +18,7 @@ If `$ARGUMENTS` is `--version`, respond with `lint-specialist v1.0.0` and STOP.
 ## Step 1 — Resolve Targets
 
 - If `$ARGUMENTS` contains a file path, use that as the single target
-- If `$ARGUMENTS` contains `--all`, glob `specialists/*.md` and exclude any file named `specialist-guide.md`
+- If `$ARGUMENTS` contains `--all`, glob `plugins/dev-team/specialists/*.md` and exclude any file named `specialist-guide.md`
 - If `$ARGUMENTS` is empty, ask: "Which specialist to lint? Provide a path or use `--all` for all specialists."
 
 Check if `--fix` flag is present — if so, offer to auto-fix simple issues after the report.
@@ -58,7 +58,7 @@ For each specialist file, read the full contents and run every check:
 For each specialist, print a structured report:
 
 ```
-Linting specialists/<domain>.md...
+Linting plugins/dev-team/specialists/<domain>.md...
 PASS  S01  Title: "# <Name> Specialist"
 PASS  S02  Required sections present and ordered
 FAIL  S03  Team "foo" missing Verify field
@@ -92,7 +92,7 @@ Do NOT attempt to fix C01/C02/C03 automatically — those require understanding 
 ## Usage
 
 ```
-/lint-specialist specialists/security.md
+/lint-specialist plugins/dev-team/specialists/security.md
 /lint-specialist --all
-/lint-specialist specialists/new-domain.md --fix
+/lint-specialist plugins/dev-team/specialists/new-domain.md --fix
 ```

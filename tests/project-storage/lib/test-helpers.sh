@@ -9,7 +9,7 @@ repo_root() {
   git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel
 }
 
-PROJECT_STORAGE="$(repo_root)/scripts/project-storage.sh"
+PROJECT_STORAGE="$(repo_root)/plugins/dev-team/scripts/project-storage.sh"
 
 # Create a temp project for testing
 new_project() {

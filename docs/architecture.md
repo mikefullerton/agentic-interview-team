@@ -170,33 +170,44 @@ Notification severity: info, warning, error. Category: progress, result, briefin
 ## File Map
 
 ```
-.claude-plugin/            # Plugin manifest
-agents/                    # 18 agent definitions
-specialists/               # 20 specialist definitions (13 domain + 6 platform + 1 PM)
-specialty-teams/           # 212 specialty-team files in 20 category dirs
-skills/
-  dev-team/                # Single skill with subcommand routing
-    SKILL.md               # Router (v0.6.0)
-    workflows/             # One workflow file per subcommand
-scripts/
-  arbitrator.sh            # Communication conduit dispatcher
-  arbitrator/markdown/     # Markdown arbitrator backend (12 resource scripts)
-  project-storage.sh       # Project management storage dispatcher
-  project-storage/markdown/ # Markdown project-storage backend (8 scripts)
-  db/                      # Database shell script API
-  run-specialty-teams.sh   # Parses specialist manifests to JSON
-  load-config.sh           # Config loader
-services/
-  dashboard/               # Live workflow dashboard (Flask, port 9876)
+plugins/
+  dev-team/                  # Self-enclosed plugin
+    .claude-plugin/          # Plugin manifest
+    agents/                  # 18 agent definitions
+    specialists/             # 20 specialist definitions (13 domain + 6 platform + 1 PM)
+    specialty-teams/         # 212 specialty-team files in 20 category dirs
+    skills/
+      dev-team/              # Single skill with subcommand routing
+        SKILL.md             # Router (v0.6.0)
+        workflows/           # One workflow file per subcommand
+    scripts/
+      arbitrator.sh          # Communication conduit dispatcher
+      arbitrator/markdown/   # Markdown arbitrator backend (13 resource scripts)
+      project-storage.sh     # Project management storage dispatcher
+      project-storage/markdown/ # Markdown project-storage backend (8 scripts)
+      db/                    # Database shell script API
+      run-specialty-teams.sh # Parses specialist manifests to JSON
+      load-config.sh         # Config loader
+    services/
+      dashboard/             # Live workflow dashboard (Flask, port 9876)
+    docs/
+      specialist-spec.md     # Formal specialist file specification
+      specialist-guide.md    # How specialists and specialty-teams work
+      research/              # Specialist assignment rules and mappings
+    tests/
+      test-mode-spec.md      # Test mode contract for workflows
+
+# Development tooling (repo root)
+.claude/                     # Claude Code local config, rules, dev skills
 docs/
-  architecture.md          # THIS FILE — single source of truth
-  specialist-spec.md       # Formal specialist file specification
-  specialist-guide.md      # How specialists and specialty-teams work
-  planning/                # Design specs and decision history (point-in-time)
-planning/                  # Temporary tracking (todo, cookbook requests)
+  architecture.md            # THIS FILE — single source of truth
+  planning/                  # Design specs and decision history
+  superpowers/               # Brainstorming specs and implementation plans
+planning/                    # Temporary tracking (todo, cookbook requests)
 tests/
-  arbitrator/              # 58 contract tests for arbitrator API
-  project-storage/         # 64 contract tests for project-storage API
+  arbitrator/                # 68 contract tests for arbitrator API
+  project-storage/           # 64 contract tests for project-storage API
+  harness/                   # Vitest test harness
 ```
 
 ## Design Rules

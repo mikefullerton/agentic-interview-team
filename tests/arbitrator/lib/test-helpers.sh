@@ -9,7 +9,7 @@ repo_root() {
   git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel
 }
 
-ARBITRATOR="$(repo_root)/scripts/arbitrator.sh"
+ARBITRATOR="$(repo_root)/plugins/dev-team/scripts/arbitrator.sh"
 
 # Run a test function and track results
 run_test() {

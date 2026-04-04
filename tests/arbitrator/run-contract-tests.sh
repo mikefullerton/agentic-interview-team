@@ -9,7 +9,7 @@ TOTAL_FAIL=0
 # Only test backends that exist
 REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 BACKENDS=()
-for backend_dir in "$REPO_ROOT"/scripts/arbitrator/*/; do
+for backend_dir in "$REPO_ROOT"/plugins/dev-team/scripts/arbitrator/*/; do
   [[ -d "$backend_dir" ]] || continue
   BACKENDS+=("$(basename "$backend_dir")")
 done

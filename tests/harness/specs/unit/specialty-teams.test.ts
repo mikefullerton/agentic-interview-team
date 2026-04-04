@@ -9,8 +9,9 @@ import { execFileSync } from "child_process";
 import { join, basename } from "path";
 
 const REPO_ROOT = join(__dirname, "../../../..");
-const TEAMS_DIR = join(REPO_ROOT, "specialty-teams");
-const SPECIALISTS_DIR = join(REPO_ROOT, "specialists");
+const PLUGIN_ROOT = join(REPO_ROOT, "plugins", "dev-team");
+const TEAMS_DIR = join(PLUGIN_ROOT, "specialty-teams");
+const SPECIALISTS_DIR = join(PLUGIN_ROOT, "specialists");
 
 // Collect all specialty-team files
 function getAllTeamFiles(): { category: string; name: string; path: string }[] {
@@ -144,7 +145,7 @@ describe.each(teamFiles)(
 );
 
 describe("run-specialty-teams.sh", () => {
-  const RUN_SCRIPT = join(REPO_ROOT, "scripts", "run-specialty-teams.sh");
+  const RUN_SCRIPT = join(PLUGIN_ROOT, "scripts", "run-specialty-teams.sh");
 
   it("outputs valid JSON for a specialist with manifest", () => {
     const result = execFileSync(
@@ -228,7 +229,7 @@ describe("specialist manifest integrity", () => {
       expect(paths.length).toBeGreaterThan(0);
 
       for (const p of paths) {
-        const fullPath = join(REPO_ROOT, p);
+        const fullPath = join(PLUGIN_ROOT, p);
         expect(
           existsSync(fullPath),
           `${filename} references missing file: ${p}`

@@ -8,7 +8,7 @@ TOTAL_FAIL=0
 
 REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 BACKENDS=()
-for backend_dir in "$REPO_ROOT"/scripts/project-storage/*/; do
+for backend_dir in "$REPO_ROOT"/plugins/dev-team/scripts/project-storage/*/; do
   [[ -d "$backend_dir" ]] || continue
   BACKENDS+=("$(basename "$backend_dir")")
 done
