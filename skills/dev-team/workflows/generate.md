@@ -93,7 +93,7 @@ For each assigned specialist, run the **specialty-team worker-verifier loop**:
 
 #### Step 1: Get the team manifest
 
-Run `${CLAUDE_PLUGIN_ROOT}/scripts/run-specialty-teams.sh <specialist-file>` to get the JSON array of specialty-teams.
+Run `${CLAUDE_PLUGIN_ROOT}/scripts/run-specialty-teams.sh <specialist-file>` to get the JSON array of specialty-teams. The script reads the specialist's `## Manifest` section and resolves each path to a specialty-team file. The output JSON format is unchanged.
 
 #### Step 2: Iterate teams
 

@@ -82,19 +82,18 @@ The persona shapes how the specialist communicates across all modes (interview q
 - Each path MUST be either a file or directory that exists in the cookbook repo
 - Every path listed here MUST have corresponding specialty-team(s)
 
-### 5. Specialty Teams
+### 5. Manifest
 
 ```markdown
-## Specialty Teams
-
-### <team-name>
-- **Artifact**: `<path>`
-- **Worker focus**: <text>
-- **Verify**: <text>
+## Manifest
+- specialty-teams/<category>/<team-name>.md
+- specialty-teams/<category>/<team-name>.md
 ```
 
-- One or more team entries
-- See **Specialty Team Entry** below for field specifications
+- Markdown list of paths to specialty-team files, relative to the repo root
+- Each path MUST resolve to an existing file in `specialty-teams/`
+- At least one entry required
+- See **Specialty-Team File Specification** below for the file format
 
 ### 6. Exploratory Prompts (optional)
 
@@ -111,7 +110,7 @@ The persona shapes how the specialist communicates across all modes (interview q
 
 ## Optional Sections
 
-These MAY appear between Specialty Teams and Exploratory Prompts:
+These MAY appear between Manifest and Exploratory Prompts:
 
 ### Conventions
 
@@ -123,32 +122,48 @@ These MAY appear between Specialty Teams and Exploratory Prompts:
 - Domain-specific naming, formatting, or structural rules
 - Free-form prose
 
-## Specialty Team Entry
+## Specialty-Team File Specification
 
-Each team is a `###` heading inside `## Specialty Teams` with exactly 3 fields.
+Each specialty-team is a standalone markdown file in `specialty-teams/<category>/<name>.md`.
 
-### Team Name
+### File Location
 
-- `### <name>` where `<name>` is lowercase kebab-case
-- Pattern: `[a-z][a-z0-9]*(-[a-z0-9]+)*`
-- Derived from the artifact filename (e.g., `authentication` from `authentication.md`)
+`specialty-teams/<category>/<name>.md` where:
+- `<category>` matches a specialist filename in `specialists/` (e.g., `security`, `platform-ios-apple`)
+- `<name>` is lowercase kebab-case, typically derived from the artifact filename
 
-### Fields
+### Frontmatter
 
-Fields MUST appear in this order, one per line:
+```yaml
+---
+name: <kebab-case-name>
+description: <human-readable description of what this team covers>
+artifact: <path to one cookbook artifact, relative to cookbook root>
+version: <semver>
+---
+```
 
 | Field | Format | Description |
 |-------|--------|-------------|
-| Artifact | `- **Artifact**: \`<path>\`` | Path to one cookbook artifact, relative to cookbook root, wrapped in backticks |
-| Worker focus | `- **Worker focus**: <text>` | What this team cares about (mode-independent). Single line. |
-| Verify | `- **Verify**: <text>` | Concrete acceptance criteria for the verifier. Single line. |
+| name | `[a-z][a-z0-9]*(-[a-z0-9]+)*` | Unique within category, matches filename |
+| description | Free text, ~120 chars | Human-readable summary for discovery |
+| artifact | Cookbook-relative path ending in `.md` | Single file path (not a directory) |
+| version | `N.N.N` semver | Tracks changes to this team definition |
 
-### Field Constraints
+### Body Sections
 
-- **Artifact path**: MUST be backtick-wrapped. MUST be a single file path (not a directory).
-- **Worker focus**: MUST be a single line. MUST NOT contain unescaped double quotes (breaks JSON output from `run-specialty-teams.sh`).
-- **Verify**: Same constraints as Worker focus.
-- **Line prefix**: Each field line MUST start with `- **` (no leading spaces).
+```markdown
+## Worker Focus
+<text>
+
+## Verify
+<text>
+```
+
+| Section | Description |
+|---------|-------------|
+| Worker Focus | What this team cares about (mode-independent). Guides the worker agent. |
+| Verify | Concrete acceptance criteria. The verifier uses this to determine PASS/FAIL. |
 
 ## Validation Rules
 
@@ -157,21 +172,20 @@ Fields MUST appear in this order, one per line:
 | ID | Rule | Severity |
 |----|------|----------|
 | S01 | Title matches `# <Name> Specialist` pattern | FAIL |
-| S02 | All required sections present in correct order: Role, Persona, Cookbook Sources, Specialty Teams | FAIL |
-| S03 | Every specialty-team has all 3 required fields (Artifact, Worker focus, Verify) | FAIL |
-| S04 | Team names are lowercase kebab-case | FAIL |
-| S05 | Artifact paths are backtick-wrapped | FAIL |
-| S06 | Worker focus and Verify are single-line (no continuation on next line) | WARN |
-| S07 | No unescaped double quotes in Worker focus or Verify fields | FAIL |
+| S02 | All required sections present in correct order: Role, Persona, Cookbook Sources, Manifest | FAIL |
+| S03 | Each manifest path resolves to a file with valid frontmatter (name, description, artifact, version) and body sections (Worker Focus, Verify) | FAIL |
+| S04 | name field in each referenced team file matches `[a-z][a-z0-9]*(-[a-z0-9]+)*` and matches filename | FAIL |
+| S05 | artifact field in each referenced team file is non-empty and ends with `.md` | FAIL |
+| S06 | Worker Focus and Verify sections in each referenced team file are non-empty | WARN |
 
 ### Content (C-series)
 
 | ID | Rule | Severity |
 |----|------|----------|
-| C01 | Every file path in Cookbook Sources has a corresponding specialty-team | FAIL |
-| C02 | Every specialty-team artifact appears in Cookbook Sources (or its parent directory) | WARN |
-| C03 | Artifact paths resolve to real files in the cookbook repo | WARN |
-| C04 | At least one specialty-team defined | FAIL |
+| C01 | Every file path in Cookbook Sources has a corresponding team in the manifest (resolve through team files' artifact fields) | FAIL |
+| C02 | Every manifest team's artifact appears in Cookbook Sources (or its parent directory) | WARN |
+| C03 | Artifact paths in team files resolve to real files in the cookbook repo | WARN |
+| C04 | Manifest has at least one entry | FAIL |
 | C05 | Exploratory Prompts (if present) are numbered and end with `?` | WARN |
 | C06 | Role section is non-empty | FAIL |
 | C07 | Persona is not `(coming)` placeholder | WARN |
@@ -179,15 +193,13 @@ Fields MUST appear in this order, one per line:
 
 ## Parser Contract
 
-`scripts/run-specialty-teams.sh` parses specialist files and outputs a JSON array. It relies on:
+`scripts/run-specialty-teams.sh` reads specialist files and outputs a JSON array. It relies on:
 
-- `## Specialty Teams` heading to enter parsing mode
-- `### <name>` headings to delimit teams
-- `- **Artifact**:`, `- **Worker focus**:`, `- **Verify**:` prefixes to extract fields
-- Backtick delimiters around artifact paths
-- Next `## ` heading or EOF to exit parsing mode
-
-Any deviation from these patterns causes silent data loss in the JSON output.
+- `## Manifest` heading to enter manifest reading
+- `- ` prefixed lines to collect team file paths
+- Next `## ` heading or EOF to exit manifest reading
+- For each referenced file: YAML frontmatter for `name` and `artifact`, `## Worker Focus` and `## Verify` body sections for content
+- Outputs one JSON object per team with fields: name, artifact, worker_focus, verify
 
 ## Example
 
@@ -218,17 +230,9 @@ Correctness over aesthetics — a widget that works at every size beats one that
 ## Cookbook Sources
 - `guidelines/example/`
 
-## Specialty Teams
-
-### widget-design
-- **Artifact**: `guidelines/example/widget-design.md`
-- **Worker focus**: Widget sizing, responsive layout, platform-appropriate rendering
-- **Verify**: Widgets render correctly at all supported sizes; no fixed pixel dimensions; platform controls used
-
-### widget-accessibility
-- **Artifact**: `guidelines/example/widget-accessibility.md`
-- **Worker focus**: Screen reader labels, keyboard navigation, minimum touch targets
-- **Verify**: All interactive elements have accessibility labels; touch targets meet platform minimums (44pt iOS, 48dp Android)
+## Manifest
+- specialty-teams/example/widget-design.md
+- specialty-teams/example/widget-accessibility.md
 
 ## Exploratory Prompts
 

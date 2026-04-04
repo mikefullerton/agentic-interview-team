@@ -55,23 +55,37 @@ Every specialist file in `specialists/` follows this structure:
 ## Cookbook Sources
 <explicit file paths — same as before, used for alignment checking>
 
-## Specialty Teams
+## Manifest
+- specialty-teams/<category>/<team-name>.md
+- specialty-teams/<category>/<team-name>.md
+```
 
-### <team-name>
-- **Artifact**: `<path to one cookbook artifact>`
-- **Worker focus**: <what this team cares about — mode-independent>
-- **Verify**: <acceptance criteria — what the verifier checks>
+### Specialty-Team Files
 
-### <next-team>
-...
+Each specialty-team is an independent file in `specialty-teams/<category>/<name>.md`:
+
+```markdown
+---
+name: <team-name>
+description: <human-readable summary>
+artifact: <path to one cookbook artifact>
+version: 1.0.0
+---
+
+## Worker Focus
+<what this team cares about — mode-independent>
+
+## Verify
+<acceptance criteria — what the verifier checks>
 ```
 
 ### Rules for Specialty Teams
 
-1. **One team per cookbook artifact.** If a specialist owns `guidelines/security/authentication.md`, that's one team named `authentication`.
+1. **One team per cookbook artifact.** If a specialist owns `guidelines/security/authentication.md`, that's one team file `specialty-teams/security/authentication.md`.
 2. **Worker focus is mode-independent.** It describes what this team cares about, not how it operates. The mode (interview/analysis/generation/review) determines the how.
 3. **Verify criteria are concrete.** Not "check auth is good" but "auth method chosen, PKCE for public clients, no implicit flow."
-4. **Every artifact gets a team.** If a specialist lists a cookbook source in `## Cookbook Sources`, there must be a corresponding specialty-team. If it's a directory reference (e.g., `guidelines/security/`), every file in that directory gets its own team.
+4. **Every artifact gets a team.** If a specialist lists a cookbook source in `## Cookbook Sources`, there must be a corresponding specialty-team in the manifest. If it's a directory reference (e.g., `guidelines/security/`), every file in that directory gets its own team.
+5. **Shared pool.** Specialty-teams live in `specialty-teams/<category>/` and a specialist references them via its `## Manifest`. A team can be referenced by multiple specialists.
 
 ## Modes
 
@@ -87,7 +101,7 @@ The same specialty-team pipeline runs in all four modes. The worker's behavior c
 ## Execution Flow
 
 1. The orchestrating workflow (interview, create-project-from-code, create-code-from-project, generate, lint) determines which specialists to assign
-2. For each specialist, the orchestrator runs `scripts/run-specialty-teams.sh <specialist-file>` to get the team manifest as JSON
+2. For each specialist, the orchestrator runs `scripts/run-specialty-teams.sh <specialist-file>` to get the team list as JSON (reads the `## Manifest` section, then each referenced specialty-team file)
 3. The orchestrator walks the team list one at a time:
    a. Spawn worker agent with: mode, artifact, target, worker focus
    b. Spawn verifier agent with: artifact, worker output, verify criteria
@@ -115,7 +129,8 @@ Flags go to the specialist's aggregation report under a "Cross-Domain Flags" sec
 ## Adding a New Specialist
 
 1. Create `specialists/<domain>.md` following the format above
-2. Define specialty-teams — one per cookbook artifact the specialist owns
-3. Add the specialist to `docs/research/cookbook-specialist-mapping.md`
-4. Test: run one specialty-team in each mode to verify the worker focus and verify criteria produce good results
-5. Run `align-specialists` to confirm coverage maps are clean
+2. Create `specialty-teams/<domain>/` directory with one team file per cookbook artifact
+3. Add the team file paths to the specialist's `## Manifest` section
+4. Add the specialist to `docs/research/cookbook-specialist-mapping.md`
+5. Test: run one specialty-team in each mode to verify the worker focus and verify criteria produce good results
+6. Run `align-specialists` to confirm coverage maps are clean

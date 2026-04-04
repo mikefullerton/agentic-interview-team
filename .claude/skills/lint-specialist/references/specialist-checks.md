@@ -12,65 +12,59 @@ Reference checklist for `/lint-specialist`. Each check has an ID, description, s
 
 ### S02 — Required sections present and ordered
 - **Severity**: FAIL
-- **Rule**: Must contain `## Role`, `## Persona`, `## Cookbook Sources`, `## Specialty Teams` in that order
+- **Rule**: Must contain `## Role`, `## Persona`, `## Cookbook Sources`, `## Manifest` in that order
 - **Check**: Extract all `## ` headings, verify the 4 required headings appear in order (other headings may appear between them)
 - **Fix**: Add missing sections or reorder
 
-### S03 — Team fields complete
+### S03 — Manifest team files valid
 - **Severity**: FAIL
-- **Rule**: Every `### team-name` under `## Specialty Teams` must have all 3 fields: Artifact, Worker focus, Verify
-- **Check**: For each `### ` heading after `## Specialty Teams`, scan until next `### ` or `## ` for all 3 field prefixes
-- **Fix**: Add missing fields
+- **Rule**: Every `- ` path in `## Manifest` must resolve to a file with valid YAML frontmatter (name, description, artifact, version) and body sections (## Worker Focus, ## Verify)
+- **Check**: For each `- ` line in the Manifest section, resolve the path relative to the repo root. Read the file. Parse frontmatter and verify all 4 fields exist. Verify `## Worker Focus` and `## Verify` headings exist in the body.
+- **Fix**: Create or fix the referenced team file
 
-### S04 — Team names kebab-case
+### S04 — Team names kebab-case and match filename
 - **Severity**: FAIL
-- **Rule**: Team names must match `[a-z][a-z0-9]*(-[a-z0-9]+)*`
-- **Check**: Extract text after `### ` in the Specialty Teams section, validate against pattern
-- **Fix**: Rename to kebab-case
+- **Rule**: The `name` field in each referenced team file must match `[a-z][a-z0-9]*(-[a-z0-9]+)*` and must match the filename (without `.md`)
+- **Check**: Read the `name` field from each team file's frontmatter, validate against pattern, compare to filename
+- **Fix**: Rename the file and update the `name` field to match
 
-### S05 — Artifact paths backtick-wrapped
+### S05 — Artifact paths valid
 - **Severity**: FAIL
-- **Rule**: Artifact field must contain a backtick-wrapped path
-- **Check**: The `- **Artifact**:` line contains at least one pair of backticks with content between them
-- **Fix**: Wrap the path in backticks
+- **Rule**: The `artifact` field in each referenced team file must be non-empty and end with `.md`
+- **Check**: Read the `artifact` field from each team file's frontmatter
+- **Fix**: Fix the artifact path in the team file's frontmatter
 
-### S06 — Single-line field values
+### S06 — Worker Focus and Verify sections non-empty
 - **Severity**: WARN
-- **Rule**: Worker focus and Verify should be single-line (the parser only captures one line)
-- **Check**: The line after `- **Worker focus**:` or `- **Verify**:` that starts with `- **` or `###` or `##` — if neither appears on the next non-blank line, the field may span multiple lines
-- **Fix**: Consolidate to a single line
-
-### S07 — No unescaped double quotes
-- **Severity**: FAIL
-- **Rule**: Worker focus and Verify fields must not contain `"` (breaks JSON output)
-- **Check**: Search for `"` in the text after `- **Worker focus**: ` and `- **Verify**: `
-- **Fix**: Replace `"` with single quotes or remove
+- **Rule**: Each referenced team file's `## Worker Focus` and `## Verify` sections must have content
+- **Check**: Extract text between `## Worker Focus` and the next `## ` heading (or EOF), trim, verify non-empty. Same for `## Verify`.
+- **Fix**: Add content to the empty section
 
 ## Content Checks (C-series)
 
-### C01 — Cookbook Sources fully covered by teams
+### C01 — Cookbook Sources fully covered by manifest teams
 - **Severity**: FAIL
-- **Rule**: Every file path in Cookbook Sources must have a corresponding specialty-team
+- **Rule**: Every file path in Cookbook Sources must have a corresponding team in the manifest (resolved through team files' artifact fields)
 - **Check**: For each path in Cookbook Sources:
-  - If it's a file path: there must be a team with that exact Artifact
-  - If it's a directory: every `.md` file in that directory (in the cookbook repo) should have a team
+  - If it's a file path: there must be a manifest team whose `artifact` field matches
+  - If it's a directory: every `.md` file in that directory (in the cookbook repo) should have a manifest team
 - **Note**: Requires `cookbook_repo` from config to resolve directory contents. If unavailable, skip directory expansion and only check explicit file paths.
 
-### C02 — Team artifacts traced to Cookbook Sources
+### C02 — Manifest team artifacts traced to Cookbook Sources
 - **Severity**: WARN
-- **Rule**: Every specialty-team's Artifact should appear in Cookbook Sources (or its parent directory should)
-- **Check**: For each team's Artifact path, verify it (or its parent directory) is listed in Cookbook Sources
+- **Rule**: Every manifest team's artifact (from team file frontmatter) should appear in Cookbook Sources (or its parent directory should)
+- **Check**: For each manifest team's `artifact` field, verify it (or its parent directory) is listed in Cookbook Sources
 
 ### C03 — Artifact paths exist in cookbook
 - **Severity**: WARN
-- **Rule**: Artifact paths should resolve to real files
-- **Check**: Resolve `<cookbook_repo>/<artifact_path>` and verify it exists on disk
+- **Rule**: Artifact paths in team files should resolve to real files
+- **Check**: Resolve `<cookbook_repo>/<artifact_path>` for each manifest team and verify it exists on disk
 - **Note**: Requires `cookbook_repo` from config. If unavailable, skip.
 
-### C04 — At least one team
+### C04 — At least one manifest entry
 - **Severity**: FAIL
-- **Rule**: `## Specialty Teams` must contain at least one `### team-name`
-- **Check**: Count `### ` headings in the Specialty Teams section
+- **Rule**: `## Manifest` must contain at least one `- ` entry
+- **Check**: Count `- ` lines in the Manifest section
 
 ### C05 — Exploratory Prompts format
 - **Severity**: WARN

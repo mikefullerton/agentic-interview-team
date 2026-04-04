@@ -1,13 +1,9 @@
 #!/bin/bash
-# run-specialty-teams.sh — Deterministic iterator for specialty-teams
+# run-specialty-teams.sh — Read specialty-team definitions for a specialist
 #
-# Reads a specialist manifest, extracts specialty-team definitions,
-# and outputs a structured execution plan that the calling agent
-# uses to spawn worker-verifier pairs one at a time.
-#
-# This script does NOT spawn agents itself — it parses the specialist
-# file and outputs the team list as JSON for the orchestrating agent
-# to iterate over deterministically.
+# Reads the specialist's ## Manifest section, resolves each path to a
+# specialty-team file, parses its frontmatter and body sections, and
+# outputs a JSON array.
 #
 # Usage:
 #   run-specialty-teams.sh <specialist-file> [--mode <mode>]
@@ -17,8 +13,8 @@
 #     {
 #       "name": "authentication",
 #       "artifact": "guidelines/security/authentication.md",
-#       "worker_focus": "OAuth 2.0/OIDC with PKCE, SSO, public client flows",
-#       "verify": "Auth method chosen, PKCE for public clients, no implicit flow"
+#       "worker_focus": "OAuth 2.0/OIDC with PKCE...",
+#       "verify": "Auth method chosen, PKCE for public clients..."
 #     },
 #     ...
 #   ]
@@ -26,100 +22,122 @@
 set -euo pipefail
 
 SPECIALIST_FILE="${1:?Usage: run-specialty-teams.sh <specialist-file> [--mode <mode>]}"
-MODE="${3:-interview}"
 
 if [[ ! -f "$SPECIALIST_FILE" ]]; then
     echo "ERROR: Specialist file not found: $SPECIALIST_FILE" >&2
     exit 1
 fi
 
+# Resolve repo root from specialist file location
+REPO_ROOT="$(cd "$(dirname "$SPECIALIST_FILE")/.." && pwd)"
+
 # Escape double quotes and backslashes for JSON string values
 json_escape() {
     echo "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
 }
 
-# Parse specialty teams from the specialist file
-# Format expected:
-#   ### <team-name>
-#   - **Artifact**: `<path>`
-#   - **Worker focus**: <description>
-#   - **Verify**: <criteria>
-
-in_teams=false
-current_name=""
-current_artifact=""
-current_focus=""
-current_verify=""
-first=true
-
-echo "["
+# Collect manifest paths from the specialist file
+manifest_paths=()
+in_manifest=false
 
 while IFS= read -r line; do
-    # Detect start of Specialty Teams section
-    if echo "$line" | grep -q "^## Specialty Teams"; then
-        in_teams=true
+    if echo "$line" | grep -q "^## Manifest"; then
+        in_manifest=true
         continue
     fi
 
-    # Detect end of Specialty Teams section (next ## heading)
-    if $in_teams && echo "$line" | grep -q "^## " && ! echo "$line" | grep -q "^## Specialty Teams"; then
-        # Flush last team
-        if [[ -n "$current_name" ]]; then
-            if ! $first; then echo ","; fi
-            printf '  {"name": "%s", "artifact": "%s", "worker_focus": "%s", "verify": "%s"}' \
-                "$(json_escape "$current_name")" "$(json_escape "$current_artifact")" "$(json_escape "$current_focus")" "$(json_escape "$current_verify")"
-            first=false
-        fi
-        flushed=true
+    if $in_manifest && echo "$line" | grep -q "^## "; then
         break
     fi
 
-    if ! $in_teams; then
-        continue
+    if $in_manifest && echo "$line" | grep -q "^- "; then
+        path=$(echo "$line" | sed 's/^- //')
+        manifest_paths+=("$path")
     fi
-
-    # Parse team name (### heading)
-    if echo "$line" | grep -q "^### "; then
-        # Flush previous team
-        if [[ -n "$current_name" ]]; then
-            if ! $first; then echo ","; fi
-            printf '  {"name": "%s", "artifact": "%s", "worker_focus": "%s", "verify": "%s"}' \
-                "$(json_escape "$current_name")" "$(json_escape "$current_artifact")" "$(json_escape "$current_focus")" "$(json_escape "$current_verify")"
-            first=false
-        fi
-        current_name=$(echo "$line" | sed 's/^### //')
-        current_artifact=""
-        current_focus=""
-        current_verify=""
-        continue
-    fi
-
-    # Parse artifact
-    if echo "$line" | grep -q "^\- \*\*Artifact\*\*:"; then
-        current_artifact=$(echo "$line" | sed 's/.*`\(.*\)`.*/\1/')
-        continue
-    fi
-
-    # Parse worker focus
-    if echo "$line" | grep -q "^\- \*\*Worker focus\*\*:"; then
-        current_focus=$(echo "$line" | sed 's/.*\*\*Worker focus\*\*: //')
-        continue
-    fi
-
-    # Parse verify
-    if echo "$line" | grep -q "^\- \*\*Verify\*\*:"; then
-        current_verify=$(echo "$line" | sed 's/.*\*\*Verify\*\*: //')
-        continue
-    fi
-
 done < "$SPECIALIST_FILE"
 
-# Flush last team if we hit EOF while still in teams section (no closing ## heading)
-if [[ -n "$current_name" ]] && $in_teams && [[ "$flushed" != "true" ]]; then
+if [[ ${#manifest_paths[@]} -eq 0 ]]; then
+    echo "ERROR: No manifest entries found in $SPECIALIST_FILE" >&2
+    exit 1
+fi
+
+# Read each specialty-team file and output JSON
+first=true
+echo "["
+
+for team_path in "${manifest_paths[@]}"; do
+    team_file="$REPO_ROOT/$team_path"
+
+    if [[ ! -f "$team_file" ]]; then
+        echo "ERROR: Specialty-team file not found: $team_file" >&2
+        exit 1
+    fi
+
+    # Parse frontmatter
+    name=""
+    artifact=""
+    in_frontmatter=false
+
+    while IFS= read -r line; do
+        if [[ "$line" == "---" ]] && ! $in_frontmatter; then
+            in_frontmatter=true
+            continue
+        fi
+        if [[ "$line" == "---" ]] && $in_frontmatter; then
+            break
+        fi
+        if $in_frontmatter; then
+            case "$line" in
+                name:*) name=$(echo "$line" | sed 's/^name: *//') ;;
+                artifact:*) artifact=$(echo "$line" | sed 's/^artifact: *//') ;;
+            esac
+        fi
+    done < "$team_file"
+
+    # Parse body sections
+    worker_focus=""
+    verify=""
+    current_section=""
+
+    while IFS= read -r line; do
+        if [[ "$line" == "## Worker Focus" ]]; then
+            current_section="focus"
+            continue
+        fi
+        if [[ "$line" == "## Verify" ]]; then
+            current_section="verify"
+            continue
+        fi
+        if echo "$line" | grep -q "^## "; then
+            current_section=""
+            continue
+        fi
+
+        # Skip empty lines
+        if [[ -z "$line" ]]; then
+            continue
+        fi
+
+        # Only capture first non-empty line per section
+        case "$current_section" in
+            focus)
+                if [[ -z "$worker_focus" ]]; then
+                    worker_focus="$line"
+                fi
+                ;;
+            verify)
+                if [[ -z "$verify" ]]; then
+                    verify="$line"
+                fi
+                ;;
+        esac
+    done < "$team_file"
+
     if ! $first; then echo ","; fi
     printf '  {"name": "%s", "artifact": "%s", "worker_focus": "%s", "verify": "%s"}' \
-        "$current_name" "$current_artifact" "$current_focus" "$current_verify"
-fi
+        "$(json_escape "$name")" "$(json_escape "$artifact")" "$(json_escape "$worker_focus")" "$(json_escape "$verify")"
+    first=false
+done
 
 echo ""
 echo "]"

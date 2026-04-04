@@ -44,7 +44,9 @@ For each cookbook source path the user provided:
 
 Build the complete list of artifact files that need specialty-teams.
 
-## Step 4 — Generate Specialty Teams
+## Step 4 — Generate Specialty-Team Files
+
+Create the directory `specialty-teams/<name>/`.
 
 For each artifact file:
 
@@ -52,11 +54,29 @@ For each artifact file:
 2. Extract the key requirements, rules, and constraints from the artifact
 3. Derive:
    - **Team name**: from the filename (e.g., `authentication.md` → `authentication`)
+   - **Description**: human-readable summary (~120 chars) of what this team covers
    - **Artifact**: the path as provided
    - **Worker focus**: synthesize the artifact's core concerns into a single line
    - **Verify**: synthesize concrete acceptance criteria from the artifact's requirements
 
 Present the draft teams to the user for review before writing.
+
+Write each team to `specialty-teams/<name>/<team-name>.md`:
+
+```markdown
+---
+name: <team-name>
+description: <derived summary>
+artifact: <path>
+version: 1.0.0
+---
+
+## Worker Focus
+<derived from artifact>
+
+## Verify
+<derived from artifact>
+```
 
 ## Step 5 — Write the Specialist File
 
@@ -74,13 +94,9 @@ Write to `specialists/<name>.md` using this structure:
 ## Cookbook Sources
 <list of paths from Step 2>
 
-## Specialty Teams
-
-### <team-name>
-- **Artifact**: `<path>`
-- **Worker focus**: <derived from artifact>
-- **Verify**: <derived from artifact>
-
+## Manifest
+- specialty-teams/<name>/<team-name>.md
+- specialty-teams/<name>/<team-name>.md
 ...
 
 ## Exploratory Prompts
@@ -95,7 +111,7 @@ Generate 3-5 exploratory prompts based on the domain — these should be thought
 ## Step 6 — Validate
 
 Run the lint checks from `docs/specialist-spec.md` against the generated file:
-- S01-S07 structure checks
+- S01-S06 structure checks (including manifest path resolution and team file validation)
 - C01-C06 content checks (if cookbook_repo is available)
 
 Report any issues. Fix them before finalizing.
@@ -105,6 +121,7 @@ Report any issues. Fix them before finalizing.
 Print:
 ```
 Created specialists/<name>.md
+Created specialty-teams/<name>/ (<N> team files)
   Role: <role summary>
   Teams: <N> specialty-teams
   Artifacts: <N> cookbook artifacts covered

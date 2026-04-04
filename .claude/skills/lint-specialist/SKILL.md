@@ -36,21 +36,20 @@ For each specialist file, read the full contents and run every check:
 ### Structure Checks
 
 - **S01**: First line matches `# <Name> Specialist`
-- **S02**: Extract all `## ` headings. Verify `## Role`, `## Persona`, `## Cookbook Sources`, `## Specialty Teams` all exist and appear in that order. Other `## ` headings (like `## Conventions`, `## Exploratory Prompts`) may appear after `## Specialty Teams`.
-- **S03**: For each `### ` heading inside `## Specialty Teams`, check that the subsequent lines (before the next `### ` or `## `) contain all 3 field prefixes: `- **Artifact**:`, `- **Worker focus**:`, `- **Verify**:`
-- **S04**: Each team name (text after `### `) matches `[a-z][a-z0-9]*(-[a-z0-9]+)*`
-- **S05**: Each `- **Artifact**:` line contains backtick-wrapped content (`` ` `` pairs)
-- **S06**: Check the line following each `- **Worker focus**:` and `- **Verify**:` line — if it doesn't start with `- **`, `### `, or `## `, the field value spans multiple lines
-- **S07**: Extract text after `- **Worker focus**: ` and `- **Verify**: ` — check for `"` characters
+- **S02**: Extract all `## ` headings. Verify `## Role`, `## Persona`, `## Cookbook Sources`, `## Manifest` all exist and appear in that order. Other `## ` headings (like `## Conventions`, `## Exploratory Prompts`) may appear after `## Manifest`.
+- **S03**: For each `- ` line in `## Manifest`, resolve the path to a file. Check it has valid YAML frontmatter with fields: `name`, `description`, `artifact`, `version`. Check it has body sections `## Worker Focus` and `## Verify`.
+- **S04**: Check the `name` field in each referenced team file matches `[a-z][a-z0-9]*(-[a-z0-9]+)*` and matches the filename (without `.md`).
+- **S05**: Check the `artifact` field in each referenced team file is non-empty and ends with `.md`.
+- **S06**: Check `## Worker Focus` and `## Verify` sections in each referenced team file are non-empty (have content after the heading).
 
 ### Content Checks
 
-- **C01**: Parse all paths from `## Cookbook Sources` (text between backticks on list item lines). For each:
-  - If it ends with `/` (directory reference) and cookbook_repo is available: list files in that directory, check each has a team with matching artifact
-  - If it's a specific file: check there's a team with that exact artifact path
-- **C02**: For each team's artifact path, verify it (or its parent directory with trailing `/`) appears in Cookbook Sources
-- **C03**: If cookbook_repo is available, check `<cookbook_repo>/<artifact_path>` exists on disk
-- **C04**: Count `### ` headings inside `## Specialty Teams` — must be >= 1
+- **C01**: Parse all paths from `## Cookbook Sources` (text between backticks on list item lines). For each, resolve through manifest team files' artifact fields to verify coverage:
+  - If it ends with `/` (directory reference) and cookbook_repo is available: list files in that directory, check each has a team in the manifest whose artifact matches
+  - If it's a specific file: check there's a manifest team whose artifact matches
+- **C02**: For each manifest team's artifact (from the team file's frontmatter), verify it (or its parent directory with trailing `/`) appears in Cookbook Sources
+- **C03**: If cookbook_repo is available, check `<cookbook_repo>/<artifact_path>` exists on disk for each manifest team's artifact
+- **C04**: Count `- ` lines inside `## Manifest` — must be >= 1
 - **C05**: If `## Exploratory Prompts` exists, check each numbered item ends with `?`
 - **C06**: Text between `## Role` and the next `## ` heading is non-empty after trimming
 
@@ -82,10 +81,9 @@ Summary: <N> specialists linted
 
 If `--fix` was specified and there are fixable issues:
 
-- **S04** (non-kebab team names): Offer to rename
-- **S05** (missing backticks): Offer to wrap artifact paths
-- **S07** (double quotes): Offer to replace `"` with single quotes
-- **S03** (missing fields): Offer to add stub fields (`- **Verify**: TODO`)
+- **S04** (non-kebab team names): Offer to rename the team file and update its `name` field
+- **S05** (missing/invalid artifact): Offer to fix the artifact path in team file frontmatter
+- **S03** (missing fields/sections): Offer to add stub frontmatter fields or body sections
 
 For each fix, show the change and ask for confirmation before applying.
 

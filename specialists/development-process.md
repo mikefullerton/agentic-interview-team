@@ -14,37 +14,14 @@ Feature development cycle, iterative delivery, technical debt, feature flags, A/
 - `guidelines/feature-management/debug-mode.md`
 - `guidelines/feature-management/feature-flags.md`
 
-## Specialty Teams
+## Manifest
 
-### make-it-work
-- **Artifact**: `principles/make-it-work-make-it-right-make-it-fast.md`
-- **Worker focus**: Sequential phases — correctness first (common case working), then refactor for clarity and edge cases, then optimize only what measurement proves is slow; never skip phase 2 to jump directly to performance optimization
-- **Verify**: Code handles the common case correctly before refactoring; edge cases and error handling addressed in phase 2 before any performance work; performance optimizations are measurement-driven, not speculative
-
-### small-reversible-decisions
-- **Artifact**: `principles/small-reversible-decisions.md`
-- **Worker focus**: Fast decisions on cheap-to-reverse choices; invest in understanding before committing to expensive-to-reverse decisions; incremental delivery over phased releases; binding decisions deferred to last responsible moment; architecture treated as continuous activity
-- **Verify**: No large upfront architectural commitments without evidence; incremental delivery with feedback loops in place; reversibility considered when choosing between design options
-
-### yagni
-- **Artifact**: `principles/yagni.md`
-- **Worker focus**: Build only for today's known requirements; no speculative abstractions, hooks for future features, or generalization beyond current need; cost of premature abstraction (ongoing maintenance) exceeds cost of adding it later when needed
-- **Verify**: No unused abstraction layers, extension points, or generalization not required by current features; code complexity matches current requirements
-
-### ab-testing
-- **Artifact**: `guidelines/feature-management/ab-testing.md`
-- **Worker focus**: Features that may need experimentation support variant assignment via `ExperimentProvider` interface (`variant(key) -> String`); local default implementation; debug panel override for manual variant selection
-- **Verify**: Experimentable features implement `ExperimentProvider` interface; local default variant returns a valid value; debug panel allows variant override without code changes
-
-### debug-mode
-- **Artifact**: `guidelines/feature-management/debug-mode.md`
-- **Worker focus**: Debug-only configuration panel not included in release builds — contains feature flag overrides, analytics event log, A/B test variant picker, environment info; access guarded by `#if DEBUG` (Apple/Windows), `BuildConfig.DEBUG` (Android), `NODE_ENV === 'development'` (web)
-- **Verify**: Debug panel absent from release/production builds; build guard present on all debug panel entry points; panel includes feature flag overrides and variant picker
-
-### feature-flags
-- **Artifact**: `guidelines/feature-management/feature-flags.md`
-- **Worker focus**: All features gated behind feature flags from initial implementation; `FeatureFlagProvider` interface (`isEnabled(key) -> Bool`) with local default (UserDefaults/SharedPreferences/localStorage/JSON config); DI-swappable backend implementation; flag keys documented in spec
-- **Verify**: New features have a feature flag from day one; `FeatureFlagProvider` interface implemented with local default; no hardcoded feature enable/disable in business logic; flag keys listed in spec or documentation
+- specialty-teams/development-process/ab-testing.md
+- specialty-teams/development-process/debug-mode.md
+- specialty-teams/development-process/feature-flags.md
+- specialty-teams/development-process/make-it-work.md
+- specialty-teams/development-process/small-reversible-decisions.md
+- specialty-teams/development-process/yagni.md
 
 ## Exploratory Prompts
 

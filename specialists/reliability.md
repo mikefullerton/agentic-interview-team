@@ -11,22 +11,11 @@ Fail fast, idempotency, error categorization, retry strategies, timeout handling
 - `principles/idempotency.md`
 - `compliance/reliability.md`
 
-## Specialty Teams
+## Manifest
 
-### fail-fast
-- **Artifact**: `principles/fail-fast.md`
-- **Worker focus**: Invalid state detected and surfaced immediately at the point of origin; assertions and preconditions in debug builds; input validation at system boundaries; typed errors returned rather than swallowed; no empty catch blocks; fail gracefully with clear messages in production, loudly in debug
-- **Verify**: No empty catch blocks; typed error returns at system boundaries; debug builds use assertions/preconditions; no silent swallowing of exceptions; production error paths produce user-visible messages
-
-### idempotency
-- **Artifact**: `principles/idempotency.md`
-- **Worker focus**: User actions and system operations safe to repeat without duplicate side effects; buttons debounced or disabled during async operations; idempotency keys on API calls with side effects; database migrations safe to run multiple times; state transitions check current state before applying
-- **Verify**: Submit buttons disabled or debounced during in-flight requests; idempotency keys present on write API calls; migration scripts use IF NOT EXISTS or equivalent guards; state transition logic reads current state before writing
-
-### reliability-compliance
-- **Artifact**: `compliance/reliability.md`
-- **Worker focus**: 8 compliance checks — error-recovery, graceful-degradation, fault-tolerance, state-recovery, idempotent-operations, timeout-handling, data-integrity, health-observability
-- **Verify**: Each compliance check has a status (passed/failed/partial/n-a) with evidence; transient errors retried without user intervention; external dependency failure degrades gracefully (no crash); timed-out operations leave system in consistent state; persistent components emit health metrics
+- specialty-teams/reliability/fail-fast.md
+- specialty-teams/reliability/idempotency.md
+- specialty-teams/reliability/reliability-compliance.md
 
 ## Exploratory Prompts
 

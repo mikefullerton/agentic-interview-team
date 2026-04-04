@@ -11,22 +11,11 @@ Schema design, migrations, indexing, query optimization, geoscaling, failover, r
 - `compliance/reliability.md`
 - `compliance/access-patterns.md`
 
-## Specialty Teams
+## Manifest
 
-### database
-- **Artifact**: `guidelines/language/python/database.md`
-- **Worker focus**: SQLite with WAL mode for concurrent read access; no ORM — direct SQL via `sqlite3` standard library; `PRAGMA journal_mode=WAL` set on connection open
-- **Verify**: `PRAGMA journal_mode=WAL` present in connection setup; no ORM imports (SQLAlchemy, Django ORM, etc.); raw `sqlite3` module used for all queries
-
-### reliability-compliance
-- **Artifact**: `compliance/reliability.md`
-- **Worker focus**: 8 compliance checks — error-recovery (transient error handling with retry), graceful-degradation (unavailable dependency fallback), fault-tolerance (no crashes on unexpected input), state-recovery (persistent state survives restart), idempotent-operations (safe retries), timeout-handling (consistent state after timeout), data-integrity (corrupt data detected and reported), health-observability (long-running services emit health metrics)
-- **Verify**: Each compliance check has a status (passed/failed/partial/n-a) with evidence; retry logic present for network/IO calls; no operations that wait indefinitely without a timeout; state can be restored after process kill and restart
-
-### access-patterns-compliance
-- **Artifact**: `compliance/access-patterns.md`
-- **Worker focus**: 8 compliance checks — api-design-conventions (RESTful with versioning), offline-behavior (defined behavior when network unavailable), retry-with-backoff (exponential backoff + jitter on failure), timeout-configuration (no indefinite waits), rate-limit-handling (HTTP 429 + Retry-After respected), pagination-support (collection endpoints paginated), reconnection-strategy (WebSocket/SSE reconnect with backoff), error-response-handling (all documented error codes handled)
-- **Verify**: Each compliance check has a status with evidence; retry implementation uses exponential backoff with jitter; all network calls have explicit timeouts; HTTP 429 handling present if rate-limited APIs are consumed
+- specialty-teams/platform-database/access-patterns-compliance.md
+- specialty-teams/platform-database/database.md
+- specialty-teams/platform-database/reliability-compliance.md
 
 ## Exploratory Prompts
 
