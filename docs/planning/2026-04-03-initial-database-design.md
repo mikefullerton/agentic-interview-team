@@ -132,7 +132,9 @@ Specialist assignment to a phase.
 
 - **Report**: not a table — it's query patterns against the existing data given a session_id. Supports progressive disclosure (overview → specialists → findings → process trace). Designed for LLM consumption with as much data as available.
 
-## Open Questions
+## Naming Convention: message vs description
 
-- **message vs description distinction**: "message" is the voice of the actor (what they say), "description" is expository metadata (what happened). Should this be a formal rule?
-- **Violations table**: deferred from specialty_team discussion — may surface as a way to track specific rule violations found by specialists
+These are distinct column types that may appear as separate columns on the same table:
+
+- **message**: a communication from an actor in the system. Messages are translated by the actor's persona. This is the actor speaking.
+- **description**: expository information geared toward LLM consumption. Not persona-voiced — just factual context about what happened or what something is.
