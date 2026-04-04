@@ -55,7 +55,7 @@ The team-lead is the only component that talks to the user. All other communicat
 ### Skill Router
 - **File**: `skills/dev-team/SKILL.md` (v0.6.0)
 - Loads config from `~/.agentic-cookbook/dev-team/config.json`
-- Initializes shared database via `scripts/db/db-init.sh`
+- Initializes shared database via `scripts/db/db_init.py`
 - Routes to 8 workflow files based on subcommand
 
 ### Team-Leads
@@ -80,7 +80,7 @@ Project management (1): project-manager
 - Worker Focus: what the worker analyzes
 - Verify: acceptance criteria for the verifier
 
-Parsed by `scripts/run-specialty-teams.sh` which reads a specialist's manifest and outputs JSON (name, artifact, worker_focus, verify).
+Parsed by `scripts/run_specialty_teams.py` which reads a specialist's manifest and outputs JSON (name, artifact, worker_focus, verify).
 
 ### Agents
 18 agent definitions in `agents/`. Key agents:
@@ -92,7 +92,7 @@ Parsed by `scripts/run-specialty-teams.sh` which reads a specialist's manifest a
 - `specialist-code-pass.md` / `specialist-interviewer.md` — (marked for absorption in v2)
 
 ### Arbitrator
-Abstracted communication conduit between all participants. Single entry point: `scripts/arbitrator.sh <resource> <action> [--flags]`.
+Abstracted communication conduit between all participants. Single entry point: `python3 scripts/arbitrator.py <resource> <action> [--flags]`.
 
 - Backend-swappable via `ARBITRATOR_BACKEND` env var (default: `markdown`)
 - All commands output JSON to stdout, errors to stderr, exit 0/1
@@ -105,7 +105,7 @@ Abstracted communication conduit between all participants. Single entry point: `
 The arbitrator is ONLY a communication conduit. Domain-specific data (project management, etc.) goes through its own specialist and storage provider.
 
 ### Project-Storage-Provider
-Abstract CRUD API for dev-team-project data. Single entry point: `scripts/project-storage.sh <resource> <action> [--flags]`.
+Abstract CRUD API for dev-team-project data. Single entry point: `python3 scripts/project_storage.py <resource> <action> [--flags]`.
 
 - Backend-swappable via `PROJECT_STORAGE_BACKEND` env var (default: `markdown`)
 - Full CRUD: create, get, list (with filters), update, delete
@@ -181,13 +181,13 @@ plugins/
         SKILL.md             # Router (v0.6.0)
         workflows/           # One workflow file per subcommand
     scripts/
-      arbitrator.sh          # Communication conduit dispatcher
+      arbitrator.py          # Communication conduit dispatcher
       arbitrator/markdown/   # Markdown arbitrator backend (13 resource scripts)
-      project-storage.sh     # Project management storage dispatcher
+      project_storage.py     # Project management storage dispatcher
       project-storage/markdown/ # Markdown project-storage backend (8 scripts)
-      db/                    # Database shell script API
-      run-specialty-teams.sh # Parses specialist manifests to JSON
-      load-config.sh         # Config loader
+      db/                    # Database Python API
+      run_specialty_teams.py # Parses specialist manifests to JSON
+      load_config.py         # Config loader
     services/
       dashboard/             # Live workflow dashboard (Flask, port 9876)
     docs/

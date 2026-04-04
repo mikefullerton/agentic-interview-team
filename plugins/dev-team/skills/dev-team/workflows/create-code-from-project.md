@@ -38,28 +38,28 @@ Pass this preference to the **code-generator** and **specialist-code-pass** agen
 ## DB Integration
 
 At workflow start:
-- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-project.sh --name <project-name> --path <project-path>`
-- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-run.sh start --project $PROJECT_ID --workflow create-code-from-project`
+- `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_project.py --name <project-name> --path <project-path>`
+- `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_run.py start --project $PROJECT_ID --workflow create-code-from-project`
 
-Pass `$PROJECT_ID` and `$RUN_ID` to all spawned agents. Log agents with `db-agent.sh`, build logs with `db-artifact.sh` (categories: `build-log`, `report`), activity with `db-message.sh`.
+Pass `$PROJECT_ID` and `$RUN_ID` to all spawned agents. Log agents with `db_agent.py`, build logs with `db_artifact.py` (categories: `build-log`, `report`), activity with `db_message.py`.
 
-At end: `db-run.sh complete --id $RUN_ID --status completed`
+At end: `db_run.py complete --id $RUN_ID --status completed`
 
 ### Resume Check
 
-Call `${CLAUDE_PLUGIN_ROOT}/scripts/resume-session.sh --playbook create-code-from-project`. If the output has `"interrupted": true`:
+Call `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/resume_session.py --playbook create-code-from-project`. If the output has `"interrupted": true`:
 
 1. Present a gate to the user:
    - Message: "Found interrupted create-code-from-project session from `<creation_date>` with progress: `<specialist summaries>`. Resume or restart?"
    - Options: "Resume" (reuse session), "Restart" (abandon old, create new)
 2. If user picks Resume: use the returned `session_id` for this run. Skip creating a new session.
-3. If user picks Restart: mark the old session as `abandoned` via `${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.sh state append --session <old-id> --changed-by team-lead --state abandoned --description "User chose restart"`. Create a new session normally.
+3. If user picks Restart: mark the old session as `abandoned` via `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.py state append --session <old-id> --changed-by team-lead --state abandoned --description "User chose restart"`. Create a new session normally.
 
 ### Specialist Tracking
 
 After specialist assignment is approved, log each assignment:
 ```
-${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "INSERT INTO specialist_assignments (project_id, session_id, recipe_path, specialist, tier, approved) VALUES ($PROJECT_ID, $RUN_ID, '<recipe>', '<specialist>', <tier>, 1)"
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_query.py "INSERT INTO specialist_assignments (project_id, session_id, recipe_path, specialist, tier, approved) VALUES ($PROJECT_ID, $RUN_ID, '<recipe>', '<specialist>', <tier>, 1)"
 ```
 
 ## Phase 1 — Load Project
@@ -95,7 +95,7 @@ Read the specialist assignment rules at `${CLAUDE_PLUGIN_ROOT}/docs/research/spe
 For each recipe, determine and order specialists by tier:
 
 ```
-${CLAUDE_PLUGIN_ROOT}/scripts/assign-specialists.sh <recipe-path> --platforms '<platforms-json>' --tier-order
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/assign_specialists.py <recipe-path> --platforms '<platforms-json>' --tier-order
 ```
 
 The `--tier-order` flag sorts specialists by build tier (foundation -> core -> cross-cutting -> platform).
@@ -207,11 +207,11 @@ Brief status: "✓ Base code generated for `<scope>`"
 
 #### 4c. Sequential Specialist Passes
 
-**Check for existing team-result**: If resuming, query `${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.sh team-result list --session $SESSION_ID --specialist <domain>`. For each team:
+**Check for existing team-result**: If resuming, query `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.py team-result list --session $SESSION_ID --specialist <domain>`. For each team:
 - If `status: passed` or `status: escalated`: skip this team.
 - If `status: failed`: resume at iteration N+1 with the stored `verifier_feedback` as Previous feedback.
 - If `status: running`: re-run from iteration 1 (crashed mid-execution).
-- If not present: create a new team-result with `${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.sh team-result create --session $SESSION_ID --result $RESULT_ID --specialist <domain> --team <name>`.
+- If not present: create a new team-result with `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.py team-result create --session $SESSION_ID --result $RESULT_ID --specialist <domain> --team <name>`.
 
 For each assigned specialist (in tier order), spawn a **specialist-code-pass** agent (`agents/specialist-code-pass.md`) using the Agent tool with `subagent_type: "specialist-code-pass"`:
 
@@ -232,9 +232,9 @@ Provide:
 Brief status after each: "✓ <specialist> pass complete for `<scope>`"
 
 **Record team outcome**:
-- On PASS: `${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.sh team-result update --session $SESSION_ID --specialist <domain> --team <name> --status passed --iteration <N>`
-- On FAIL (will retry): `${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.sh team-result update --session $SESSION_ID --specialist <domain> --team <name> --status failed --iteration <N> --verifier-feedback "<reasons>"`
-- On escalation: `${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.sh team-result update --session $SESSION_ID --specialist <domain> --team <name> --status escalated --iteration 3`
+- On PASS: `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.py team-result update --session $SESSION_ID --specialist <domain> --team <name> --status passed --iteration <N>`
+- On FAIL (will retry): `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.py team-result update --session $SESSION_ID --specialist <domain> --team <name> --status failed --iteration <N> --verifier-feedback "<reasons>"`
+- On escalation: `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.py team-result update --session $SESSION_ID --specialist <domain> --team <name> --status escalated --iteration 3`
 
 #### 4d. Persist Generation Log
 
@@ -422,7 +422,7 @@ summary: "Built <project-name> from <N> recipes with <M> specialist passes"
 Query the DB for all messages from this run and write the full transcript:
 
 ```
-${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT timestamp, agent_type, specialist_domain, message FROM messages WHERE session_id=$RUN_ID ORDER BY timestamp"
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_query.py "SELECT timestamp, agent_type, specialist_domain, message FROM messages WHERE session_id=$RUN_ID ORDER BY timestamp"
 ```
 
 Write to `<output>/context/build-log/build-transcript.md`:
@@ -462,7 +462,7 @@ session_id: <RUN_ID>
 - **Findings:** <N> FAIL, <M> WARN
 ```
 
-Also log the transcript file as an artifact: `db-artifact.sh write --project $PROJECT_ID --run $RUN_ID --path <file> --category transcript`
+Also log the transcript file as an artifact: `db_artifact.py write --project $PROJECT_ID --run $RUN_ID --path <file> --category transcript`
 
 Copy `cookbook-project.json` into the output directory (if not already there), annotating it with build metadata:
 - Add `"build"` section with date, version, result, test results

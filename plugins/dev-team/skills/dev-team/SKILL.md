@@ -14,17 +14,17 @@ argument-hint: <command> [args...] — commands: interview, create-project-from-
 
 Otherwise, print `dev-team v0.6.0` as the first line of output.
 
-**Version check**: Run `${CLAUDE_PLUGIN_ROOT}/scripts/version-check.sh "${CLAUDE_SKILL_DIR}" "0.6.0"`. If it outputs a warning, print it and continue.
+**Version check**: Run `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/version_check.py "${CLAUDE_SKILL_DIR}" "0.6.0"`. If it outputs a warning, print it and continue.
 
 ## Configuration
 
 **Config path**: If `$ARGUMENTS` contains `--config <path>`, extract it.
 
-Run: `${CLAUDE_PLUGIN_ROOT}/scripts/load-config.sh` with `--config <path>` if specified. If the script fails (exit code 1), the error message tells the user what's wrong.
+Run: `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/load_config.py` with `--config <path>` if specified. If the script fails (exit code 1), the error message tells the user what's wrong.
 
 Extract `cookbook_repo`, `workspace_repo`, and `user_name` from the JSON output.
 
-**Database**: Run `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-init.sh` to ensure the shared database exists.
+**Database**: Run `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_init.py` to ensure the shared database exists.
 
 If config doesn't exist and the subcommand is NOT `interview`: "I need a config file. Run `/dev-team interview` first to set one up, or create `~/.agentic-cookbook/dev-team/config.json` with `workspace_repo`, `cookbook_repo`, and `user_name` fields."
 

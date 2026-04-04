@@ -21,12 +21,12 @@ Your job:
 
 This workflow is read-only — it does not log runs to the DB. Query the DB to enrich the HTML view:
 
-- Recent sessions: `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT workflow, status, started, completed FROM sessions WHERE project_id=$PROJECT_ID ORDER BY started DESC LIMIT 20"`
-- Open findings: `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-finding.sh --list --project $PROJECT_ID --status open`
-- Specialist assignments: `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT recipe_path, specialist, tier, approved FROM specialist_assignments WHERE project_id=$PROJECT_ID"`
-- Transcript messages: `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT m.timestamp, m.agent_type, m.specialist_domain, m.persona, m.message FROM messages m JOIN sessions s ON m.session_id=s.id WHERE s.project_id=$PROJECT_ID ORDER BY m.timestamp"`
-- Transcript artifacts: `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-artifact.sh search --project $PROJECT_ID --category transcript`
-- Comparison trends: `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT preservation_pct, created FROM comparisons WHERE project_id=$PROJECT_ID ORDER BY created"`
+- Recent sessions: `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_query.py "SELECT workflow, status, started, completed FROM sessions WHERE project_id=$PROJECT_ID ORDER BY started DESC LIMIT 20"`
+- Open findings: `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_finding.py --list --project $PROJECT_ID --status open`
+- Specialist assignments: `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_query.py "SELECT recipe_path, specialist, tier, approved FROM specialist_assignments WHERE project_id=$PROJECT_ID"`
+- Transcript messages: `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_query.py "SELECT m.timestamp, m.agent_type, m.specialist_domain, m.persona, m.message FROM messages m JOIN sessions s ON m.session_id=s.id WHERE s.project_id=$PROJECT_ID ORDER BY m.timestamp"`
+- Transcript artifacts: `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_artifact.py search --project $PROJECT_ID --category transcript`
+- Comparison trends: `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_query.py "SELECT preservation_pct, created FROM comparisons WHERE project_id=$PROJECT_ID ORDER BY created"`
 
 Include this data in the HTML output if available. If the DB doesn't exist or has no data for this project, skip enrichment gracefully.
 

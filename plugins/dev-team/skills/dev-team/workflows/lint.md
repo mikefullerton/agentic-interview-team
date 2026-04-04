@@ -13,30 +13,30 @@ Your persona: a thorough, fair code reviewer. You present findings clearly with 
 ## DB Integration
 
 At workflow start:
-- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-project.sh --name <artifact-name> --path <artifact-path>`
-- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-run.sh start --project $PROJECT_ID --workflow lint`
+- `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_project.py --name <artifact-name> --path <artifact-path>`
+- `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_run.py start --project $PROJECT_ID --workflow lint`
 
-Log each checklist result as a finding: `db-finding.sh --project $PROJECT_ID --type <PASS|WARN|FAIL> --severity <critical|important|minor> --description "<check description>" --artifact-path <artifact>`
+Log each checklist result as a finding: `db_finding.py --project $PROJECT_ID --type <PASS|WARN|FAIL> --severity <critical|important|minor> --description "<check description>" --artifact-path <artifact>`
 
-Log the report: `db-artifact.sh write --project $PROJECT_ID --run $RUN_ID --path <report> --category report`
+Log the report: `db_artifact.py write --project $PROJECT_ID --run $RUN_ID --path <report> --category report`
 
-At end: `db-run.sh complete --id $RUN_ID --status completed`
+At end: `db_run.py complete --id $RUN_ID --status completed`
 
 ### Resume Check
 
-Call `${CLAUDE_PLUGIN_ROOT}/scripts/resume-session.sh --playbook lint`. If the output has `"interrupted": true`:
+Call `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/resume_session.py --playbook lint`. If the output has `"interrupted": true`:
 
 1. Present a gate to the user:
    - Message: "Found interrupted lint session from `<creation_date>` with progress: `<specialist summaries>`. Resume or restart?"
    - Options: "Resume" (reuse session), "Restart" (abandon old, create new)
 2. If user picks Resume: use the returned `session_id` for this run. Skip creating a new session.
-3. If user picks Restart: mark the old session as `abandoned` via `${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.sh state append --session <old-id> --changed-by team-lead --state abandoned --description "User chose restart"`. Create a new session normally.
+3. If user picks Restart: mark the old session as `abandoned` via `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.py state append --session <old-id> --changed-by team-lead --state abandoned --description "User chose restart"`. Create a new session normally.
 
 ### Trend Tracking
 
 After producing results, query previous findings:
 ```
-${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT type, COUNT(*) as count FROM findings WHERE project_id=$PROJECT_ID GROUP BY type"
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_query.py "SELECT type, COUNT(*) as count FROM findings WHERE project_id=$PROJECT_ID GROUP BY type"
 ```
 If previous data exists, show: "Previous: <N> PASS, <M> WARN, <K> FAIL → This run: ..."
 
@@ -78,7 +78,7 @@ Read the specialist assignment rules at `${CLAUDE_PLUGIN_ROOT}/docs/research/spe
 **recipe**: Assign Claude Code as primary, plus domain specialists. You can use the shell script for quick assignment:
 
 ```
-${CLAUDE_PLUGIN_ROOT}/scripts/assign-specialists.sh <recipe-path> --platforms '<platforms-json>'
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/assign_specialists.py <recipe-path> --platforms '<platforms-json>'
 ```
 
 Or read `${CLAUDE_PLUGIN_ROOT}/docs/research/specialist-assignment.json` directly and apply the category, content, and platform mappings.
@@ -97,11 +97,11 @@ In test mode, proceed immediately. Otherwise wait for user acknowledgment.
 
 ## Phase 3 — Review
 
-**Check for existing team-result**: If resuming, query `${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.sh team-result list --session $SESSION_ID --specialist <domain>`. For each team:
+**Check for existing team-result**: If resuming, query `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.py team-result list --session $SESSION_ID --specialist <domain>`. For each team:
 - If `status: passed` or `status: escalated`: skip this team.
 - If `status: failed`: resume at iteration N+1 with the stored `verifier_feedback` as Previous feedback.
 - If `status: running`: re-run from iteration 1 (crashed mid-execution).
-- If not present: create a new team-result with `${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.sh team-result create --session $SESSION_ID --result $RESULT_ID --specialist <domain> --team <name>`.
+- If not present: create a new team-result with `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.py team-result create --session $SESSION_ID --result $RESULT_ID --specialist <domain> --team <name>`.
 
 For each assigned specialist, spawn an **artifact-reviewer** agent at `${CLAUDE_PLUGIN_ROOT}/agents/artifact-reviewer.md` using the Agent tool.
 
@@ -128,9 +128,9 @@ As each reviewer completes, write its report to:
 Use the artifact's base name (directory name for skills/implementations, filename without extension for files) as the artifact name. Use the specialist domain slug (lowercase, hyphens) as the domain suffix.
 
 **Record team outcome**:
-- On PASS: `${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.sh team-result update --session $SESSION_ID --specialist <domain> --team <name> --status passed --iteration <N>`
-- On FAIL (will retry): `${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.sh team-result update --session $SESSION_ID --specialist <domain> --team <name> --status failed --iteration <N> --verifier-feedback "<reasons>"`
-- On escalation: `${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.sh team-result update --session $SESSION_ID --specialist <domain> --team <name> --status escalated --iteration 3`
+- On PASS: `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.py team-result update --session $SESSION_ID --specialist <domain> --team <name> --status passed --iteration <N>`
+- On FAIL (will retry): `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.py team-result update --session $SESSION_ID --specialist <domain> --team <name> --status failed --iteration <N> --verifier-feedback "<reasons>"`
+- On escalation: `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.py team-result update --session $SESSION_ID --specialist <domain> --team <name> --status escalated --iteration 3`
 
 ## Phase 4 — Present Results
 

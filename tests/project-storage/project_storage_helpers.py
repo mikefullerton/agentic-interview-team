@@ -4,13 +4,13 @@ import subprocess
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent
-PROJECT_STORAGE = str(REPO_ROOT / "plugins" / "dev-team" / "scripts" / "project-storage.sh")
+PROJECT_STORAGE = str(REPO_ROOT / "plugins" / "dev-team" / "scripts" / "project_storage.py")
 
 
 def run_storage(*args):
-    """Call project-storage.sh and return the CompletedProcess."""
+    """Call project_storage.py and return the CompletedProcess."""
     result = subprocess.run(
-        [PROJECT_STORAGE] + list(args),
+        ["python3", PROJECT_STORAGE] + list(args),
         capture_output=True, text=True
     )
     return result

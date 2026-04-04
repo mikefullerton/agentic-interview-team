@@ -13,12 +13,12 @@ Your persona: a meticulous librarian doing an inventory check. You verify refere
 ## DB Integration
 
 At workflow start:
-- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-project.sh --name dev-team-alignment --path ${CLAUDE_PLUGIN_ROOT}`
-- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-run.sh start --project $PROJECT_ID --workflow align-specialists`
+- `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_project.py --name dev-team-alignment --path ${CLAUDE_PLUGIN_ROOT}`
+- `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_run.py start --project $PROJECT_ID --workflow align-specialists`
 
-Log agents with `db-agent.sh`, the alignment report with `db-artifact.sh` (category: `report`), activity with `db-message.sh`.
+Log agents with `db_agent.py`, the alignment report with `db_artifact.py` (category: `report`), activity with `db_message.py`.
 
-At end: `db-run.sh complete --id $RUN_ID --status completed`
+At end: `db_run.py complete --id $RUN_ID --status completed`
 
 ## Phase 1 — Cookbook Scan
 

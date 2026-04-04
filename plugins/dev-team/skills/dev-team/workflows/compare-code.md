@@ -18,23 +18,23 @@ Your persona: a thorough, detail-oriented QA lead verifying a round-trip migrati
 ## DB Integration
 
 At workflow start:
-- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-project.sh --name <baseline-name> --path <baseline-path>`
-- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-run.sh start --project $PROJECT_ID --workflow compare-code`
+- `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_project.py --name <baseline-name> --path <baseline-path>`
+- `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_run.py start --project $PROJECT_ID --workflow compare-code`
 
-Log agents with `db-agent.sh`, reports with `db-artifact.sh` (categories: `comparison`, `report`), activity with `db-message.sh`.
+Log agents with `db_agent.py`, reports with `db_artifact.py` (categories: `comparison`, `report`), activity with `db_message.py`.
 
-At end: `db-run.sh complete --id $RUN_ID --status completed`
+At end: `db_run.py complete --id $RUN_ID --status completed`
 
 ### Comparison Tracking
 
 After computing results:
 ```
-${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "INSERT INTO comparisons (project_id, session_id, baseline_path, target_path, preservation_pct, regressions_count) VALUES ($PROJECT_ID, $RUN_ID, '<baseline>', '<target>', <pct>, <count>)"
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_query.py "INSERT INTO comparisons (project_id, session_id, baseline_path, target_path, preservation_pct, regressions_count) VALUES ($PROJECT_ID, $RUN_ID, '<baseline>', '<target>', <pct>, <count>)"
 ```
 
 Query previous comparisons for trend:
 ```
-${CLAUDE_PLUGIN_ROOT}/scripts/db/db-query.sh "SELECT preservation_pct, created FROM comparisons WHERE project_id=$PROJECT_ID ORDER BY created"
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_query.py "SELECT preservation_pct, created FROM comparisons WHERE project_id=$PROJECT_ID ORDER BY created"
 ```
 If previous data exists, show: "Preservation trend: <pct1>% → <pct2>% → current"
 

@@ -13,33 +13,33 @@ Your persona: a quality-focused project lead running a design review. You presen
 ## DB Integration
 
 At workflow start:
-- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-project.sh --name <project-name> --path <project-path>`
-- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-run.sh start --project $PROJECT_ID --workflow generate`
+- `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_project.py --name <project-name> --path <project-path>`
+- `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_run.py start --project $PROJECT_ID --workflow generate`
 
-Pass `$PROJECT_ID` and `$RUN_ID` to all spawned agents. Log agents with `db-agent.sh`, reviews with `db-artifact.sh` (category: `review`), activity with `db-message.sh`.
+Pass `$PROJECT_ID` and `$RUN_ID` to all spawned agents. Log agents with `db_agent.py`, reviews with `db_artifact.py` (category: `review`), activity with `db_message.py`.
 
-Log each suggestion as a finding: `db-finding.sh --project $PROJECT_ID --type suggestion --description "<suggestion>" --artifact-path <recipe>`
-Update finding status when user approves/rejects: `db-finding.sh update --id $FINDING_ID --status accepted|rejected`
+Log each suggestion as a finding: `db_finding.py --project $PROJECT_ID --type suggestion --description "<suggestion>" --artifact-path <recipe>`
+Update finding status when user approves/rejects: `db_finding.py update --id $FINDING_ID --status accepted|rejected`
 
-At end: `db-run.sh complete --id $RUN_ID --status completed`
+At end: `db_run.py complete --id $RUN_ID --status completed`
 
 ### Cross-Workflow Coordination
 
 At start, check for open lint findings:
 ```
-${CLAUDE_PLUGIN_ROOT}/scripts/db/db-finding.sh --list --project $PROJECT_ID --type FAIL --status open
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_finding.py --list --project $PROJECT_ID --type FAIL --status open
 ```
 If findings exist, inform the user: "Lint previously found <N> open FAILs. Specialists will be aware of these during review."
 
 ### Resume Check
 
-Call `${CLAUDE_PLUGIN_ROOT}/scripts/resume-session.sh --playbook generate`. If the output has `"interrupted": true`:
+Call `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/resume_session.py --playbook generate`. If the output has `"interrupted": true`:
 
 1. Present a gate to the user:
    - Message: "Found interrupted generate session from `<creation_date>` with progress: `<specialist summaries>`. Resume or restart?"
    - Options: "Resume" (reuse session), "Restart" (abandon old, create new)
-2. If user picks Resume: use the returned `session_id` for this run. Skip creating a new session via `db-run.sh`.
-3. If user picks Restart: mark the old session as `abandoned` via `${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.sh state append --session <old-id> --changed-by team-lead --state abandoned --description "User chose restart"`. Create a new session normally.
+2. If user picks Resume: use the returned `session_id` for this run. Skip creating a new session via `db_run.py`.
+3. If user picks Restart: mark the old session as `abandoned` via `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.py state append --session <old-id> --changed-by team-lead --state abandoned --description "User chose restart"`. Create a new session normally.
 
 ## Phase 1 — Load Project
 
@@ -69,7 +69,7 @@ Read the specialist assignment rules at `${CLAUDE_PLUGIN_ROOT}/docs/research/spe
 For each recipe, determine relevant specialists. You can use the shell script for quick assignment:
 
 ```
-${CLAUDE_PLUGIN_ROOT}/scripts/assign-specialists.sh <recipe-path> --platforms '<platforms-json>'
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/assign_specialists.py <recipe-path> --platforms '<platforms-json>'
 ```
 
 Or read `${CLAUDE_PLUGIN_ROOT}/docs/research/specialist-assignment.json` directly and apply the category, content, and platform mappings.
@@ -103,17 +103,17 @@ For each assigned specialist, run the **specialty-team worker-verifier loop**:
 
 #### Step 1: Get the team manifest
 
-Run `${CLAUDE_PLUGIN_ROOT}/scripts/run-specialty-teams.sh <specialist-file>` to get the JSON array of specialty-teams. The script reads the specialist's `## Manifest` section and resolves each path to a specialty-team file. The output JSON format is unchanged.
+Run `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/run_specialty_teams.py <specialist-file>` to get the JSON array of specialty-teams. The script reads the specialist's `## Manifest` section and resolves each path to a specialty-team file. The output JSON format is unchanged.
 
 #### Step 2: Iterate teams
 
 For each team in the manifest, run the worker-verifier loop:
 
-**Check for existing team-result**: If resuming, query `${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.sh team-result list --session $SESSION_ID --specialist <domain>`. For each team:
+**Check for existing team-result**: If resuming, query `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.py team-result list --session $SESSION_ID --specialist <domain>`. For each team:
 - If `status: passed` or `status: escalated`: skip this team.
 - If `status: failed`: resume at iteration N+1 with the stored `verifier_feedback` as Previous feedback.
 - If `status: running`: re-run from iteration 1 (crashed mid-execution).
-- If not present: create a new team-result with `${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.sh team-result create --session $SESSION_ID --result $RESULT_ID --specialist <domain> --team <name>`.
+- If not present: create a new team-result with `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.py team-result create --session $SESSION_ID --result $RESULT_ID --specialist <domain> --team <name>`.
 
 **Spawn worker** — use Agent tool with `subagent_type: "dev-team:specialist-code-pass"` (or any agent type with Read/Glob/Grep access):
 - **Prompt the agent** with the instructions from `${CLAUDE_PLUGIN_ROOT}/agents/specialty-team-worker.md`
@@ -135,9 +135,9 @@ For each team in the manifest, run the worker-verifier loop:
 **Loop**: If the verifier returns FAIL and this is iteration < 3, re-run the worker with the verifier's failure reasons. If PASS, record the result. If FAIL after 3 iterations, record as escalation.
 
 **Record team outcome** after each loop iteration:
-- On PASS: `${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.sh team-result update --session $SESSION_ID --specialist <domain> --team <name> --status passed --iteration <N>`
-- On FAIL (will retry): `${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.sh team-result update --session $SESSION_ID --specialist <domain> --team <name> --status failed --iteration <N> --verifier-feedback "<reasons>"`
-- On escalation: `${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.sh team-result update --session $SESSION_ID --specialist <domain> --team <name> --status escalated --iteration 3`
+- On PASS: `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.py team-result update --session $SESSION_ID --specialist <domain> --team <name> --status passed --iteration <N>`
+- On FAIL (will retry): `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.py team-result update --session $SESSION_ID --specialist <domain> --team <name> --status failed --iteration <N> --verifier-feedback "<reasons>"`
+- On escalation: `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/arbitrator.py team-result update --session $SESSION_ID --specialist <domain> --team <name> --status escalated --iteration 3`
 
 #### Step 3: Aggregate
 

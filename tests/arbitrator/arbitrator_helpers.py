@@ -4,13 +4,13 @@ import subprocess
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent
-ARBITRATOR = str(REPO_ROOT / "plugins" / "dev-team" / "scripts" / "arbitrator.sh")
+ARBITRATOR = str(REPO_ROOT / "plugins" / "dev-team" / "scripts" / "arbitrator.py")
 
 
 def run_arbitrator(*args):
-    """Call arbitrator.sh and return the CompletedProcess."""
+    """Call arbitrator.py and return the CompletedProcess."""
     result = subprocess.run(
-        [ARBITRATOR] + list(args),
+        ["python3", ARBITRATOR] + list(args),
         capture_output=True, text=True
     )
     return result

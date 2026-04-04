@@ -144,13 +144,13 @@ describe.each(teamFiles)(
   }
 );
 
-describe("run-specialty-teams.sh", () => {
-  const RUN_SCRIPT = join(PLUGIN_ROOT, "scripts", "run-specialty-teams.sh");
+describe("run_specialty_teams.py", () => {
+  const RUN_SCRIPT = join(PLUGIN_ROOT, "scripts", "run_specialty_teams.py");
 
   it("outputs valid JSON for a specialist with manifest", () => {
     const result = execFileSync(
-      RUN_SCRIPT,
-      [join(SPECIALISTS_DIR, "accessibility.md")],
+      "python3",
+      [RUN_SCRIPT, join(SPECIALISTS_DIR, "accessibility.md")],
       { encoding: "utf-8" }
     );
     const teams = JSON.parse(result);
@@ -160,8 +160,8 @@ describe("run-specialty-teams.sh", () => {
 
   it("each team has required fields", () => {
     const result = execFileSync(
-      RUN_SCRIPT,
-      [join(SPECIALISTS_DIR, "accessibility.md")],
+      "python3",
+      [RUN_SCRIPT, join(SPECIALISTS_DIR, "accessibility.md")],
       { encoding: "utf-8" }
     );
     const teams = JSON.parse(result);
@@ -175,8 +175,8 @@ describe("run-specialty-teams.sh", () => {
 
   it("outputs correct team count for security specialist", () => {
     const result = execFileSync(
-      RUN_SCRIPT,
-      [join(SPECIALISTS_DIR, "security.md")],
+      "python3",
+      [RUN_SCRIPT, join(SPECIALISTS_DIR, "security.md")],
       { encoding: "utf-8" }
     );
     const teams = JSON.parse(result);
@@ -185,8 +185,8 @@ describe("run-specialty-teams.sh", () => {
 
   it("team fields match file content", () => {
     const result = execFileSync(
-      RUN_SCRIPT,
-      [join(SPECIALISTS_DIR, "security.md")],
+      "python3",
+      [RUN_SCRIPT, join(SPECIALISTS_DIR, "security.md")],
       { encoding: "utf-8" }
     );
     const teams = JSON.parse(result);

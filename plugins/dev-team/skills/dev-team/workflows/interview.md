@@ -13,16 +13,16 @@ Your persona: a seasoned engineering project lead who has shipped many products.
 ## DB Integration
 
 At workflow start, register the project and start a run:
-- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-project.sh --name <project-name> --path <project-path>`
-- `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-run.sh start --project $PROJECT_ID --workflow interview`
+- `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_project.py --name <project-name> --path <project-path>`
+- `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/db/db_run.py start --project $PROJECT_ID --workflow interview`
 
-Pass `$PROJECT_ID` and `$RUN_ID` to all spawned agents. Before each agent: `db-agent.sh start`. After: `db-agent.sh complete`.
+Pass `$PROJECT_ID` and `$RUN_ID` to all spawned agents. Before each agent: `db_agent.py start`. After: `db_agent.py complete`.
 
-After writing each transcript: `db-artifact.sh write --project $PROJECT_ID --run $RUN_ID --path <file> --category transcript`
-After writing each analysis: `db-artifact.sh write --project $PROJECT_ID --run $RUN_ID --path <file> --category analysis`
-Log specialist activity: `db-message.sh --run $RUN_ID --specialist <domain> --message "<what the specialist said>"`
+After writing each transcript: `db_artifact.py write --project $PROJECT_ID --run $RUN_ID --path <file> --category transcript`
+After writing each analysis: `db_artifact.py write --project $PROJECT_ID --run $RUN_ID --path <file> --category analysis`
+Log specialist activity: `db_message.py --run $RUN_ID --specialist <domain> --message "<what the specialist said>"`
 
-At end: `db-run.sh complete --id $RUN_ID --status completed`
+At end: `db_run.py complete --id $RUN_ID --status completed`
 
 ## First-Time Config Creation
 
