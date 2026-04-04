@@ -69,25 +69,33 @@ header {
   text-transform: uppercase;
 }
 
+header .super-title {
+  font-family: var(--serif);
+  font-size: 1.5rem; font-weight: 400;
+  font-style: italic;
+  color: var(--accent);
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
 header h1 {
   font-family: var(--serif);
   font-size: 4rem; font-weight: 400;
-  letter-spacing: -0.02em; color: var(--text);
-  margin-bottom: 12px;
+  font-style: italic;
+  letter-spacing: -0.02em; color: var(--accent);
+  margin-bottom: 16px;
 }
-
-header h1 em { color: var(--accent); font-style: italic; }
 
 header .tagline {
   font-family: var(--mono);
-  font-size: 0.8rem; color: var(--text-muted);
-  letter-spacing: 0.08em; text-transform: uppercase;
+  font-size: 0.7rem; color: var(--text-muted);
+  letter-spacing: 0.15em; text-transform: uppercase;
 }
 
 header .version {
   margin-top: 20px;
   font-family: var(--mono);
-  font-size: 0.95rem; letter-spacing: 0.04em;
+  font-size: 0.85rem; letter-spacing: 0.04em;
 }
 
 header .version a {
@@ -319,10 +327,10 @@ footer {
 
 <header>
   <div class="dev-stamp">In Development</div>
-  <h1>The Agentic Cookbook's <em>Dev Team</em></h1>
-  <div class="tagline">Multi-Agent Development Pipeline for Claude Code</div>
-  <div class="tagline" style="margin-top: 12px; font-size: 0.75rem; letter-spacing: 0.04em; text-transform: none; color: var(--text-dim);">Part of <a href="http://agentic-cookbook.com" style="color: var(--accent); text-decoration: none; opacity: 0.7; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">The Agentic Cookbooks</a> family &mdash; open-source recipes for building agentic systems with Claude Code</div>
-  <div class="version"><a href="https://github.com/agentic-cookbook/dev-team">github</a> &middot; <a href="http://agentic-cookbook.com">cookbook</a> &middot; <a href="../official-agent-registry">agent registry</a></div>
+  <div class="super-title">The Agentic Cookbook's</div>
+  <h1>Dev Team</h1>
+  <div class="tagline">Part of the Agentic Cookbook Family</div>
+  <div class="version">&#128214; <a href="http://agentic-cookbook.com">The Cookbook</a> &middot; &#128218; <a href="../official-agent-registry">Agent Registry</a></div>
 </header>
 
 <nav>
