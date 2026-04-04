@@ -16,8 +16,16 @@ if [[ ! -d "$SCRIPT_DIR" ]]; then
   exit 1
 fi
 
-HANDLER="${SCRIPT_DIR}/${RESOURCE}.sh"
+# Map hyphenated resource names to Python module names
+PY_RESOURCE="${RESOURCE//-/_}"
+PY_HANDLER="${SCRIPT_DIR}/${PY_RESOURCE}.py"
 
+if [[ -x "$PY_HANDLER" ]]; then
+  exec python3 "$PY_HANDLER" "$ACTION" "$@"
+fi
+
+# Fallback to shell handler
+HANDLER="${SCRIPT_DIR}/${RESOURCE}.sh"
 if [[ ! -x "$HANDLER" ]]; then
   echo "Unknown resource: ${RESOURCE}" >&2
   exit 1
