@@ -139,6 +139,14 @@ nav a:hover { color: var(--text); border-left-color: var(--accent); }
   margin: 8px 20px; border-top: 1px solid var(--border-accent);
 }
 
+.nav-label {
+  display: block; padding: 4px 20px 2px;
+  font-family: var(--mono);
+  font-size: 0.55rem; color: var(--text-dim);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  margin-top: 4px;
+}
+
 header { margin-left: 0; }
 .container { max-width: 960px; margin: 0 auto; padding: 0 40px 0 240px; }
 footer { margin-left: 200px; }
@@ -318,17 +326,22 @@ footer {
 
 <nav>
   <div class="nav-links">
+    <span class="nav-label">System</span>
     <a href="#overview">Overview</a>
     <a href="#commands">Commands</a>
     <a href="#pipeline">Pipeline</a>
     <span class="nav-divider"></span>
+    <span class="nav-label">Team</span>
     <a href="#specialists">Specialists</a>
+    <a href="#specialty-teams">Specialty-Teams</a>
     <a href="#agents">Agents</a>
     <span class="nav-divider"></span>
+    <span class="nav-label">Infrastructure</span>
     <a href="#arbitrator">Arbitrator</a>
     <a href="#project-storage">Project Storage</a>
     <a href="#data-flow">Data Flow</a>
     <span class="nav-divider"></span>
+    <span class="nav-label">Reference</span>
     <a href="#configuration">Configuration</a>
     <a href="#file-map">File Map</a>
     <a href="#tests">Tests</a>
@@ -654,17 +667,54 @@ footer {
     </div>
   </details>
 
-  <details>
-    <summary>Specialty-Team Architecture <span class="tag tag-arch">architecture</span></summary>
-    <div class="detail-body">
-      <p>212 standalone files in <code>specialty-teams/&lt;category&gt;/&lt;name&gt;.md</code>. Each defines a worker-verifier pair.</p>
-      <div class="diagram"><span class="highlight">Specialist</span> dispatches <span class="highlight">Specialty-Team</span>
+</section>
+
+<!-- Specialty-Teams -->
+<section id="specialty-teams">
+  <h2><span class="num">05</span>Specialty-Teams</h2>
+  <p class="lead">212 standalone files across 20 categories. Each defines a worker-verifier pair focused on one cookbook artifact. The atomic unit of specialist expertise.</p>
+
+  <div class="diagram"><span class="highlight">Specialist</span> dispatches <span class="highlight">Specialty-Team</span>
   <span class="dim">&rarr;</span> <span class="highlight">Worker</span> reads cookbook artifact, produces findings
   <span class="dim">&rarr;</span> <span class="highlight">Verifier</span> checks worker output
       <span class="dim">&rarr;</span> <span class="green">PASS</span> &rarr; findings recorded
       <span class="dim">&rarr;</span> <span class="red" style="color:var(--red)">FAIL</span> &rarr; retry (max 3) &rarr; escalate</div>
-      <p><strong>Isolation principle:</strong> Worker and verifier never see each other's instructions. This is a checks-and-balances design &mdash; the verifier can't be biased by the worker's approach.</p>
-      <h3>Specialty-Team File Format</h3>
+
+  <p><strong>Isolation principle:</strong> Worker and verifier never see each other's instructions. This is a checks-and-balances design &mdash; the verifier can't be biased by the worker's approach.</p>
+
+  <details>
+    <summary>Categories (20) <span class="tag tag-arch">architecture</span></summary>
+    <div class="detail-body">
+      <table>
+        <tr><th>Category</th><th>Teams</th><th>Specialist</th></tr>
+        <tr><td>security</td><td>15</td><td>security</td></tr>
+        <tr><td>networking-api</td><td>18</td><td>networking-api</td></tr>
+        <tr><td>platform-web-backend</td><td>18</td><td>platform-web-backend</td></tr>
+        <tr><td>platform-web-frontend</td><td>14</td><td>platform-web-frontend</td></tr>
+        <tr><td>platform-ios-apple</td><td>14</td><td>platform-ios-apple</td></tr>
+        <tr><td>platform-android</td><td>10</td><td>platform-android</td></tr>
+        <tr><td>platform-windows</td><td>9</td><td>platform-windows</td></tr>
+        <tr><td>platform-database</td><td>10</td><td>platform-database</td></tr>
+        <tr><td>accessibility</td><td>10</td><td>accessibility</td></tr>
+        <tr><td>reliability</td><td>8</td><td>reliability</td></tr>
+        <tr><td>ui-ux-design</td><td>11</td><td>ui-ux-design</td></tr>
+        <tr><td>software-architecture</td><td>8</td><td>software-architecture</td></tr>
+        <tr><td>testing-qa</td><td>12</td><td>testing-qa</td></tr>
+        <tr><td>code-quality</td><td>7</td><td>code-quality</td></tr>
+        <tr><td>devops-observability</td><td>10</td><td>devops-observability</td></tr>
+        <tr><td>data-persistence</td><td>7</td><td>data-persistence</td></tr>
+        <tr><td>localization-i18n</td><td>8</td><td>localization-i18n</td></tr>
+        <tr><td>development-process</td><td>7</td><td>development-process</td></tr>
+        <tr><td>claude-code</td><td>10</td><td>claude-code</td></tr>
+        <tr><td>project-management</td><td>6</td><td>project-manager</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>File Format <span class="tag tag-arch">spec</span></summary>
+    <div class="detail-body">
+      <p>Each file lives at <code>specialty-teams/&lt;category&gt;/&lt;name&gt;.md</code> with YAML frontmatter and two sections:</p>
       <pre><code>---
 name: authentication
 description: OAuth 2.0/OIDC with PKCE, SSO, multi-client strategies
@@ -679,13 +729,29 @@ for native apps, no implicit flow, SSO strategies
 ## Verify
 No implicit flow; PKCE code_challenge present; system browser
 on native; no client_secret in public clients</code></pre>
+      <p><strong>artifact</strong> &mdash; the cookbook file this team analyzes. <strong>Worker Focus</strong> &mdash; what matters (mode-independent). <strong>Verify</strong> &mdash; concrete acceptance criteria for the verifier.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>How Specialists Reference Teams <span class="tag tag-arch">manifest</span></summary>
+    <div class="detail-body">
+      <p>Each specialist has a <code>## Manifest</code> section listing its teams by file path:</p>
+      <pre><code>## Manifest
+
+- specialty-teams/security/authentication.md
+- specialty-teams/security/authorization.md
+- specialty-teams/security/token-handling.md
+- specialty-teams/security/transport-security.md
+...</code></pre>
+      <p>The script <code>run-specialty-teams.sh</code> reads the manifest and outputs JSON for each team (name, artifact, worker_focus, verify). Workers and verifiers consume this JSON &mdash; they never read the specialty-team files directly.</p>
     </div>
   </details>
 </section>
 
 <!-- Agents -->
 <section id="agents">
-  <h2><span class="num">05</span>Agents</h2>
+  <h2><span class="num">06</span>Agents</h2>
   <p class="lead">18 agent definitions in <code>agents/</code>. Each is a markdown file with instructions for a specific role.</p>
 
   <details>
@@ -718,7 +784,7 @@ on native; no client_secret in public clients</code></pre>
 
 <!-- Arbitrator -->
 <section id="arbitrator">
-  <h2><span class="num">06</span>Arbitrator</h2>
+  <h2><span class="num">07</span>Arbitrator</h2>
   <p class="lead">Abstracted communication conduit between all participants. The arbitrator handles ALL data exchange &mdash; participants never know how storage works.</p>
 
   <details>
@@ -768,7 +834,7 @@ on native; no client_secret in public clients</code></pre>
 
 <!-- Project Storage -->
 <section id="project-storage">
-  <h2><span class="num">07</span>Project Storage</h2>
+  <h2><span class="num">08</span>Project Storage</h2>
   <p class="lead">Abstract CRUD API for dev-team-project data. A dev-team-project tracks project management concerns &mdash; schedules, tasks, issues &mdash; not code specifications.</p>
 
   <details>
@@ -808,7 +874,7 @@ on native; no client_secret in public clients</code></pre>
 
 <!-- Data Flow -->
 <section id="data-flow">
-  <h2><span class="num">08</span>Data Flow</h2>
+  <h2><span class="num">09</span>Data Flow</h2>
   <p class="lead">Two abstraction layers handle all data exchange. Neither reveals its storage implementation to callers.</p>
 
   <div class="diagram"><span class="accent">Communication</span> (Arbitrator)
@@ -832,7 +898,7 @@ on native; no client_secret in public clients</code></pre>
 
 <!-- Configuration -->
 <section id="configuration">
-  <h2><span class="num">09</span>Configuration</h2>
+  <h2><span class="num">10</span>Configuration</h2>
   <p class="lead">Minimal config. Created on first run of <code>/dev-team interview</code>.</p>
 
   <pre><code>~/.agentic-cookbook/dev-team/config.json
@@ -847,7 +913,7 @@ on native; no client_secret in public clients</code></pre>
 
 <!-- File Map -->
 <section id="file-map">
-  <h2><span class="num">10</span>File Map</h2>
+  <h2><span class="num">11</span>File Map</h2>
   <p class="lead">Repository structure at a glance.</p>
 
   <pre><code>.claude-plugin/              Plugin manifest
@@ -875,7 +941,7 @@ docs/
 
 <!-- Tests -->
 <section id="tests">
-  <h2><span class="num">11</span>Tests</h2>
+  <h2><span class="num">12</span>Tests</h2>
   <p class="lead">Backend-agnostic contract tests validate APIs regardless of storage implementation.</p>
 
   <table>
