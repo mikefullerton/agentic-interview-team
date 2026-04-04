@@ -379,7 +379,7 @@ footer {
     <tr><td>/dev-team create-project-from-code</td><td>analysis</td><td>Reverse-engineer a codebase into a cookbook project</td></tr>
     <tr><td>/dev-team generate</td><td>review</td><td>Improve a cookbook project through specialist review</td></tr>
     <tr><td>/dev-team create-code-from-project</td><td>build</td><td>Build working code from a cookbook project</td></tr>
-    <tr><td>/dev-team lint</td><td>audit</td><td>Evaluate any artifact against cookbook standards</td></tr>
+    <tr><td>/dev-team lint</td><td>audit</td><td>Evaluate any file against cookbook standards</td></tr>
     <tr><td>/dev-team align-specialists</td><td>audit</td><td>Review specialist-cookbook alignment after guideline changes</td></tr>
     <tr><td>/dev-team compare-code</td><td>analysis</td><td>Compare two code projects for round-trip verification</td></tr>
     <tr><td>/dev-team view-project</td><td>&mdash;</td><td>Generate HTML view of a cookbook project (read-only)</td></tr>
@@ -617,7 +617,7 @@ footer {
 <!-- Specialists -->
 <section id="specialists">
   <h2><span class="num">04</span>Specialists</h2>
-  <p class="lead">20 specialists, each with a role, persona, cookbook sources, and a manifest of specialty-teams. Each specialty-team is a worker-verifier pair focused on one cookbook artifact.</p>
+  <p class="lead">20 specialists, each with a role, persona, cookbook sources, and a manifest of specialty-teams. Each specialty-team is a worker-verifier pair focused on one cookbook guideline, principle, or compliance check.</p>
 
   <details>
     <summary>Domain Specialists (13) <span class="tag tag-domain">domain</span></summary>
@@ -672,10 +672,10 @@ footer {
 <!-- Specialty-Teams -->
 <section id="specialty-teams">
   <h2><span class="num">05</span>Specialty-Teams</h2>
-  <p class="lead">212 standalone files across 20 categories. Each defines a worker-verifier pair focused on one cookbook artifact. The atomic unit of specialist expertise.</p>
+  <p class="lead">212 standalone files across 20 categories. Each defines a worker-verifier pair focused on one cookbook guideline, principle, or compliance check. The atomic unit of specialist expertise.</p>
 
   <div class="diagram"><span class="highlight">Specialist</span> dispatches <span class="highlight">Specialty-Team</span>
-  <span class="dim">&rarr;</span> <span class="highlight">Worker</span> reads cookbook artifact, produces findings
+  <span class="dim">&rarr;</span> <span class="highlight">Worker</span> reads cookbook guideline, produces findings
   <span class="dim">&rarr;</span> <span class="highlight">Verifier</span> checks worker output
       <span class="dim">&rarr;</span> <span class="green">PASS</span> &rarr; findings recorded
       <span class="dim">&rarr;</span> <span class="red" style="color:var(--red)">FAIL</span> &rarr; retry (max 3) &rarr; escalate</div>
@@ -684,14 +684,14 @@ footer {
 
   <details>
     <summary>accessibility (2) <span class="tag tag-domain">domain</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>accessibility-compliance</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">8 compliance checks — screen-reader-support, keyboard-navigable, dynamic-type-support, contrast-ratio, touch-target-size</td><td><a href="http://agentic-cookbook.com/compliance/accessibility.md" class="gh">compliance/accessibility.md</a></td></tr>
     <tr><td>accessibility</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Semantic roles and labels on all interactive elements; full screen reader support (VoiceOver, TalkBack, Narrator, ARIA);</td><td><a href="http://agentic-cookbook.com/guidelines/accessibility/accessibility.md" class="gh">guidelines/accessibility/accessibility.md</a></td></tr>
     </table></div>
   </details>
   <details>
     <summary>claude-code (15) <span class="tag tag-domain">domain</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>agent-checklist</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Structure checks (frontmatter present with name+description, kebab-case filename); content quality (single responsibilit</td><td><a href="http://agentic-cookbook.com/guidelines/skills-and-agents/agent-checklist.md" class="gh">guidelines/skills-and-agents/agent-checklist.md</a></td></tr>
     <tr><td>agent-structure-reference</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Agents are `.md` files in `.claude/agents/` with YAML frontmatter; body is the system prompt; frontmatter fields (name, </td><td><a href="http://agentic-cookbook.com/guidelines/skills-and-agents/agent-structure-reference.md" class="gh">guidelines/skills-and-agents/agent-structure-reference.md</a></td></tr>
     <tr><td>authoring-skills-and-rules</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Skill design rules — check inventory first, version from day one, session version check, use `$ARGUMENTS` and `${CLAUDE_</td><td><a href="http://agentic-cookbook.com/guidelines/skills-and-agents/authoring-skills-and-rules.md" class="gh">guidelines/skills-and-agents/authoring-skills-and-rules.md</a></td></tr>
@@ -711,7 +711,7 @@ footer {
   </details>
   <details>
     <summary>code-quality (8) <span class="tag tag-domain">domain</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>atomic-commits</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">One logical change per commit; follow build-verify-commit loop (change → build → verify → commit → repeat); never stack </td><td><a href="http://agentic-cookbook.com/guidelines/code-quality/atomic-commits.md" class="gh">guidelines/code-quality/atomic-commits.md</a></td></tr>
     <tr><td>best-practices-compliance</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">8 compliance checks — unit-test-coverage, test-pyramid, atomic-commits, code-linting, post-generation-verification, expl</td><td><a href="http://agentic-cookbook.com/compliance/best-practices.md" class="gh">compliance/best-practices.md</a></td></tr>
     <tr><td>bulk-operation-verification</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">After any operation touching 5+ files, run a verification pass; grep entire repo for stale references (old names, paths,</td><td><a href="http://agentic-cookbook.com/guidelines/code-quality/bulk-operation-verification.md" class="gh">guidelines/code-quality/bulk-operation-verification.md</a></td></tr>
@@ -724,7 +724,7 @@ footer {
   </details>
   <details>
     <summary>data-persistence (4) <span class="tag tag-domain">domain</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>idempotency</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">User actions and system operations safe to repeat without duplicate side effects; buttons debounced or disabled during a</td><td><a href="http://agentic-cookbook.com/principles/idempotency.md" class="gh">principles/idempotency.md</a></td></tr>
     <tr><td>immutability</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Mutable shared state eliminated as the root cause of concurrency bugs; `let`/`val`/`const` used by default; value types </td><td><a href="http://agentic-cookbook.com/principles/immutability-by-default.md" class="gh">principles/immutability-by-default.md</a></td></tr>
     <tr><td>offline-and-connectivity</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Local-first design with background sync; optimistic updates with rollback on server failure; queue-based outbox for muta</td><td><a href="http://agentic-cookbook.com/guidelines/networking/offline-and-connectivity.md" class="gh">guidelines/networking/offline-and-connectivity.md</a></td></tr>
@@ -733,7 +733,7 @@ footer {
   </details>
   <details>
     <summary>development-process (6) <span class="tag tag-domain">domain</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>ab-testing</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Features that may need experimentation support variant assignment via `ExperimentProvider` interface (`variant(key) -&gt; S</td><td><a href="http://agentic-cookbook.com/guidelines/feature-management/ab-testing.md" class="gh">guidelines/feature-management/ab-testing.md</a></td></tr>
     <tr><td>debug-mode</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Debug-only configuration panel not included in release builds — contains feature flag overrides, analytics event log, A/</td><td><a href="http://agentic-cookbook.com/guidelines/feature-management/debug-mode.md" class="gh">guidelines/feature-management/debug-mode.md</a></td></tr>
     <tr><td>feature-flags</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">All features gated behind feature flags from initial implementation; `FeatureFlagProvider` interface (`isEnabled(key) -&gt;</td><td><a href="http://agentic-cookbook.com/guidelines/feature-management/feature-flags.md" class="gh">guidelines/feature-management/feature-flags.md</a></td></tr>
@@ -744,7 +744,7 @@ footer {
   </details>
   <details>
     <summary>devops-observability (7) <span class="tag tag-domain">domain</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>ab-testing</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Features that may need experimentation support variant assignment via `ExperimentProvider` interface (`variant(key) -&gt; S</td><td><a href="http://agentic-cookbook.com/guidelines/feature-management/ab-testing.md" class="gh">guidelines/feature-management/ab-testing.md</a></td></tr>
     <tr><td>analytics</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">All significant user actions instrumented via an `AnalyticsProvider` interface (`track(event, properties)`); no direct c</td><td><a href="http://agentic-cookbook.com/guidelines/logging/analytics.md" class="gh">guidelines/logging/analytics.md</a></td></tr>
     <tr><td>debug-mode</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Debug-only configuration panel (not in release builds) with feature flag overrides, analytics event log, A/B test varian</td><td><a href="http://agentic-cookbook.com/guidelines/feature-management/debug-mode.md" class="gh">guidelines/feature-management/debug-mode.md</a></td></tr>
@@ -756,7 +756,7 @@ footer {
   </details>
   <details>
     <summary>localization-i18n (3) <span class="tag tag-domain">domain</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>internationalization-compliance</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">7 compliance checks — string-externalization, rtl-layout-support, locale-aware-formatting, plural-forms, text-expansion-</td><td><a href="http://agentic-cookbook.com/compliance/internationalization.md" class="gh">compliance/internationalization.md</a></td></tr>
     <tr><td>localization</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">All user-facing strings externalized into platform-standard resource files — `.xcstrings`/`.strings` (Swift), `strings.x</td><td><a href="http://agentic-cookbook.com/guidelines/internationalization/localization.md" class="gh">guidelines/internationalization/localization.md</a></td></tr>
     <tr><td>rtl-support</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Leading/trailing (not left/right) for all alignment and padding; directional icons mirrored; non-directional icons not m</td><td><a href="http://agentic-cookbook.com/guidelines/internationalization/rtl-support.md" class="gh">guidelines/internationalization/rtl-support.md</a></td></tr>
@@ -764,7 +764,7 @@ footer {
   </details>
   <details>
     <summary>networking-api (11) <span class="tag tag-domain">domain</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>access-patterns-compliance</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">8 compliance checks — api-design-conventions, offline-behavior, retry-with-backoff, timeout-configuration, rate-limit-ha</td><td><a href="http://agentic-cookbook.com/compliance/access-patterns.md" class="gh">compliance/access-patterns.md</a></td></tr>
     <tr><td>api-design</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">REST with consistent URL conventions (lowercase-hyphen, plural nouns, max 2 nesting levels, no verbs, no trailing slashe</td><td><a href="http://agentic-cookbook.com/guidelines/networking/api-design.md" class="gh">guidelines/networking/api-design.md</a></td></tr>
     <tr><td>caching</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Server controls cache policy via headers; immutable versioned assets use `public, max-age=31536000, immutable`; dynamic </td><td><a href="http://agentic-cookbook.com/guidelines/networking/caching.md" class="gh">guidelines/networking/caching.md</a></td></tr>
@@ -780,7 +780,7 @@ footer {
   </details>
   <details>
     <summary>platform-android (11) <span class="tag tag-platform">platform</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>background-tasks</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Use `WorkManager` for all deferrable background work — handles constraints, retries, and chaining; use `ForegroundServic</td><td><a href="http://agentic-cookbook.com/guidelines/platform/background-tasks.md" class="gh">guidelines/platform/background-tasks.md</a></td></tr>
     <tr><td>deep-linking</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Android App Links (verified HTTP deep links) via `&lt;intent-filter&gt;` with `autoVerify=&quot;true&quot;`; Jetpack Navigation componen</td><td><a href="http://agentic-cookbook.com/guidelines/platform/deep-linking.md" class="gh">guidelines/platform/deep-linking.md</a></td></tr>
     <tr><td>font-scaling</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Layouts must not break at 2x font size; check `Configuration.fontScale` and test with large font settings enabled; use s</td><td><a href="http://agentic-cookbook.com/guidelines/language/kotlin/font-scaling.md" class="gh">guidelines/language/kotlin/font-scaling.md</a></td></tr>
@@ -796,7 +796,7 @@ footer {
   </details>
   <details>
     <summary>platform-database (3) <span class="tag tag-platform">platform</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>access-patterns-compliance</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">8 compliance checks — api-design-conventions (RESTful with versioning), offline-behavior (defined behavior when network </td><td><a href="http://agentic-cookbook.com/compliance/access-patterns.md" class="gh">compliance/access-patterns.md</a></td></tr>
     <tr><td>database</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">SQLite with WAL mode for concurrent read access; no ORM — direct SQL via `sqlite3` standard library; `PRAGMA journal_mod</td><td><a href="http://agentic-cookbook.com/guidelines/language/python/database.md" class="gh">guidelines/language/python/database.md</a></td></tr>
     <tr><td>reliability-compliance</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">8 compliance checks — error-recovery (transient error handling with retry), graceful-degradation (unavailable dependency</td><td><a href="http://agentic-cookbook.com/compliance/reliability.md" class="gh">compliance/reliability.md</a></td></tr>
@@ -804,7 +804,7 @@ footer {
   </details>
   <details>
     <summary>platform-ios-apple (12) <span class="tag tag-platform">platform</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>background-tasks</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Use `BGAppRefreshTask` and `BGProcessingTask` via BackgroundTasks framework for deferred work; use `URLSession` backgrou</td><td><a href="http://agentic-cookbook.com/guidelines/platform/background-tasks.md" class="gh">guidelines/platform/background-tasks.md</a></td></tr>
     <tr><td>deep-linking</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Universal Links for HTTP-based deep links with associated domain entitlement; custom URL schemes as fallback; `onOpenURL</td><td><a href="http://agentic-cookbook.com/guidelines/platform/deep-linking.md" class="gh">guidelines/platform/deep-linking.md</a></td></tr>
     <tr><td>dynamic-type</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Layouts must not break at larger text sizes; use Dynamic Type throughout with no fixed font sizes; custom fonts must res</td><td><a href="http://agentic-cookbook.com/guidelines/language/swift/dynamic-type.md" class="gh">guidelines/language/swift/dynamic-type.md</a></td></tr>
@@ -821,7 +821,7 @@ footer {
   </details>
   <details>
     <summary>platform-web-backend (24) <span class="tag tag-platform">platform</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>access-patterns-compliance</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">8 compliance checks — api-design-conventions, offline-behavior, retry-with-backoff, timeout-configuration, rate-limit-ha</td><td><a href="http://agentic-cookbook.com/compliance/access-patterns.md" class="gh">compliance/access-patterns.md</a></td></tr>
     <tr><td>api-design</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">REST conventions — lowercase-hyphenated plural-noun URLs, max 2-level nesting, no verbs in URLs, correct HTTP methods wi</td><td><a href="http://agentic-cookbook.com/guidelines/networking/api-design.md" class="gh">guidelines/networking/api-design.md</a></td></tr>
     <tr><td>caching</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Server sets correct Cache-Control — immutable for versioned assets, `private, max-age=N` for dynamic, `no-store` for sen</td><td><a href="http://agentic-cookbook.com/guidelines/networking/caching.md" class="gh">guidelines/networking/caching.md</a></td></tr>
@@ -850,7 +850,7 @@ footer {
   </details>
   <details>
     <summary>platform-web-frontend (27) <span class="tag tag-platform">platform</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>accessibility</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">WCAG 2.1 AA minimum; ARIA roles, states, properties (WAI-ARIA APG); keyboard navigation for all interactive elements; `a</td><td><a href="http://agentic-cookbook.com/guidelines/accessibility/accessibility.md" class="gh">guidelines/accessibility/accessibility.md</a></td></tr>
     <tr><td>always-show-progress</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Implement determinate progress bars (with percentage) and indeterminate spinners/skeletons/shimmer in the DOM; prevent U</td><td><a href="http://agentic-cookbook.com/guidelines/ui/always-show-progress.md" class="gh">guidelines/ui/always-show-progress.md</a></td></tr>
     <tr><td>animation-motion</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">CSS transitions and JS animations use correct duration ranges per interaction type; `prefers-reduced-motion: reduce` med</td><td><a href="http://agentic-cookbook.com/guidelines/ui/animation-motion.md" class="gh">guidelines/ui/animation-motion.md</a></td></tr>
@@ -882,7 +882,7 @@ footer {
   </details>
   <details>
     <summary>platform-windows (18) <span class="tag tag-platform">platform</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>background-tasks</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Use `BackgroundTask` with Windows App SDK for background execution; register triggers (time, network state change, push </td><td><a href="http://agentic-cookbook.com/guidelines/platform/background-tasks.md" class="gh">guidelines/platform/background-tasks.md</a></td></tr>
     <tr><td>csharp-naming</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">PascalCase for types, methods, properties, public fields, constants, namespaces; camelCase for parameters and local vari</td><td><a href="http://agentic-cookbook.com/guidelines/language/csharp/naming.md" class="gh">guidelines/language/csharp/naming.md</a></td></tr>
     <tr><td>deep-linking</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Protocol activation via `&lt;uap:Protocol&gt;` declaration in `Package.appxmanifest`; handle activation through `AppInstance.G</td><td><a href="http://agentic-cookbook.com/guidelines/platform/deep-linking.md" class="gh">guidelines/platform/deep-linking.md</a></td></tr>
@@ -905,7 +905,7 @@ footer {
   </details>
   <details>
     <summary>project-management (6) <span class="tag tag-pm">pm</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>concerns</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Risk identification, attention flagging, and monitoring of items needing review</td><td>.dev-team-project/concerns/</td></tr>
     <tr><td>decisions</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Decision recording with rationale, alternatives, and traceability</td><td>.dev-team-project/decisions/</td></tr>
     <tr><td>dependencies</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Internal and external dependency mapping, availability tracking, and risk assessment</td><td>.dev-team-project/dependencies/</td></tr>
@@ -916,7 +916,7 @@ footer {
   </details>
   <details>
     <summary>reliability (3) <span class="tag tag-domain">domain</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>fail-fast</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Invalid state detected and surfaced immediately at the point of origin; assertions and preconditions in debug builds; in</td><td><a href="http://agentic-cookbook.com/principles/fail-fast.md" class="gh">principles/fail-fast.md</a></td></tr>
     <tr><td>idempotency</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">User actions and system operations safe to repeat without duplicate side effects; buttons debounced or disabled during a</td><td><a href="http://agentic-cookbook.com/principles/idempotency.md" class="gh">principles/idempotency.md</a></td></tr>
     <tr><td>reliability-compliance</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">8 compliance checks — error-recovery, graceful-degradation, fault-tolerance, state-recovery, idempotent-operations, time</td><td><a href="http://agentic-cookbook.com/compliance/reliability.md" class="gh">compliance/reliability.md</a></td></tr>
@@ -924,7 +924,7 @@ footer {
   </details>
   <details>
     <summary>security (15) <span class="tag tag-domain">domain</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>authentication</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">OAuth 2.0/OIDC with PKCE for public clients, system browser for native apps, no implicit flow, SSO and multi-client stra</td><td><a href="http://agentic-cookbook.com/guidelines/security/authentication.md" class="gh">guidelines/security/authentication.md</a></td></tr>
     <tr><td>authorization</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Deny by default, server-side enforcement only, least privilege scopes, RBAC, BOLA/IDOR prevention via resource ownership</td><td><a href="http://agentic-cookbook.com/guidelines/security/authorization.md" class="gh">guidelines/security/authorization.md</a></td></tr>
     <tr><td>content-security-policy</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">default-src 'none' baseline, nonce-based script-src with strict-dynamic, never unsafe-inline or unsafe-eval, frame-ances</td><td><a href="http://agentic-cookbook.com/guidelines/security/content-security-policy.md" class="gh">guidelines/security/content-security-policy.md</a></td></tr>
@@ -944,7 +944,7 @@ footer {
   </details>
   <details>
     <summary>software-architecture (8) <span class="tag tag-domain">domain</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>composition-over-inheritance</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Default to composing behaviors from small, focused pieces; use inheritance only for genuine &quot;is-a&quot; relationships and eve</td><td><a href="http://agentic-cookbook.com/principles/composition-over-inheritance.md" class="gh">principles/composition-over-inheritance.md</a></td></tr>
     <tr><td>concurrency-immutability</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Default to immutable values; introduce mutability only where necessary; prefer value types over reference types; contain</td><td><a href="http://agentic-cookbook.com/guidelines/concurrency/immutability.md" class="gh">guidelines/concurrency/immutability.md</a></td></tr>
     <tr><td>concurrency</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">All lengthy work on background threads using platform async primitives (Swift Concurrency, Kotlin Coroutines, Promise/as</td><td><a href="http://agentic-cookbook.com/guidelines/concurrency/concurrency.md" class="gh">guidelines/concurrency/concurrency.md</a></td></tr>
@@ -957,7 +957,7 @@ footer {
   </details>
   <details>
     <summary>testing-qa (12) <span class="tag tag-domain">domain</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>flaky-test-prevention</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">No shared mutable state between tests, no execution-order dependencies, no real network calls in unit tests, no sleep() </td><td><a href="http://agentic-cookbook.com/guidelines/testing/flaky-test-prevention.md" class="gh">guidelines/testing/flaky-test-prevention.md</a></td></tr>
     <tr><td>mutation-testing</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Run mutation testing before claiming tests are complete; platform tools: mutmut (Python), Stryker (TypeScript/JS/.NET), </td><td><a href="http://agentic-cookbook.com/guidelines/testing/mutation-testing.md" class="gh">guidelines/testing/mutation-testing.md</a></td></tr>
     <tr><td>post-generation-verification</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Every generated artifact must pass 6 steps — build (all platforms), test (full suite), lint (platform linter), log verif</td><td><a href="http://agentic-cookbook.com/guidelines/testing/post-generation-verification.md" class="gh">guidelines/testing/post-generation-verification.md</a></td></tr>
@@ -974,7 +974,7 @@ footer {
   </details>
   <details>
     <summary>ui-ux-design (17) <span class="tag tag-domain">domain</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Artifact</th></tr>
+    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
     <tr><td>always-show-progress</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Determinate progress (bar with percentage) when total work is known; indeterminate (spinner, skeleton, shimmer) when not</td><td><a href="http://agentic-cookbook.com/guidelines/ui/always-show-progress.md" class="gh">guidelines/ui/always-show-progress.md</a></td></tr>
     <tr><td>animation-motion</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Purposeful motion only — guide attention, show spatial relationships, provide feedback; duration defaults by interaction</td><td><a href="http://agentic-cookbook.com/guidelines/ui/animation-motion.md" class="gh">guidelines/ui/animation-motion.md</a></td></tr>
     <tr><td>color</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Semantic color tokens (not hard-coded hex), limited palette (1 primary + neutrals + semantic), color never the sole stat</td><td><a href="http://agentic-cookbook.com/guidelines/ui/color.md" class="gh">guidelines/ui/color.md</a></td></tr>
@@ -1013,7 +1013,7 @@ for native apps, no implicit flow, SSO strategies
 ## Verify
 No implicit flow; PKCE code_challenge present; system browser
 on native; no client_secret in public clients</code></pre>
-      <p><strong>artifact</strong> &mdash; the cookbook file this team analyzes. <strong>Worker Focus</strong> &mdash; what matters (mode-independent). <strong>Verify</strong> &mdash; concrete acceptance criteria for the verifier.</p>
+      <p><strong>artifact</strong> &mdash; the cookbook guideline, principle, or compliance check this team analyzes. <strong>Worker Focus</strong> &mdash; what matters (mode-independent). <strong>Verify</strong> &mdash; concrete acceptance criteria for the verifier.</p>
     </div>
   </details>
 
@@ -1043,7 +1043,7 @@ on native; no client_secret in public clients</code></pre>
     <div class="detail-body">
       <table>
         <tr><th>Agent</th><th>Purpose</th></tr>
-        <tr><td>specialty-team-worker</td><td>Reads one cookbook artifact, produces structured findings</td></tr>
+        <tr><td>specialty-team-worker</td><td>Reads one cookbook guideline or principle, produces structured findings</td></tr>
         <tr><td>specialty-team-verifier</td><td>Checks worker output for completeness, returns PASS/FAIL</td></tr>
         <tr><td>transcript-analyzer</td><td>Analyzes interview transcripts for coverage and gaps</td></tr>
         <tr><td>specialist-analyst</td><td>Analyzes user answers from a specialist perspective</td></tr>
@@ -1057,7 +1057,7 @@ on native; no client_secret in public clients</code></pre>
         <tr><td>build-runner</td><td>Runs builds and reports results</td></tr>
         <tr><td>smoke-tester</td><td>Runs smoke tests on generated code</td></tr>
         <tr><td>code-comparator</td><td>Compares two code projects for differences</td></tr>
-        <tr><td>artifact-reviewer</td><td>Reviews artifacts against standards</td></tr>
+        <tr><td>artifact-reviewer</td><td>Reviews files against cookbook standards</td></tr>
         <tr><td>specialist-aligner</td><td>Checks specialist-cookbook alignment</td></tr>
         <tr><td>specialist-code-pass</td><td>Sequential specialist augmentation of code (v1, marked for absorption)</td></tr>
         <tr><td>specialist-interviewer</td><td>Specialist-perspective interview questions (v1, marked for absorption)</td></tr>
