@@ -1,3 +1,9 @@
+# macOS
+.DS_Store
+
+# Claude Code worktrees
+.claude/worktrees/
+
 # Local Claude Code setup (old symlinks — no longer used)
 # .claude/skills/ and .claude/agents/ are now real files, not symlinks
 
