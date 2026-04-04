@@ -11,22 +11,11 @@ String externalization, RTL support, locale-aware formatting, text expansion, Un
 - `guidelines/internationalization/rtl-support.md`
 - `compliance/internationalization.md`
 
-## Specialty Teams
+## Manifest
 
-### localization
-- **Artifact**: `guidelines/internationalization/localization.md`
-- **Worker focus**: All user-facing strings externalized into platform-standard resource files — `.xcstrings`/`.strings` (Swift), `strings.xml` (Kotlin), message catalogs via `react-intl`/`i18next` (TypeScript), `.resw` with `x:Uid` (Windows); no hardcoded strings; locale-aware APIs for dates, numbers, currencies; plural rules for all supported locales
-- **Verify**: No literal user-facing strings in source code; platform localization API used throughout; date/number formatting uses locale-aware APIs not hardcoded format strings; plural forms cover non-English rules where applicable
-
-### rtl-support
-- **Artifact**: `guidelines/internationalization/rtl-support.md`
-- **Worker focus**: Leading/trailing (not left/right) for all alignment and padding; directional icons mirrored; non-directional icons not mirrored; `android:supportsRtl="true"` on Android, CSS logical properties on web, `FlowDirection` on Windows; RTL locale tested
-- **Verify**: No `left`/`right` layout constraints or CSS properties — only leading/trailing/logical equivalents; `supportsRtl` manifest flag set on Android; directional icons have RTL variants; RTL locale tested in preview or emulator
-
-### internationalization-compliance
-- **Artifact**: `compliance/internationalization.md`
-- **Worker focus**: 7 compliance checks — string-externalization, rtl-layout-support, locale-aware-formatting, plural-forms, text-expansion-tolerance (up to 200%), unicode-support (full Unicode including emoji), no-hardcoded-strings
-- **Verify**: Each compliance check has a status (passed/failed/partial/n-a) with evidence; text expansion tested at ≥150% string length; Unicode handling confirmed for emoji and multi-byte characters
+- specialty-teams/localization-i18n/internationalization-compliance.md
+- specialty-teams/localization-i18n/localization.md
+- specialty-teams/localization-i18n/rtl-support.md
 
 ## Exploratory Prompts
 
