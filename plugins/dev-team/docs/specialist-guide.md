@@ -100,7 +100,7 @@ The same specialty-team pipeline runs in all four modes. The worker's behavior c
 
 ## Execution Flow
 
-1. The orchestrating workflow (interview, create-project-from-code, create-code-from-project, generate, lint) determines which specialists to assign
+1. The orchestrating workflow (interview, create-recipe-from-code, create-code-from-recipe, generate, lint) determines which specialists to assign
 2. For each specialist, the orchestrator runs `scripts/run-specialty-teams.sh <specialist-file>` to get the team list as JSON (reads the `## Manifest` section, then each referenced specialty-team file)
 3. The orchestrator walks the team list one at a time:
    a. Spawn worker agent with: mode, artifact, target, worker focus
