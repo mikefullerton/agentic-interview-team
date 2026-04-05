@@ -201,15 +201,15 @@ The lint `test_complete` event includes additional fields: `pass_count`, `warn_c
 Skills write test log events by appending a JSON line to `test-log.jsonl` using the Write tool. Example:
 
 At each phase boundary:
-- Before starting Phase 1: write `{"skill": "create-project-from-code", "phase": "architecture-scan", "event": "phase_started", "timestamp": "<now>"}`
-- After completing Phase 1: write `{"skill": "create-project-from-code", "phase": "architecture-scan", "event": "phase_completed", "duration_ms": <elapsed>, "timestamp": "<now>"}`
+- Before starting Phase 1: write `{"skill": "create-recipe-from-code", "phase": "architecture-scan", "event": "phase_started", "timestamp": "<now>"}`
+- After completing Phase 1: write `{"skill": "create-recipe-from-code", "phase": "architecture-scan", "event": "phase_completed", "duration_ms": <elapsed>, "timestamp": "<now>"}`
 
 At each agent interaction:
-- Before spawning: write `{"skill": "create-project-from-code", "phase": "architecture-scan", "event": "agent_spawned", "agent": "codebase-scanner", "timestamp": "<now>"}`
-- After return: write `{"skill": "create-project-from-code", "phase": "architecture-scan", "event": "agent_completed", "agent": "codebase-scanner", "status": "success", "timestamp": "<now>"}`
+- Before spawning: write `{"skill": "create-recipe-from-code", "phase": "architecture-scan", "event": "agent_spawned", "agent": "codebase-scanner", "timestamp": "<now>"}`
+- After return: write `{"skill": "create-recipe-from-code", "phase": "architecture-scan", "event": "agent_completed", "agent": "codebase-scanner", "status": "success", "timestamp": "<now>"}`
 
 At each file write:
-- After persisting: write `{"skill": "create-project-from-code", "phase": "recipe-generation", "event": "file_written", "path": "app/ui/file-tree-browser.md", "file_type": "recipe", "timestamp": "<now>"}`
+- After persisting: write `{"skill": "create-recipe-from-code", "phase": "recipe-generation", "event": "file_written", "path": "app/ui/file-tree-browser.md", "file_type": "recipe", "timestamp": "<now>"}`
 
 At the end:
-- Write `{"skill": "create-project-from-code", "phase": "summary", "event": "test_complete", "phases_completed": 5, "agents_spawned": 8, "files_written": 12, "errors": 0, "timestamp": "<now>"}`
+- Write `{"skill": "create-recipe-from-code", "phase": "summary", "event": "test_complete", "phases_completed": 5, "agents_spawned": 8, "files_written": 12, "errors": 0, "timestamp": "<now>"}`

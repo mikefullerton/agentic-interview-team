@@ -1,5 +1,5 @@
 /**
- * Smoke test — create-project-from-code on a real repo.
+ * Smoke test — create-recipe-from-code on a real repo.
  *
  * Verifies:
  * - Skill runs without errors
@@ -30,7 +30,7 @@ import { parseLog, testSummary } from "../lib/log-parser.js";
 import { existsSync, readdirSync, rmSync } from "fs";
 import { join } from "path";
 
-describe("create-project-from-code smoke test", () => {
+describe("create-recipe-from-code smoke test", () => {
   let result: RunResult;
   let outputDir: string;
   let configPath: string;
@@ -49,12 +49,12 @@ describe("create-project-from-code smoke test", () => {
       rmSync(outputDir, { recursive: true, force: true });
     }
 
-    console.log("[create-project-from-code-smoke] Starting analyze run...");
-    console.log(`[create-project-from-code-smoke] target: ${targetRepo}`);
-    console.log(`[create-project-from-code-smoke] output: ${outputDir}`);
+    console.log("[create-recipe-from-code-smoke] Starting analyze run...");
+    console.log(`[create-recipe-from-code-smoke] target: ${targetRepo}`);
+    console.log(`[create-recipe-from-code-smoke] output: ${outputDir}`);
 
     result = await runSkill({
-      skillName: "create-project-from-code",
+      skillName: "create-recipe-from-code",
       cwd: targetRepo,
       configPath,
       targetPath: targetRepo,
@@ -62,7 +62,7 @@ describe("create-project-from-code smoke test", () => {
       timeout: 900_000, // 15 minutes
     });
 
-    console.log(`[create-project-from-code-smoke] Completed. exitCode: ${result.exitCode}`);
+    console.log(`[create-recipe-from-code-smoke] Completed. exitCode: ${result.exitCode}`);
   }, 960_000);
 
   it("completes without error", () => {
@@ -98,7 +98,7 @@ describe("create-project-from-code smoke test", () => {
       return results;
     }
     const recipes = findMdFiles(appDir);
-    console.log(`[create-project-from-code-smoke] recipes found: ${recipes.length}`);
+    console.log(`[create-recipe-from-code-smoke] recipes found: ${recipes.length}`);
     expect(recipes.length).toBeGreaterThanOrEqual(1);
   });
 
@@ -108,7 +108,7 @@ describe("create-project-from-code smoke test", () => {
 
   it("writes test log with expected events", () => {
     const events = parseLog(outputDir);
-    console.log(`[create-project-from-code-smoke] log events: ${events.length}`);
+    console.log(`[create-recipe-from-code-smoke] log events: ${events.length}`);
 
     expect(events.length).toBeGreaterThanOrEqual(1);
     expect(expectAgentSpawned(events, "codebase-scanner")).toBe(true);
