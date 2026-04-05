@@ -28,7 +28,7 @@
 |------|--------|
 | `scripts/arbitrator/markdown/_lib.sh` | Add `--team`, `--iteration`, `--verifier-feedback` parse flags |
 | `skills/dev-team/workflows/generate.md` | Add resume check at startup + team-result tracking in loop |
-| `skills/dev-team/workflows/create-code-from-project.md` | Same pattern |
+| `skills/dev-team/workflows/create-recipe-from-code.md` | Same pattern |
 | `skills/dev-team/workflows/lint.md` | Same pattern |
 | `docs/architecture.md` | Add team-result to arbitrator resources list |
 | `docs/specialist-guide.md` | Add crash recovery section to execution flow |
@@ -613,18 +613,18 @@ git push
 
 ---
 
-## Task 6: Update create-code-from-project.md workflow
+## Task 6: Update create-recipe-from-code.md workflow
 
 **Files:**
-- Modify: `skills/dev-team/workflows/create-code-from-project.md`
+- Modify: `skills/dev-team/workflows/create-recipe-from-code.md`
 
 - [ ] **Step 1: Read the current workflow to identify the specialty-team loop**
 
-Read `skills/dev-team/workflows/create-code-from-project.md` — find where specialists are dispatched and the team loop runs.
+Read `skills/dev-team/workflows/create-recipe-from-code.md` — find where specialists are dispatched and the team loop runs.
 
 - [ ] **Step 2: Add the same resume check and team-result tracking pattern**
 
-Add the same resume check after config/DB init (using `--playbook create-code-from-project`).
+Add the same resume check after config/DB init (using `--playbook create-recipe-from-code`).
 
 Add the same team-result create/update/skip pattern around the specialist code pass loop.
 
@@ -633,8 +633,8 @@ The exact insertion points depend on the workflow's phase structure — read the
 - [ ] **Step 3: Commit**
 
 ```bash
-git add skills/dev-team/workflows/create-code-from-project.md
-git commit -m "Add crash recovery to create-code-from-project workflow
+git add skills/dev-team/workflows/create-recipe-from-code.md
+git commit -m "Add crash recovery to create-recipe-from-code workflow
 
 Same resume check + team-result tracking pattern as generate."
 git push

@@ -2,7 +2,7 @@
 
 ## Problem
 
-The interview skill has a solid test infrastructure (Vitest, `claude -p` runner, personas, test-log.jsonl, E2E specs), but the other three skills (create-project-from-code, generate, build) have no test infrastructure. As the system grows, every skill and its agents need to be testable through a consistent, unified approach.
+The interview skill has a solid test infrastructure (Vitest, `claude -p` runner, personas, test-log.jsonl, E2E specs), but the other three skills (create-recipe-from-code, generate, build) have no test infrastructure. As the system grows, every skill and its agents need to be testable through a consistent, unified approach.
 
 ## Decisions
 
@@ -90,14 +90,14 @@ A specification document that all skills reference for their `--test-mode` behav
 
 ## Test Cases
 
-### create-project-from-code
+### create-recipe-from-code
 
-**Smoke test** (`specs/create-project-from-code-smoke.test.ts`):
+**Smoke test** (`specs/create-recipe-from-code-smoke.test.ts`):
 - Target: one of Mike's real repos
-- Verify: architecture-map.md written, scope-report.md written, at least 1 recipe generated, cookbook-project.json created
+- Verify: architecture-map.md written, scope-report.md written, at least 1 recipe generated, cookbook-recipe.json created
 - Timeout: 16 minutes
 
-**Coverage test** (`specs/create-project-from-code-coverage.test.ts`):
+**Coverage test** (`specs/create-recipe-from-code-coverage.test.ts`):
 - Target: one of Mike's repos with known tech stack
 - Verify: scope-matcher finds scopes appropriate to the repo's tech stack (e.g., iOS repo gets `recipe.ui.*` scopes)
 - Verify: recipe-writer generates recipes for all approved scopes
@@ -105,7 +105,7 @@ A specification document that all skills reference for their `--test-mode` behav
 ### generate
 
 **Smoke test** (`specs/generate-smoke.test.ts`):
-- Target: an existing cookbook project on disk (either from a prior create-project-from-code run or a pre-built fixture). The test config specifies the path via `TEST_TARGET_PROJECT` env var.
+- Target: an existing cookbook recipe on disk (either from a prior create-recipe-from-code run or a pre-built fixture). The test config specifies the path via `TEST_TARGET_PROJECT` env var.
 - Verify: at least 1 recipe reviewed, review files written, recipe versions bumped
 - Timeout: 16 minutes
 
@@ -116,7 +116,7 @@ A specification document that all skills reference for their `--test-mode` behav
 ### build
 
 **Smoke test** (`specs/build-smoke.test.ts`):
-- Target: an existing cookbook project on disk (same source as generate tests — path from `TEST_TARGET_PROJECT` env var)
+- Target: an existing cookbook recipe on disk (same source as generate tests — path from `TEST_TARGET_PROJECT` env var)
 - Verify: scaffold created, at least 1 recipe's code generated, build attempted
 - Timeout: 30 minutes (builds take longer)
 
@@ -216,8 +216,8 @@ Key behaviors:
 2. Add `lib/log-parser.ts` to the harness
 3. Extend `lib/runner.ts` with `runSkill()`
 4. Extend `lib/assertions.ts` with skill-agnostic assertions
-5. Add `--test-mode` to create-project-from-code SKILL.md
-6. Write `specs/create-project-from-code-smoke.test.ts`
+5. Add `--test-mode` to create-recipe-from-code SKILL.md
+6. Write `specs/create-recipe-from-code-smoke.test.ts`
 7. Add `--test-mode` to generate SKILL.md
 8. Write `specs/generate-smoke.test.ts`
 9. Add `--test-mode` to build SKILL.md

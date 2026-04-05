@@ -8,7 +8,7 @@ The arbitrator already tracks session-level state and per-specialist results, bu
 
 ## Scope
 
-- All workflows that use the specialty-team loop: `generate`, `create-code-from-project`, `lint`
+- All workflows that use the specialty-team loop: `generate`, `create-recipe-from-code`, `lint`
 - New arbitrator resource: `team-result`
 - New shared script: `resume-session.sh`
 - Workflow changes to track team progress and check for interrupted sessions on startup
@@ -145,7 +145,7 @@ Each workflow adds the same pattern at two points.
 | `scripts/arbitrator/markdown/_lib.sh` | Add parse flags: `--team`, `--iteration`, `--verifier-feedback` |
 | `scripts/resume-session.sh` | **New** — detect interrupted sessions |
 | `skills/dev-team/workflows/generate.md` | Add resume check + team-result tracking |
-| `skills/dev-team/workflows/create-code-from-project.md` | Same pattern |
+| `skills/dev-team/workflows/create-recipe-from-code.md` | Same pattern |
 | `skills/dev-team/workflows/lint.md` | Same pattern |
 | `tests/arbitrator/` | **New** — contract tests for team-result |
 | `docs/architecture.md` | Add team-result to arbitrator resources |

@@ -740,13 +740,13 @@ After the `lint` line in the help text, add:
 - [ ] **Step 4:** Update the description in frontmatter to include compare-code:
 
 ```yaml
-description: Multi-agent dev team for product discovery, project creation, specialist review, building, linting, and code comparison. Subcommands: interview, create-project-from-code, generate, create-code-from-project, lint, compare-code, view-project.
+description: Multi-agent dev team for product discovery, project creation, specialist review, building, linting, and code comparison. Subcommands: interview, create-recipe-from-code, generate, create-code-from-recipe, lint, compare-code, view-recipe.
 ```
 
 - [ ] **Step 5:** Update argument-hint:
 
 ```yaml
-argument-hint: <command> [args...] — commands: interview, create-project-from-code, generate, create-code-from-project [--no-swiftui], lint, compare-code, view-project
+argument-hint: <command> [args...] — commands: interview, create-recipe-from-code, generate, create-code-from-recipe [--no-swiftui], lint, compare-code, view-recipe
 ```
 
 - [ ] **Step 6:** Bump version from 0.3.1 to 0.4.0 (all occurrences — frontmatter, title, startup, version-check, help text)

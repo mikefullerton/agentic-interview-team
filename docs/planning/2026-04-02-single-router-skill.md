@@ -23,11 +23,11 @@ The plugin currently has 6 skills, each with its own description loaded into eve
 | Current Command | New Command | Subcommand |
 |----------------|-------------|------------|
 | `/dev-team interview` | `/dev-team interview` | `interview` |
-| `/dev-team create-project-from-code` | `/dev-team create-project-from-code` | `create-project-from-code` |
+| `/dev-team create-recipe-from-code` | `/dev-team create-recipe-from-code` | `create-recipe-from-code` |
 | `/dev-team generate` | `/dev-team generate` | `generate` |
 | `/dev-team build` | `/dev-team build` | `build` |
 | `/dev-team lint` | `/dev-team lint` | `lint` |
-| `/dev-team view-project` | `/dev-team view-project` | `view-project` |
+| `/dev-team view-recipe` | `/dev-team view-recipe` | `view-recipe` |
 
 ## New Directory Structure
 
@@ -37,11 +37,11 @@ skills/
     SKILL.md                              # Router (~40 lines)
     workflows/
       interview.md                        # Full interview workflow (moved from skills/interview/SKILL.md)
-      create-project-from-code.md         # Full analysis workflow
+      create-recipe-from-code.md         # Full analysis workflow
       generate.md                         # Full generate workflow
       build.md                            # Full build workflow
       lint.md                             # Full lint workflow
-      view-project.md                     # Full view workflow
+      view-recipe.md                     # Full view workflow
 ```
 
 ---
@@ -52,12 +52,12 @@ skills/
 - Create: `skills/dev-team/SKILL.md`
 - Create: `skills/dev-team/workflows/` (directory)
 - Move: `skills/interview/SKILL.md` → `skills/dev-team/workflows/interview.md`
-- Move: `skills/create-project-from-code/SKILL.md` → `skills/dev-team/workflows/create-project-from-code.md`
+- Move: `skills/create-recipe-from-code/SKILL.md` → `skills/dev-team/workflows/create-recipe-from-code.md`
 - Move: `skills/generate/SKILL.md` → `skills/dev-team/workflows/generate.md`
 - Move: `skills/build/SKILL.md` → `skills/dev-team/workflows/build.md`
 - Move: `skills/lint/SKILL.md` → `skills/dev-team/workflows/lint.md`
-- Move: `skills/view-project/SKILL.md` → `skills/dev-team/workflows/view-project.md`
-- Remove: old skill directories (`skills/interview/`, `skills/create-project-from-code/`, `skills/generate/`, `skills/build/`, `skills/lint/`, `skills/view-project/`)
+- Move: `skills/view-recipe/SKILL.md` → `skills/dev-team/workflows/view-recipe.md`
+- Remove: old skill directories (`skills/interview/`, `skills/create-recipe-from-code/`, `skills/generate/`, `skills/build/`, `skills/lint/`, `skills/view-recipe/`)
 
 - [ ] **Step 1:** Create the router skill at `skills/dev-team/SKILL.md`:
 
@@ -65,9 +65,9 @@ skills/
 ---
 name: dev-team
 version: 0.2.0
-description: Multi-agent dev team for product discovery, project creation, specialist review, building, and linting. Subcommands: interview, create-project-from-code, generate, build, lint, view-project.
+description: Multi-agent dev team for product discovery, project creation, specialist review, building, and linting. Subcommands: interview, create-recipe-from-code, generate, build, lint, view-recipe.
 allowed-tools: Read, Glob, Grep, Agent, Write, Edit, AskUserQuestion, Bash(git *), Bash(mkdir *), Bash(ls *), Bash(date *), Bash(cat *), Bash(wc *), Bash(uuidgen), Bash(chmod *), Bash(open *), WebFetch
-argument-hint: <command> [args...] — commands: interview, create-project-from-code, generate, build, lint, view-project
+argument-hint: <command> [args...] — commands: interview, create-recipe-from-code, generate, build, lint, view-recipe
 ---
 
 # Dev Team v0.2.0
@@ -97,11 +97,11 @@ Parse the first positional argument from `$ARGUMENTS` as the subcommand. Everyth
 | Subcommand | Workflow File |
 |------------|--------------|
 | `interview` | `${CLAUDE_SKILL_DIR}/workflows/interview.md` |
-| `create-project-from-code` | `${CLAUDE_SKILL_DIR}/workflows/create-project-from-code.md` |
+| `create-recipe-from-code` | `${CLAUDE_SKILL_DIR}/workflows/create-recipe-from-code.md` |
 | `generate` | `${CLAUDE_SKILL_DIR}/workflows/generate.md` |
 | `build` | `${CLAUDE_SKILL_DIR}/workflows/build.md` |
 | `lint` | `${CLAUDE_SKILL_DIR}/workflows/lint.md` |
-| `view-project` | `${CLAUDE_SKILL_DIR}/workflows/view-project.md` |
+| `view-recipe` | `${CLAUDE_SKILL_DIR}/workflows/view-recipe.md` |
 
 Read the workflow file and follow its instructions. Pass the remaining arguments as the workflow's input.
 
@@ -112,11 +112,11 @@ Dev Team v0.2.0 — Multi-agent product development
 
 Commands:
   interview                    Product discovery interview
-  create-project-from-code     Reverse-engineer codebase into cookbook project
-  generate                     Specialist review of cookbook project recipes
-  build                        Build working code from cookbook project
+  create-recipe-from-code     Reverse-engineer codebase into cookbook recipe
+  generate                     Specialist review of cookbook recipe recipes
+  build                        Build working code from cookbook recipe
   lint                         Evaluate artifacts against cookbook standards
-  view-project                 View cookbook project in browser
+  view-recipe                 View cookbook recipe in browser
 
 Usage: /dev-team <command> [args...]
 ```
@@ -137,15 +137,15 @@ If the subcommand is unrecognized, print the help text above and say "Unknown co
   Files to move:
   - `skills/interview/SKILL.md` → `skills/dev-team/workflows/interview.md`
     - **Special:** Keep the interview's config CREATION logic (first-time setup) since the router only loads config, doesn't create it. Add a note: "If config was not loaded by the router (first invocation), create it interactively as described below."
-  - `skills/create-project-from-code/SKILL.md` → `skills/dev-team/workflows/create-project-from-code.md`
+  - `skills/create-recipe-from-code/SKILL.md` → `skills/dev-team/workflows/create-recipe-from-code.md`
   - `skills/generate/SKILL.md` → `skills/dev-team/workflows/generate.md`
   - `skills/build/SKILL.md` → `skills/dev-team/workflows/build.md`
   - `skills/lint/SKILL.md` → `skills/dev-team/workflows/lint.md`
-  - `skills/view-project/SKILL.md` → `skills/dev-team/workflows/view-project.md`
+  - `skills/view-recipe/SKILL.md` → `skills/dev-team/workflows/view-recipe.md`
 
 - [ ] **Step 4:** Remove old skill directories:
   ```bash
-  git rm -r skills/interview skills/create-project-from-code skills/generate skills/build skills/lint skills/view-project
+  git rm -r skills/interview skills/create-recipe-from-code skills/generate skills/build skills/lint skills/view-recipe
   ```
 
 - [ ] **Step 5:** Commit and push
@@ -175,11 +175,11 @@ Single entry point: `/dev-team <command>`
 | Command | Role | Responsibility |
 |---------|------|---------------|
 | `interview` | Interviewer | Discover product requirements through structured and exploratory questioning with specialist expertise |
-| `create-project-from-code` | Project Creator | Reverse-engineer a codebase into a cookbook project |
-| `generate` | Project Generator | Improve a cookbook project through specialist review |
-| `build` | Project Builder | Build working code from a cookbook project |
+| `create-recipe-from-code` | Recipe Creator | Reverse-engineer a codebase into a cookbook recipe |
+| `generate` | Recipe Generator | Improve a cookbook recipe through specialist review |
+| `build` | Recipe Builder | Build working code from a cookbook recipe |
 | `lint` | Linter | Evaluate any artifact against cookbook standards |
-| `view-project` | Viewer | Generate HTML view of a cookbook project |
+| `view-recipe` | Viewer | Generate HTML view of a cookbook recipe |
 ```
 
 New Repository Structure:
@@ -192,11 +192,11 @@ skills/
 
 - [ ] **Step 2:** Grep the entire repo for old command patterns and update:
   - `/dev-team interview` → `/dev-team interview`
-  - `/dev-team create-project-from-code` → `/dev-team create-project-from-code`
+  - `/dev-team create-recipe-from-code` → `/dev-team create-recipe-from-code`
   - `/dev-team generate` → `/dev-team generate`
   - `/dev-team build` → `/dev-team build`
   - `/dev-team lint` → `/dev-team lint`
-  - `/dev-team view-project` → `/dev-team view-project`
+  - `/dev-team view-recipe` → `/dev-team view-recipe`
   - `/dev-team interview` → `dev-team interview` (plugin:skill namespace syntax may appear)
   - Same for all other `dev-team:*` patterns
 
@@ -226,5 +226,5 @@ skills/
 2. **Version:** Run `/dev-team --version` — should print `dev-team v0.2.0`
 3. **Unknown command:** Run `/dev-team foo` — should print help and "Unknown command: foo"
 4. **Each subcommand loads:** Run `/dev-team interview`, `/dev-team lint <path>`, etc. — each should load its workflow and start executing
-5. **No old references:** `grep -r "dev-team-interview\|dev-team-create-project-from-code\|dev-team-generate\|dev-team-build\|dev-team-lint\|dev-team-view-project" --include="*.md"` — should find nothing
+5. **No old references:** `grep -r "dev-team-interview\|dev-team-create-recipe-from-code\|dev-team-generate\|dev-team-build\|dev-team-lint\|dev-team-view-recipe" --include="*.md"` — should find nothing
 6. **Config shared:** Verify config loading happens in the router, not re-done in workflow files
