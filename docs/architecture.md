@@ -145,13 +145,13 @@ Notification severity: info, warning, error. Category: progress, result, briefin
 | Command | Team-Lead | What It Does |
 |---------|-----------|-------------|
 | `interview` | interview | Discover product requirements through structured and exploratory questioning with specialist expertise |
-| `create-project-from-code` | analysis | Reverse-engineer a codebase into a cookbook project |
+| `create-recipe-from-code` | analysis | Reverse-engineer a codebase into a cookbook project |
 | `generate` | review | Improve a cookbook project through specialist review |
-| `create-code-from-project` | build | Build working code from a cookbook project |
+| `create-code-from-recipe` | build | Build working code from a cookbook project |
 | `lint` | audit | Evaluate any artifact against cookbook standards |
 | `align-specialists` | audit | Review specialist-cookbook alignment after guideline changes |
 | `compare-code` | analysis | Compare two code projects for round-trip verification |
-| `view-project` | — | Generate HTML view of a cookbook project (read-only) |
+| `view-recipe` | — | Generate HTML view of a cookbook project (read-only) |
 
 ## Configuration
 
