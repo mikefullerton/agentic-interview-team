@@ -138,7 +138,7 @@ CREATE TABLE IF NOT EXISTS messages (
 
 ### Enums
 
-- `workflow_runs.workflow`: `interview`, `create-project-from-code`, `generate`, `create-code-from-project`, `lint`, `compare-code`, `view-project`
+- `workflow_runs.workflow`: `interview`, `create-recipe-from-code`, `generate`, `create-code-from-recipe`, `lint`, `compare-code`, `view-recipe`
 - `workflow_runs.status`: `running`, `completed`, `failed`, `interrupted`
 - `agent_runs.status`: `running`, `completed`, `failed`
 - `findings.type`: `requirement`, `regression`, `suggestion`, `FAIL`, `WARN`, `PASS`

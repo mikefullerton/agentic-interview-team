@@ -171,7 +171,7 @@ A specification document that all skills reference for their `--test-mode` behav
 
 ```json
 {
-  "test:create-project-from-code:smoke": "vitest run --config vitest.e2e.config.ts specs/create-project-from-code-smoke.test.ts",
+  "test:create-recipe-from-code:smoke": "vitest run --config vitest.e2e.config.ts specs/create-recipe-from-code-smoke.test.ts",
   "test:generate:smoke": "vitest run --config vitest.e2e.config.ts specs/generate-smoke.test.ts",
   "test:build:smoke": "vitest run --config vitest.e2e.config.ts specs/build-smoke.test.ts",
   "test:all:smoke": "vitest run --config vitest.e2e.config.ts specs/*-smoke.test.ts"

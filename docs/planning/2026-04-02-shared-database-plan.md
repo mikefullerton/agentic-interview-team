@@ -33,12 +33,12 @@ scripts/db/
 ```
 skills/dev-team/SKILL.md                              # Add db-init.sh call to startup
 skills/dev-team/workflows/interview.md                # Add DB logging
-skills/dev-team/workflows/create-project-from-code.md # Add DB logging + resumability
+skills/dev-team/workflows/create-recipe-from-code.md # Add DB logging + resumability
 skills/dev-team/workflows/generate.md                 # Add DB logging + read previous findings
-skills/dev-team/workflows/create-code-from-project.md # Add DB logging + resumability
+skills/dev-team/workflows/create-code-from-recipe.md # Add DB logging + resumability
 skills/dev-team/workflows/lint.md                     # Add DB logging + trend queries
 skills/dev-team/workflows/compare-code.md             # Add DB logging + comparison tracking
-skills/dev-team/workflows/view-project.md             # Read from DB for enriched view
+skills/dev-team/workflows/view-recipe.md             # Read from DB for enriched view
 .claude/CLAUDE.md                                     # Document DB location and scripts
 ```
 
@@ -734,12 +734,12 @@ This is the judgment task — weaving DB calls into each workflow without disrup
 **Files:**
 - Modify: `skills/dev-team/SKILL.md` (router — add db-init to startup)
 - Modify: `skills/dev-team/workflows/interview.md`
-- Modify: `skills/dev-team/workflows/create-project-from-code.md`
+- Modify: `skills/dev-team/workflows/create-recipe-from-code.md`
 - Modify: `skills/dev-team/workflows/generate.md`
-- Modify: `skills/dev-team/workflows/create-code-from-project.md`
+- Modify: `skills/dev-team/workflows/create-code-from-recipe.md`
 - Modify: `skills/dev-team/workflows/lint.md`
 - Modify: `skills/dev-team/workflows/compare-code.md`
-- Modify: `skills/dev-team/workflows/view-project.md`
+- Modify: `skills/dev-team/workflows/view-recipe.md`
 
 - [ ] **Step 1:** Read all workflow files and the router to understand current structure
 
@@ -778,9 +778,9 @@ On error: `${CLAUDE_PLUGIN_ROOT}/scripts/db/db-run.sh complete --id $RUN_ID --st
 
 **interview.md** — After each transcript write, log artifact. After each analysis, log artifact. Log messages from specialists.
 
-**create-project-from-code.md** — Add resumability check at start:
+**create-recipe-from-code.md** — Add resumability check at start:
 ```
-Check for interrupted run: db-run.sh --latest --project $PROJECT_ID --workflow create-project-from-code
+Check for interrupted run: db-run.sh --latest --project $PROJECT_ID --workflow create-recipe-from-code
 If status='interrupted': query agent_runs to determine last completed phase, skip to next.
 ```
 Log each recipe as artifact. Log architecture map and scope report as artifacts.
@@ -792,7 +792,7 @@ Skip re-reviewing issues already flagged by lint.
 ```
 Log each review as artifact. Log findings (suggestions accepted/rejected).
 
-**create-code-from-project.md** — Add resumability (same pattern as create-project-from-code). Log each specialist pass as agent run. Log generated code as artifacts. Log build results.
+**create-code-from-recipe.md** — Add resumability (same pattern as create-recipe-from-code). Log each specialist pass as agent run. Log generated code as artifacts. Log build results.
 
 **lint.md** — Log findings (PASS/WARN/FAIL). Add trend query:
 ```
@@ -806,7 +806,7 @@ db-query.sh "SELECT preservation_pct, created FROM comparisons WHERE project_id=
 Show: "Preservation trend: 87% → 93% → current"
 ```
 
-**view-project.md** — Read from DB to enrich the HTML view:
+**view-recipe.md** — Read from DB to enrich the HTML view:
 ```
 Query recent findings, workflow history, comparison trends to display in the viewer.
 ```
@@ -818,8 +818,8 @@ git add skills/dev-team/
 git commit -m "Integrate shared database into all workflows
 
 Router calls db-init at startup. Each workflow logs project, run, agents,
-artifacts, findings, and messages. Adds resumability to create-project-from-code
-and create-code-from-project. Adds trend tracking to lint and compare-code.
+artifacts, findings, and messages. Adds resumability to create-recipe-from-code
+and create-code-from-recipe. Adds trend tracking to lint and compare-code.
 Router bumped to v0.5.0."
 git push
 ```

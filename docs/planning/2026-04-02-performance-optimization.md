@@ -422,7 +422,7 @@ This is the main optimization task. Each skill gets the same treatment:
 
 **Files:**
 - Modify: `skills/interview/SKILL.md`
-- Modify: `skills/create-project-from-code/SKILL.md`
+- Modify: `skills/create-recipe-from-code/SKILL.md`
 - Modify: `skills/generate/SKILL.md`
 - Modify: `skills/build/SKILL.md`
 - Modify: `skills/lint/SKILL.md`
