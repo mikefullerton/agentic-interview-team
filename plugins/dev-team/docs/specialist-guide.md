@@ -39,6 +39,30 @@ An organizer. A specialist holds a role and persona, manages a list of specialty
 
 The specialty-teams ARE the specialist's skill set. The specialist doesn't "know" security — it manages the specialty-teams for authentication, authorization, token-handling, CORS, CSP, etc. Each team is the real expert. The specialist is the manager.
 
+### Consulting-Teams
+
+Some specialists have **consulting-teams** — a special kind of specialty-team that acts as a required verification gate for every specialty-team's output. Consulting teams catch cross-cutting concerns that no single specialty team owns.
+
+```
+Specialist (role + persona)
+  └── manages N specialty-teams, one at a time
+        └── Specialty-Team (focused on ONE guideline/principle/rule)
+              ├── Worker — does the work for this artifact
+              ├── Verifier — checks the work, independent of worker
+              ├── Loop until verifier signs off
+              └── Consulting review (if specialist has consulting-teams)
+                    └── For each consulting-team:
+                          ├── Consulting Worker — reviews output through cross-cutting lens
+                          ├── Consulting Verifier — checks the review
+                          └── Loop until verifier signs off
+```
+
+**When to use consulting teams:** When a specialist's concerns are deeply interdependent — where a decision in one specialty team cascades into others. Most specialists don't need consulting teams. Use them when cross-cutting consistency matters more than speed.
+
+**Verdict types:** Each consulting review produces VERIFIED (concerns found and assessed) or NOT-APPLICABLE (nothing within the consultant's purview, with evidence of review). Both go through the consulting verifier.
+
+**Accumulated context:** Consulting reviews run per-specialty-team. Each consultant builds context as the pipeline progresses and can reference its own prior findings for consistency checking.
+
 ## Specialist File Format
 
 Every specialist file in `specialists/` follows this structure:
@@ -107,7 +131,13 @@ The same specialty-team pipeline runs in all four modes. The worker's behavior c
    b. Spawn verifier agent with: artifact, worker output, verify criteria
    c. If FAIL and iterations < 3: feed failure back to worker, retry
    d. If PASS: record result
-   e. If FAIL after 3: record escalation
+   e. If specialist has consulting-teams: for each consulting-team:
+      - Spawn consulting worker with: specialty-team output, consulting focus, accumulated context
+      - Spawn consulting verifier with: consulting focus, specialty-team output, consulting worker output
+      - If FAIL and iterations < 3: feed failure back to consulting worker, retry
+      - If PASS: record consulting annotation on team-result
+      - If FAIL after 3: record escalation
+   f. If FAIL after 3: record escalation
 
 ### Crash Recovery
 
@@ -144,6 +174,8 @@ Flags go to the specialist's aggregation report under a "Cross-Domain Flags" sec
 1. Create `specialists/<domain>.md` following the format above
 2. Create `specialty-teams/<domain>/` directory with one team file per cookbook artifact
 3. Add the team file paths to the specialist's `## Manifest` section
+3b. (Optional) Create `consulting-teams/<domain>/` directory with one consulting-team file per cross-cutting concern
+3c. Add the consulting-team file paths to the specialist's `## Consulting Teams` section
 4. Add the specialist to `docs/research/cookbook-specialist-mapping.md`
 5. Test: run one specialty-team in each mode to verify the worker focus and verify criteria produce good results
 6. Run `align-specialists` to confirm coverage maps are clean
