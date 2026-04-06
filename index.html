@@ -379,6 +379,7 @@ footer {
     <span class="nav-label">Team</span>
     <a href="#specialists">Specialists</a>
     <a href="#specialty-teams">Specialty-Teams</a>
+    <a href="#consulting-teams">Consulting-Teams</a>
     <a href="#agents">Agents</a>
     <span class="nav-divider"></span>
     <span class="nav-label">Infrastructure</span>
@@ -407,9 +408,9 @@ footer {
   <div class="stat-grid">
     <div class="stat"><span class="num">20</span><span class="label">Specialists</span></div>
     <div class="stat"><span class="num">212</span><span class="label">Specialty Teams</span></div>
-    <div class="stat"><span class="num">18</span><span class="label">Agents</span></div>
+    <div class="stat"><span class="num">20</span><span class="label">Agents</span></div>
     <div class="stat"><span class="num">8</span><span class="label">Commands</span></div>
-    <div class="stat"><span class="num">122</span><span class="label">Contract Tests</span></div>
+    <div class="stat"><span class="num">136</span><span class="label">Contract Tests</span></div>
   </div>
 </section>
 
@@ -530,9 +531,115 @@ footer {
     <line x1="180" y1="112" x2="298" y2="195" stroke="#5cb270" stroke-width="1" stroke-dasharray="4,4" marker-end="url(#arrow-green)"/>
   </svg>
 
+  <!-- Participant Roles Diagram -->
+  <h3>Participant Roles</h3>
+  <svg viewBox="0 0 800 620" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:800px;margin:20px auto;display:block;">
+    <defs>
+      <marker id="pr-arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#5a5a6a"/></marker>
+      <marker id="pr-arrow-a" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#c4a35a"/></marker>
+      <marker id="pr-arrow-b" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#5a8fd4"/></marker>
+      <marker id="pr-arrow-g" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#5cb270"/></marker>
+    </defs>
+
+    <!-- Layer labels (left side) -->
+    <text x="16" y="38" fill="#5a5a6a" font-family="DM Mono,monospace" font-size="9" letter-spacing="0.08em" text-transform="uppercase">LAYER 1</text>
+    <text x="16" y="128" fill="#5a5a6a" font-family="DM Mono,monospace" font-size="9" letter-spacing="0.08em" text-transform="uppercase">LAYER 2</text>
+    <text x="16" y="248" fill="#5a5a6a" font-family="DM Mono,monospace" font-size="9" letter-spacing="0.08em" text-transform="uppercase">LAYER 3</text>
+    <text x="16" y="378" fill="#5a5a6a" font-family="DM Mono,monospace" font-size="9" letter-spacing="0.08em" text-transform="uppercase">LAYER 4</text>
+    <text x="16" y="498" fill="#5a5a6a" font-family="DM Mono,monospace" font-size="9" letter-spacing="0.08em" text-transform="uppercase">LAYER 5</text>
+
+    <!-- Horizontal dividers -->
+    <line x1="60" y1="78" x2="780" y2="78" stroke="#2a2a36" stroke-width="1" stroke-dasharray="4,4"/>
+    <line x1="60" y1="188" x2="780" y2="188" stroke="#2a2a36" stroke-width="1" stroke-dasharray="4,4"/>
+    <line x1="60" y1="318" x2="780" y2="318" stroke="#2a2a36" stroke-width="1" stroke-dasharray="4,4"/>
+    <line x1="60" y1="448" x2="780" y2="448" stroke="#2a2a36" stroke-width="1" stroke-dasharray="4,4"/>
+
+    <!-- User -->
+    <rect x="300" y="14" width="200" height="48" rx="6" fill="#14141a" stroke="#c4a35a" stroke-width="1.5"/>
+    <text x="400" y="35" text-anchor="middle" fill="#c4a35a" font-family="DM Mono,monospace" font-size="13" font-weight="500">User</text>
+    <text x="400" y="52" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="10">invokes commands, answers questions, provides verdicts</text>
+
+    <!-- Team-Lead -->
+    <rect x="270" y="96" width="260" height="74" rx="6" fill="#14141a" stroke="#c4a35a" stroke-width="1.5"/>
+    <text x="400" y="118" text-anchor="middle" fill="#c4a35a" font-family="DM Mono,monospace" font-size="13" font-weight="500">Team-Lead</text>
+    <text x="400" y="136" text-anchor="middle" fill="#8a8a9a" font-family="Manrope,sans-serif" font-size="10">runs the workflow, dispatches specialists</text>
+    <text x="400" y="152" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="10">only component that talks to user</text>
+
+    <!-- Arrow User -> Team-Lead -->
+    <line x1="400" y1="62" x2="400" y2="94" stroke="#c4a35a" stroke-width="1" marker-end="url(#pr-arrow-a)"/>
+
+    <!-- Specialist -->
+    <rect x="240" y="206" width="320" height="94" rx="6" fill="#14141a" stroke="#5a8fd4" stroke-width="1"/>
+    <text x="400" y="228" text-anchor="middle" fill="#5a8fd4" font-family="DM Mono,monospace" font-size="13" font-weight="500">Specialist</text>
+    <text x="400" y="246" text-anchor="middle" fill="#8a8a9a" font-family="Manrope,sans-serif" font-size="10">organizer with role + persona, manages specialty-teams</text>
+    <text x="400" y="262" text-anchor="middle" fill="#8a8a9a" font-family="Manrope,sans-serif" font-size="10">aggregates findings into results</text>
+    <!-- Specialist-Persona sub-box -->
+    <rect x="270" y="270" width="260" height="28" rx="4" fill="rgba(212,167,84,0.06)" stroke="#d4a754" stroke-width="1" stroke-dasharray="3,3"/>
+    <text x="400" y="288" text-anchor="middle" fill="#d4a754" font-family="DM Mono,monospace" font-size="10">Specialist-Persona: translates findings to voice</text>
+
+    <!-- Arrow Team-Lead -> Specialist -->
+    <line x1="400" y1="170" x2="400" y2="204" stroke="#5a5a6a" stroke-width="1" marker-end="url(#pr-arrow)"/>
+
+    <!-- Specialty-Team row -->
+    <rect x="80" y="336" width="280" height="94" rx="6" fill="rgba(92,178,112,0.04)" stroke="#5cb270" stroke-width="1"/>
+    <text x="220" y="356" text-anchor="middle" fill="#5cb270" font-family="DM Mono,monospace" font-size="12" font-weight="500">Specialty-Team</text>
+    <!-- Worker -->
+    <rect x="100" y="368" width="110" height="42" rx="4" fill="#14141a" stroke="#2a2a36" stroke-width="1"/>
+    <text x="155" y="387" text-anchor="middle" fill="#8a8a9a" font-family="DM Mono,monospace" font-size="10">Worker</text>
+    <text x="155" y="402" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="9">reads ONE artifact</text>
+    <!-- Verifier -->
+    <rect x="230" y="368" width="110" height="42" rx="4" fill="#14141a" stroke="#5cb270" stroke-width="1"/>
+    <text x="285" y="387" text-anchor="middle" fill="#5cb270" font-family="DM Mono,monospace" font-size="10">Verifier</text>
+    <text x="285" y="402" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="9">PASS / FAIL</text>
+    <!-- Arrow Worker -> Verifier -->
+    <line x1="210" y1="389" x2="228" y2="389" stroke="#5cb270" stroke-width="1" marker-end="url(#pr-arrow-g)"/>
+
+    <!-- Consulting-Team row -->
+    <rect x="440" y="336" width="310" height="94" rx="6" fill="rgba(196,163,90,0.04)" stroke="#c4a35a" stroke-width="1"/>
+    <text x="595" y="356" text-anchor="middle" fill="#c4a35a" font-family="DM Mono,monospace" font-size="12" font-weight="500">Consulting-Team <tspan fill="#5a5a6a" font-size="9">(optional)</tspan></text>
+    <!-- Consulting Worker -->
+    <rect x="460" y="368" width="120" height="42" rx="4" fill="#14141a" stroke="#2a2a36" stroke-width="1"/>
+    <text x="520" y="387" text-anchor="middle" fill="#8a8a9a" font-family="DM Mono,monospace" font-size="10">Worker</text>
+    <text x="520" y="402" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="9">cross-cutting review</text>
+    <!-- Consulting Verifier -->
+    <rect x="600" y="368" width="130" height="42" rx="4" fill="#14141a" stroke="#c4a35a" stroke-width="1"/>
+    <text x="665" y="387" text-anchor="middle" fill="#c4a35a" font-family="DM Mono,monospace" font-size="10">Verifier</text>
+    <text x="665" y="402" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="9">PASS / FAIL</text>
+    <!-- Arrow Consulting Worker -> Verifier -->
+    <line x1="580" y1="389" x2="598" y2="389" stroke="#c4a35a" stroke-width="1" marker-end="url(#pr-arrow-a)"/>
+
+    <!-- Arrow Specialist -> Specialty-Team -->
+    <line x1="340" y1="300" x2="220" y2="334" stroke="#5a5a6a" stroke-width="1" marker-end="url(#pr-arrow)"/>
+    <!-- Arrow Specialist -> Consulting-Team -->
+    <line x1="460" y1="300" x2="595" y2="334" stroke="#5a5a6a" stroke-width="1" marker-end="url(#pr-arrow)"/>
+
+    <!-- Arbitrator (spans the right side) -->
+    <rect x="80" y="460" width="670" height="44" rx="22" fill="rgba(196,163,90,0.06)" stroke="#c4a35a" stroke-width="1" stroke-dasharray="6,3"/>
+    <text x="400" y="480" text-anchor="middle" fill="#c4a35a" font-family="DM Mono,monospace" font-size="12" font-weight="500">Arbitrator</text>
+    <text x="400" y="496" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="10">communication conduit between all participants &mdash; no one talks directly</text>
+
+    <!-- Dashed lines from Arbitrator to layers -->
+    <line x1="200" y1="460" x2="200" y2="432" stroke="#c4a35a" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+    <line x1="400" y1="460" x2="400" y2="302" stroke="#c4a35a" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+    <line x1="600" y1="460" x2="600" y2="432" stroke="#c4a35a" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+
+    <!-- Verdict labels -->
+    <rect x="80" y="540" width="160" height="56" rx="6" fill="rgba(92,178,112,0.06)" stroke="#5cb270" stroke-width="1"/>
+    <text x="160" y="560" text-anchor="middle" fill="#5cb270" font-family="DM Mono,monospace" font-size="10" font-weight="500">Specialty Verdicts</text>
+    <text x="160" y="580" text-anchor="middle" fill="#8a8a9a" font-family="Manrope,sans-serif" font-size="10">PASS or FAIL</text>
+
+    <rect x="320" y="540" width="160" height="56" rx="6" fill="rgba(196,163,90,0.06)" stroke="#c4a35a" stroke-width="1"/>
+    <text x="400" y="560" text-anchor="middle" fill="#c4a35a" font-family="DM Mono,monospace" font-size="10" font-weight="500">Consulting Verdicts</text>
+    <text x="400" y="580" text-anchor="middle" fill="#8a8a9a" font-family="Manrope,sans-serif" font-size="10">VERIFIED or N/A</text>
+
+    <rect x="560" y="540" width="190" height="56" rx="6" fill="rgba(212,84,84,0.06)" stroke="#d45454" stroke-width="1"/>
+    <text x="655" y="560" text-anchor="middle" fill="#d45454" font-family="DM Mono,monospace" font-size="10" font-weight="500">Verifier Verdicts</text>
+    <text x="655" y="580" text-anchor="middle" fill="#8a8a9a" font-family="Manrope,sans-serif" font-size="10">PASS or FAIL (both types)</text>
+  </svg>
+
   <!-- Session Flow Diagram -->
   <h3>Session Lifecycle</h3>
-  <svg viewBox="0 0 800 680" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:800px;margin:20px auto;display:block;">
+  <svg viewBox="0 0 800 790" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:800px;margin:20px auto;display:block;">
     <defs>
       <marker id="fa" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#5a5a6a"/></marker>
       <marker id="fa-g" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#5cb270"/></marker>
@@ -564,7 +671,7 @@ footer {
 
     <!-- Step 5: Worker-Verifier loop -->
     <rect x="180" y="310" width="440" height="100" rx="6" fill="rgba(92,178,112,0.04)" stroke="#5cb270" stroke-width="1"/>
-    <text x="400" y="332" text-anchor="middle" fill="#5cb270" font-family="DM Mono,monospace" font-size="11" font-weight="500">5. Specialty-Team Loop</text>
+    <text x="400" y="332" text-anchor="middle" fill="#5cb270" font-family="DM Mono,monospace" font-size="11" font-weight="500">5a. Specialty-Team Loop</text>
 
     <!-- Worker box -->
     <rect x="210" y="345" width="140" height="36" rx="4" fill="#14141a" stroke="#2a2a36" stroke-width="1"/>
@@ -583,46 +690,67 @@ footer {
     <path d="M520,381 L520,400 L280,400 L280,381" fill="none" stroke="#d45454" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#fa-r)"/>
     <text x="400" y="398" text-anchor="middle" fill="#d45454" font-family="DM Mono,monospace" font-size="9">FAIL &rarr; retry (max 3)</text>
 
+    <!-- Step 5b: Consulting Review -->
+    <rect x="180" y="436" width="440" height="100" rx="6" fill="rgba(196,163,90,0.04)" stroke="#c4a35a" stroke-width="1"/>
+    <text x="400" y="458" text-anchor="middle" fill="#c4a35a" font-family="DM Mono,monospace" font-size="11" font-weight="500">5b. Consulting Review <tspan fill="#5a5a6a" font-size="9">(optional)</tspan></text>
+
+    <!-- Consulting Worker box -->
+    <rect x="210" y="471" width="140" height="36" rx="4" fill="#14141a" stroke="#2a2a36" stroke-width="1"/>
+    <text x="280" y="493" text-anchor="middle" fill="#8a8a9a" font-family="DM Mono,monospace" font-size="10">Worker</text>
+    <text x="280" y="505" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="9">cross-cutting review</text>
+
+    <!-- Arrow consulting worker -> verifier -->
+    <line x1="350" y1="489" x2="448" y2="489" stroke="#5a5a6a" stroke-width="1" marker-end="url(#fa)"/>
+
+    <!-- Consulting Verifier box -->
+    <rect x="450" y="471" width="140" height="36" rx="4" fill="#14141a" stroke="#c4a35a" stroke-width="1"/>
+    <text x="520" y="493" text-anchor="middle" fill="#c4a35a" font-family="DM Mono,monospace" font-size="10">Verifier</text>
+    <text x="520" y="505" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="9">PASS or FAIL</text>
+
+    <!-- Consulting verdict labels -->
+    <text x="280" y="524" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="9">VERIFIED or NOT-APPLICABLE</text>
+
     <!-- Step 6: Persona -->
-    <rect x="280" y="436" width="240" height="44" rx="6" fill="#14141a" stroke="#d4a754" stroke-width="1"/>
-    <text x="400" y="456" text-anchor="middle" fill="#d4a754" font-family="DM Mono,monospace" font-size="11" font-weight="500">6. Specialist-Persona</text>
-    <text x="400" y="472" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="10">translates findings &rarr; interpretations</text>
+    <rect x="280" y="562" width="240" height="44" rx="6" fill="#14141a" stroke="#d4a754" stroke-width="1"/>
+    <text x="400" y="582" text-anchor="middle" fill="#d4a754" font-family="DM Mono,monospace" font-size="11" font-weight="500">6. Specialist-Persona</text>
+    <text x="400" y="598" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="10">translates findings &rarr; interpretations</text>
 
     <!-- Step 7: Result -->
-    <rect x="280" y="506" width="240" height="44" rx="6" fill="#14141a" stroke="#5cb270" stroke-width="1.5"/>
-    <text x="400" y="526" text-anchor="middle" fill="#5cb270" font-family="DM Mono,monospace" font-size="11" font-weight="500">7. Result returned</text>
-    <text x="400" y="542" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="10">result_id + pass/fail via arbitrator</text>
+    <rect x="280" y="632" width="240" height="44" rx="6" fill="#14141a" stroke="#5cb270" stroke-width="1.5"/>
+    <text x="400" y="652" text-anchor="middle" fill="#5cb270" font-family="DM Mono,monospace" font-size="11" font-weight="500">7. Result returned</text>
+    <text x="400" y="668" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="10">result_id + pass/fail via arbitrator</text>
 
     <!-- Step 8: Report -->
-    <rect x="280" y="576" width="240" height="44" rx="6" fill="#14141a" stroke="#c4a35a" stroke-width="1.5"/>
-    <text x="400" y="596" text-anchor="middle" fill="#c4a35a" font-family="DM Mono,monospace" font-size="11" font-weight="500">8. Team-Lead aggregates</text>
-    <text x="400" y="612" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="10">presents report to user</text>
+    <rect x="280" y="702" width="240" height="44" rx="6" fill="#14141a" stroke="#c4a35a" stroke-width="1.5"/>
+    <text x="400" y="722" text-anchor="middle" fill="#c4a35a" font-family="DM Mono,monospace" font-size="11" font-weight="500">8. Team-Lead aggregates</text>
+    <text x="400" y="738" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="10">presents report to user</text>
 
     <!-- Step 9: Done -->
-    <rect x="330" y="646" width="140" height="30" rx="15" fill="rgba(92,178,112,0.12)" stroke="#5cb270" stroke-width="1"/>
-    <text x="400" y="665" text-anchor="middle" fill="#5cb270" font-family="DM Mono,monospace" font-size="11">Session Complete</text>
+    <rect x="330" y="772" width="140" height="30" rx="15" fill="rgba(92,178,112,0.12)" stroke="#5cb270" stroke-width="1"/>
+    <text x="400" y="791" text-anchor="middle" fill="#5cb270" font-family="DM Mono,monospace" font-size="11">Session Complete</text>
 
     <!-- Vertical arrows -->
     <line x1="400" y1="54" x2="400" y2="78" stroke="#5a5a6a" stroke-width="1" marker-end="url(#fa)"/>
     <line x1="400" y1="132" x2="400" y2="156" stroke="#5a5a6a" stroke-width="1" marker-end="url(#fa)"/>
     <line x1="400" y1="210" x2="400" y2="234" stroke="#c4a35a" stroke-width="1" marker-end="url(#fa-a)"/>
     <line x1="400" y1="280" x2="400" y2="308" stroke="#5a5a6a" stroke-width="1" marker-end="url(#fa)"/>
-    <line x1="400" y1="410" x2="400" y2="434" stroke="#5a5a6a" stroke-width="1" marker-end="url(#fa)"/>
-    <line x1="400" y1="480" x2="400" y2="504" stroke="#5cb270" stroke-width="1" marker-end="url(#fa-g)"/>
-    <line x1="400" y1="550" x2="400" y2="574" stroke="#5a5a6a" stroke-width="1" marker-end="url(#fa)"/>
-    <line x1="400" y1="620" x2="400" y2="644" stroke="#5cb270" stroke-width="1" marker-end="url(#fa-g)"/>
+    <line x1="400" y1="410" x2="400" y2="434" stroke="#c4a35a" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#fa-a)"/>
+    <line x1="400" y1="536" x2="400" y2="560" stroke="#5a5a6a" stroke-width="1" marker-end="url(#fa)"/>
+    <line x1="400" y1="606" x2="400" y2="630" stroke="#5cb270" stroke-width="1" marker-end="url(#fa-g)"/>
+    <line x1="400" y1="676" x2="400" y2="700" stroke="#5a5a6a" stroke-width="1" marker-end="url(#fa)"/>
+    <line x1="400" y1="746" x2="400" y2="770" stroke="#5cb270" stroke-width="1" marker-end="url(#fa-g)"/>
 
     <!-- Arbitrator label (side) -->
     <rect x="600" y="220" width="120" height="30" rx="15" fill="rgba(196,163,90,0.08)" stroke="#c4a35a" stroke-width="1" stroke-dasharray="4,3"/>
     <text x="660" y="239" text-anchor="middle" fill="#c4a35a" font-family="DM Mono,monospace" font-size="9">Arbitrator</text>
     <line x1="600" y1="235" x2="522" y2="258" stroke="#c4a35a" stroke-width="1" stroke-dasharray="3,3"/>
-    <line x1="600" y1="245" x2="522" y2="528" stroke="#c4a35a" stroke-width="1" stroke-dasharray="3,3"/>
+    <line x1="600" y1="245" x2="522" y2="654" stroke="#c4a35a" stroke-width="1" stroke-dasharray="3,3"/>
     <text x="660" y="256" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="9">all communication</text>
     <text x="660" y="268" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="9">flows through here</text>
 
     <!-- Repeat indicator -->
-    <path d="M178,355 L160,355 L160,530 L278,530" fill="none" stroke="#5a8fd4" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#fa)"/>
-    <text x="130" y="445" text-anchor="middle" fill="#5a8fd4" font-family="DM Mono,monospace" font-size="9" transform="rotate(-90, 130, 445)">per specialist</text>
+    <path d="M178,355 L160,355 L160,656 L278,656" fill="none" stroke="#5a8fd4" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#fa)"/>
+    <text x="130" y="510" text-anchor="middle" fill="#5a8fd4" font-family="DM Mono,monospace" font-size="9" transform="rotate(-90, 130, 510)">per specialist</text>
   </svg>
 
   <details>
@@ -1078,18 +1206,87 @@ on native; no client_secret in public clients</code></pre>
   </details>
 </section>
 
+<!-- Consulting-Teams -->
+<section id="consulting-teams">
+  <h2><span class="num">05b</span>Consulting-Teams</h2>
+  <p class="lead">Cross-cutting verification gates. Some specialists have consulting-teams that review every specialty-team's output for interdependent concerns that no single team owns.</p>
+
+  <svg viewBox="0 0 800 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:800px;margin:20px auto;display:block;">
+    <defs>
+      <marker id="ct-arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#5a5a6a"/></marker>
+      <marker id="ct-arrow-a" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#c4a35a"/></marker>
+      <marker id="ct-arrow-g" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#5cb270"/></marker>
+    </defs>
+
+    <!-- Specialty-team output (left) -->
+    <rect x="40" y="20" width="200" height="60" rx="6" fill="rgba(92,178,112,0.04)" stroke="#5cb270" stroke-width="1"/>
+    <text x="140" y="44" text-anchor="middle" fill="#5cb270" font-family="DM Mono,monospace" font-size="11" font-weight="500">Specialty-Team Output</text>
+    <text x="140" y="62" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="10">verified findings</text>
+
+    <!-- Arrow to consulting worker -->
+    <line x1="240" y1="50" x2="318" y2="50" stroke="#5a5a6a" stroke-width="1" marker-end="url(#ct-arrow)"/>
+    <text x="279" y="42" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="9">feeds into</text>
+
+    <!-- Consulting Worker -->
+    <rect x="320" y="14" width="200" height="72" rx="6" fill="#14141a" stroke="#c4a35a" stroke-width="1"/>
+    <text x="420" y="38" text-anchor="middle" fill="#c4a35a" font-family="DM Mono,monospace" font-size="11" font-weight="500">Consulting Worker</text>
+    <text x="420" y="56" text-anchor="middle" fill="#8a8a9a" font-family="Manrope,sans-serif" font-size="10">reviews through cross-cutting lens</text>
+    <text x="420" y="72" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="10">accumulated context from all teams</text>
+
+    <!-- Arrow to consulting verifier -->
+    <line x1="520" y1="50" x2="598" y2="50" stroke="#5a5a6a" stroke-width="1" marker-end="url(#ct-arrow)"/>
+
+    <!-- Consulting Verifier -->
+    <rect x="600" y="20" width="160" height="60" rx="6" fill="#14141a" stroke="#c4a35a" stroke-width="1"/>
+    <text x="680" y="44" text-anchor="middle" fill="#c4a35a" font-family="DM Mono,monospace" font-size="11" font-weight="500">Consulting Verifier</text>
+    <text x="680" y="62" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="10">PASS or FAIL</text>
+
+    <!-- Verdict boxes -->
+    <rect x="120" y="120" width="240" height="60" rx="6" fill="rgba(92,178,112,0.06)" stroke="#5cb270" stroke-width="1"/>
+    <text x="240" y="144" text-anchor="middle" fill="#5cb270" font-family="DM Mono,monospace" font-size="12" font-weight="500">VERIFIED</text>
+    <text x="240" y="164" text-anchor="middle" fill="#8a8a9a" font-family="Manrope,sans-serif" font-size="10">concern applies and findings are sound</text>
+
+    <rect x="440" y="120" width="240" height="60" rx="6" fill="rgba(90,143,212,0.06)" stroke="#5a8fd4" stroke-width="1"/>
+    <text x="560" y="144" text-anchor="middle" fill="#5a8fd4" font-family="DM Mono,monospace" font-size="12" font-weight="500">NOT-APPLICABLE</text>
+    <text x="560" y="164" text-anchor="middle" fill="#8a8a9a" font-family="Manrope,sans-serif" font-size="10">concern does not apply to this team's scope</text>
+
+    <!-- Arrows from worker to verdicts -->
+    <line x1="380" y1="86" x2="260" y2="118" stroke="#5cb270" stroke-width="1" marker-end="url(#ct-arrow-g)"/>
+    <line x1="460" y1="86" x2="540" y2="118" stroke="#5a5a6a" stroke-width="1" marker-end="url(#ct-arrow)"/>
+
+    <!-- Context accumulation note -->
+    <rect x="100" y="220" width="600" height="100" rx="6" fill="#14141a" stroke="#2a2a36" stroke-width="1"/>
+    <text x="400" y="246" text-anchor="middle" fill="#e8e6e3" font-family="DM Mono,monospace" font-size="11" font-weight="500">Accumulated Context</text>
+    <text x="400" y="268" text-anchor="middle" fill="#8a8a9a" font-family="Manrope,sans-serif" font-size="10">Each consulting worker sees the output of ALL specialty-teams that ran before it.</text>
+    <text x="400" y="286" text-anchor="middle" fill="#8a8a9a" font-family="Manrope,sans-serif" font-size="10">This enables detection of cross-team conflicts, missing integrations,</text>
+    <text x="400" y="304" text-anchor="middle" fill="#8a8a9a" font-family="Manrope,sans-serif" font-size="10">and interdependent concerns that no single specialty-team can see alone.</text>
+  </svg>
+
+  <details>
+    <summary>When Consulting-Teams Are Used <span class="tag tag-data">verification</span></summary>
+    <div class="detail-body">
+      <p>Most specialists do not need consulting-teams. They are designed for specialists whose domains have deeply interdependent concerns &mdash; where the output of one specialty-team can contradict or invalidate another's findings.</p>
+      <p><strong>Example:</strong> The database specialist has consulting-teams because schema design, query optimization, migration strategy, and indexing are tightly coupled. A schema change that satisfies normalization principles might break the performance team's indexing recommendations. A consulting-team catches these conflicts.</p>
+      <p><strong>Two verdicts:</strong> <code>VERIFIED</code> means the cross-cutting concern applies and the specialty-team's findings hold up under scrutiny. <code>NOT-APPLICABLE</code> means the concern does not apply to this particular team's scope &mdash; this is a valid outcome, not a failure.</p>
+      <p><strong>Verifier independence:</strong> Just like specialty-teams, consulting workers and verifiers never see each other's instructions. The verifier checks the worker's assessment independently.</p>
+    </div>
+  </details>
+</section>
+
 <!-- Agents -->
 <section id="agents">
   <h2><span class="num">06</span>Agents</h2>
-  <p class="lead">18 agent definitions in <code>agents/</code>. Each is a markdown file with instructions for a specific role.</p>
+  <p class="lead">20 agent definitions in <code>agents/</code>. Each is a markdown file with instructions for a specific role.</p>
 
   <details>
-    <summary>All Agents (18) <span class="tag tag-agent">agents</span></summary>
+    <summary>All Agents (20) <span class="tag tag-agent">agents</span></summary>
     <div class="detail-body">
       <table>
         <tr><th>Agent</th><th>Purpose</th></tr>
         <tr><td>specialty-team-worker</td><td>Reads one cookbook guideline or principle, produces structured findings</td></tr>
         <tr><td>specialty-team-verifier</td><td>Checks worker output for completeness, returns PASS/FAIL</td></tr>
+        <tr><td>consulting-team-worker</td><td>Reviews specialty-team output through a cross-cutting lens, produces VERIFIED or NOT-APPLICABLE</td></tr>
+        <tr><td>consulting-team-verifier</td><td>Checks consulting worker assessment for completeness, returns PASS/FAIL</td></tr>
         <tr><td>transcript-analyzer</td><td>Analyzes interview transcripts for coverage and gaps</td></tr>
         <tr><td>specialist-analyst</td><td>Analyzes user answers from a specialist perspective</td></tr>
         <tr><td>code-generator</td><td>Generates source code from cookbook recipes</td></tr>
@@ -1156,7 +1353,7 @@ on native; no client_secret in public clients</code></pre>
       references/
   artifacts/
   retries/</code></pre>
-      <p><strong>58 contract tests</strong> validate the API regardless of backend.</p>
+      <p><strong>72 contract tests</strong> validate the API regardless of backend.</p>
     </div>
   </details>
 </section>
@@ -1246,7 +1443,7 @@ on native; no client_secret in public clients</code></pre>
   <p class="lead">Repository structure at a glance.</p>
 
   <pre><code>.claude-plugin/              Plugin manifest
-agents/                      18 agent definitions
+agents/                      20 agent definitions
 specialists/                 20 specialists (13 domain + 6 platform + 1 PM)
 specialty-teams/             212 specialty-team files in 20 categories
 skills/
@@ -1275,7 +1472,7 @@ docs/
 
   <table>
     <tr><th>Suite</th><th>Tests</th><th>Coverage</th></tr>
-    <tr><td>tests/arbitrator/</td><td>58</td><td>All 11 arbitrator resources: session lifecycle, state transitions, messages, gates, results, findings, interpretations, artifacts, references, retries, reports, error handling</td></tr>
+    <tr><td>tests/arbitrator/</td><td>72</td><td>All 11 arbitrator resources: session lifecycle, state transitions, messages, gates, results, findings, interpretations, artifacts, references, retries, reports, consulting reviews, error handling</td></tr>
     <tr><td>tests/project-storage/</td><td>64</td><td>All 7 project-storage resources: project lifecycle, milestones, todos, issues, concerns, dependencies, decisions, CRUD, filtering, error handling</td></tr>
     <tr><td>tests/specialty-teams/</td><td>2330</td><td>File structure, frontmatter, content, script output, manifest integrity across 212 specialty-team files</td></tr>
   </table>
