@@ -77,10 +77,13 @@ describe("cleanup", () => {
 
 describe("path helpers", () => {
   it("REPO_PATHS.interviewTeam points to the interview team repo", () => {
-    expect(existsSync(join(REPO_PATHS.interviewTeam, "agents"))).toBe(true);
+    expect(existsSync(join(REPO_PATHS.interviewTeam, "plugins", "dev-team", "agents"))).toBe(true);
   });
 
   it("TEST_CONFIG_PATH points to the test config", () => {
+    // Requires dev-team-tests sibling repo to be present
+    const testOutputExists = existsSync(join(REPO_PATHS.testOutput));
+    if (!testOutputExists) return; // skip when test output repo is not cloned
     expect(existsSync(TEST_CONFIG_PATH)).toBe(true);
   });
 
