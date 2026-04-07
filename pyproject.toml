@@ -1,0 +1,9 @@
+[project]
+name = "dev-team"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["testing/unit/tests", "testing/unit/harness"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
