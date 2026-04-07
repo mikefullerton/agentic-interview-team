@@ -27,6 +27,8 @@ Entry point: `/dev-team <command>` — a single skill router that dispatches to 
 | **Consulting-Team** | Standalone file defining a consulting worker-verifier pair focused on one cross-cutting concern. Reviews every specialty-team's output within a specialist. Lives in `consulting-teams/`. |
 | **Consulting-Worker** | LLM agent. Reviews a specialty-team's passed output through a cross-cutting lens. Produces VERIFIED or NOT-APPLICABLE. |
 | **Consulting-Verifier** | LLM agent. Checks consulting-worker output for completeness. Returns PASS/FAIL. Max 3 retries before escalation. |
+| **Observer** | Shell hook + Python script that captures subagent activity via `SubagentStop`. Auto-discovers observer modules in `scripts/observers/`. |
+| **Stenographer** | Built-in observer. Writes structured JSONL session log to the session directory. |
 | **Specialist-Persona** | LLM agent. Reads raw findings + persona definition, writes persona-voiced interpretations. Translation layer only — produces no new findings. |
 | **Result** | One specialist's output for a session. Parent of findings. |
 | **Finding** | An individual issue within a result — gap, recommendation, or concern with severity. |
@@ -46,6 +48,7 @@ User invokes /dev-team <command>
         → Specialist script reads assignment
           → Specialty-teams run (worker-verifier loop, max 3 retries)
           → Consulting-teams review (if any — worker-verifier loop per consultant)
+          [Observer hook fires on each subagent completion — writes session.log + system log]
           → Specialist-persona writes interpretations
         → Specialist returns result (result_id + pass/fail) via arbitrator
       → Team-lead aggregates results
@@ -191,6 +194,10 @@ plugins/
       project_storage.py     # Project management storage dispatcher
       project-storage/markdown/ # Markdown project-storage backend (8 scripts)
       db/                    # Database Python API
+      observers/                # Observer modules (auto-discovered by SubagentStop hook)
+        dispatch.py             # Hook entry point — event extraction + observer dispatch
+        stenographer.py         # Session.log JSONL writer
+        oslog.py                # System log writer (macOS/Linux)
       run_specialty_teams.py # Parses specialist manifests to JSON
       load_config.py         # Config loader
     services/
