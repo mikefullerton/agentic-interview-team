@@ -3,7 +3,7 @@ name = "dev-team"
 requires-python = ">=3.10"
 
 [tool.pytest.ini_options]
-testpaths = ["testing/unit/tests", "testing/unit/harness"]
+testpaths = ["testing/unit/tests", "testing/unit/harness", "testing/functional/tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
