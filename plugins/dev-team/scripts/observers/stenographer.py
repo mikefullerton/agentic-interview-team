@@ -1,7 +1,7 @@
 """Stenographer observer — writes structured JSONL to session.log."""
 
 import json
-from _lib import get_session_log_path
+from session_paths import get_session_log_path
 
 
 def observe(event: dict) -> None:
