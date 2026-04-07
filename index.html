@@ -385,6 +385,7 @@ footer {
     <span class="nav-label">Infrastructure</span>
     <a href="#arbitrator">Arbitrator</a>
     <a href="#project-storage">Project Storage</a>
+    <a href="#observers">Observers</a>
     <a href="#data-flow">Data Flow</a>
     <span class="nav-divider"></span>
     <span class="nav-label">Reference</span>
@@ -407,7 +408,7 @@ footer {
 
   <div class="stat-grid">
     <div class="stat"><span class="num">20</span><span class="label">Specialists</span></div>
-    <div class="stat"><span class="num">212</span><span class="label">Specialty Teams</span></div>
+    <div class="stat"><span class="num">231</span><span class="label">Specialty Teams</span></div>
     <div class="stat"><span class="num">20</span><span class="label">Agents</span></div>
     <div class="stat"><span class="num">8</span><span class="label">Commands</span></div>
     <div class="stat"><span class="num">136</span><span class="label">Contract Tests</span></div>
@@ -820,7 +821,7 @@ footer {
       <table>
         <tr><th>Specialist</th><th>Focus</th></tr>
         <tr><td>platform-android</td><td>Android SDK, Kotlin, Jetpack Compose, lifecycle</td></tr>
-        <tr><td>platform-database</td><td>SQL, NoSQL, schema design, migrations, indexing</td></tr>
+        <tr><td>platform-database</td><td>Schema design, sync architecture, indexing, query optimization, transactions, backup/recovery (22 teams + 3 consulting)</td></tr>
         <tr><td>platform-ios-apple</td><td>Swift, SwiftUI, UIKit, Apple frameworks</td></tr>
         <tr><td>platform-web-backend</td><td>Python, Node.js, API servers, middleware</td></tr>
         <tr><td>platform-web-frontend</td><td>React, TypeScript, CSS, bundling, SSR</td></tr>
@@ -845,7 +846,7 @@ footer {
 <!-- Specialty-Teams -->
 <section id="specialty-teams">
   <h2><span class="num">05</span>Specialty-Teams</h2>
-  <p class="lead">212 standalone files across 20 categories. Each defines a worker-verifier pair focused on one cookbook guideline, principle, or compliance check. The atomic unit of specialist expertise.</p>
+  <p class="lead">231 standalone files across 20 categories. Each defines a worker-verifier pair focused on one cookbook guideline, principle, or compliance check. The atomic unit of specialist expertise.</p>
 
   <div class="diagram"><span class="highlight">Specialist</span> dispatches <span class="highlight">Specialty-Team</span>
   <span class="dim">&rarr;</span> <span class="highlight">Worker</span> reads cookbook guideline, produces findings
@@ -968,11 +969,40 @@ footer {
     </table></div>
   </details>
   <details>
-    <summary>platform-database (3) <span class="tag tag-platform">platform</span></summary>
-    <div class="detail-body"><table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
-    <tr><td>access-patterns-compliance</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">8 compliance checks — api-design-conventions (RESTful with versioning), offline-behavior (defined behavior when network </td><td><a href="http://agentic-cookbook.com/compliance/access-patterns.md" class="gh">compliance/access-patterns.md</a></td></tr>
-    <tr><td>database</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">SQLite with WAL mode for concurrent read access; no ORM — direct SQL via `sqlite3` standard library; `PRAGMA journal_mod</td><td><a href="http://agentic-cookbook.com/guidelines/language/python/database.md" class="gh">guidelines/language/python/database.md</a></td></tr>
-    <tr><td>reliability-compliance</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">8 compliance checks — error-recovery (transient error handling with retry), graceful-degradation (unavailable dependency</td><td><a href="http://agentic-cookbook.com/compliance/reliability.md" class="gh">compliance/reliability.md</a></td></tr>
+    <summary>platform-database (22 + 3 consulting) <span class="tag tag-platform">platform</span></summary>
+    <div class="detail-body">
+      <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px;">The most complex specialist. 22 specialty-teams organized across schema design, performance, operations, and sync &mdash; plus 3 consulting-teams as cross-cutting verification gates.</p>
+      <table><tr><th>Team</th><th>Description</th><th>Cookbook Source</th></tr>
+      <tr><td colspan="3" style="color:var(--accent);font-family:var(--mono);font-size:0.75rem;letter-spacing:0.1em;padding:8px 0 4px;">SCHEMA DESIGN (9)</td></tr>
+      <tr><td>naming-conventions</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">snake_case identifiers, PK/FK naming (table_name_id not bare id), reserved word avoidance, index/constraint naming</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/naming-conventions.md" class="gh">guidelines/database-design/naming-conventions.md</a></td></tr>
+      <tr><td>data-types</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">SQLite type affinity, STRICT tables, the STRING gotcha, cross-database type mapping (SQLite &harr; PostgreSQL)</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/data-types.md" class="gh">guidelines/database-design/data-types.md</a></td></tr>
+      <tr><td>primary-keys</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">INTEGER PRIMARY KEY, AUTOINCREMENT tradeoffs, UUID strategies (v4 vs v7, TEXT vs BLOB), WITHOUT ROWID</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/primary-keys.md" class="gh">guidelines/database-design/primary-keys.md</a></td></tr>
+      <tr><td>foreign-keys</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">PRAGMA foreign_keys = ON, ON DELETE/UPDATE actions, deferred constraints, FK column indexing</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/foreign-keys.md" class="gh">guidelines/database-design/foreign-keys.md</a></td></tr>
+      <tr><td>constraints-and-validation</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">CHECK constraints, enum-like constraints, boolean enforcement, range/pattern validation, NULL truthiness</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/constraints-and-validation.md" class="gh">guidelines/database-design/constraints-and-validation.md</a></td></tr>
+      <tr><td>relationships</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">One-to-many, many-to-many join tables, polymorphic FK patterns, self-referential, tree hierarchies</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/relationships.md" class="gh">guidelines/database-design/relationships.md</a></td></tr>
+      <tr><td>normalization-and-denormalization</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">3NF starting point, selective denormalization for measured hotspots, sync impact of denormalization</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/normalization-and-denormalization.md" class="gh">guidelines/database-design/normalization-and-denormalization.md</a></td></tr>
+      <tr><td>json-columns</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">JSON in TEXT columns, extraction operators, generated columns for B-tree indexing, when JSON is a schema smell</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/json-columns.md" class="gh">guidelines/database-design/json-columns.md</a></td></tr>
+      <tr><td>schema-evolution</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Migration strategies (user_version pragma), ALTER TABLE limitations, backwards-compatible and sync-compatible migrations</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/schema-evolution.md" class="gh">guidelines/database-design/schema-evolution.md</a></td></tr>
+      <tr><td colspan="3" style="color:var(--accent);font-family:var(--mono);font-size:0.75rem;letter-spacing:0.1em;padding:8px 0 4px;">PERFORMANCE (4)</td></tr>
+      <tr><td>indexing</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">B-tree fundamentals, partial/expression indexes, composite ordering, covering indexes, EXPLAIN QUERY PLAN</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/indexing.md" class="gh">guidelines/database-design/indexing.md</a></td></tr>
+      <tr><td>query-optimization</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">SQLite query planner, rewriting slow queries, avoiding full table scans, JSON query performance, CTEs vs subqueries</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/query-optimization.md" class="gh">guidelines/database-design/query-optimization.md</a></td></tr>
+      <tr><td>transactions-and-concurrency</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">WAL mode, BEGIN IMMEDIATE vs DEFERRED, single writer + multiple readers, busy_timeout, PRAGMA tuning</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/transactions-and-concurrency.md" class="gh">guidelines/database-design/transactions-and-concurrency.md</a></td></tr>
+      <tr><td>access-pattern-analysis</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Query pattern analysis, read/write tradeoffs, WHERE/JOIN/ORDER BY design, batch sizing for sync</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/access-pattern-analysis.md" class="gh">guidelines/database-design/access-pattern-analysis.md</a></td></tr>
+      <tr><td colspan="3" style="color:var(--accent);font-family:var(--mono);font-size:0.75rem;letter-spacing:0.1em;padding:8px 0 4px;">OPERATIONS (2)</td></tr>
+      <tr><td>backup-and-recovery</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">SQLite backup API, Litestream WAL streaming, corruption detection, VACUUM strategy, tombstone purging</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/backup-and-recovery.md" class="gh">guidelines/database-design/backup-and-recovery.md</a></td></tr>
+      <tr><td>testing</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">In-memory vs file-based tests, migration testing, sync logic testing, conflict resolution testing</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/testing.md" class="gh">guidelines/database-design/testing.md</a></td></tr>
+      <tr><td colspan="3" style="color:var(--accent);font-family:var(--mono);font-size:0.75rem;letter-spacing:0.1em;padding:8px 0 4px;">SYNC (7)</td></tr>
+      <tr><td>sync-schema-design</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Dual schema (SQLite + PostgreSQL), UUID PKs for offline creation, soft deletes, dirty tracking, sync metadata</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/sync-schema-design.md" class="gh">guidelines/database-design/sync-schema-design.md</a></td></tr>
+      <tr><td>conflict-resolution</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Last-Write-Wins, field-level merge, CRDTs, conflict queues, choosing strategy per data type</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/conflict-resolution.md" class="gh">guidelines/database-design/conflict-resolution.md</a></td></tr>
+      <tr><td>sync-protocol</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Push/pull/bidirectional sync, incremental delta sync, change tracking, UPSERT idempotency, outbox pattern</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/sync-protocol.md" class="gh">guidelines/database-design/sync-protocol.md</a></td></tr>
+      <tr><td>clock-systems</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Physical clocks, Lamport timestamps, vector clocks, Hybrid Logical Clocks, server-assigned monotonic versions</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/clock-systems.md" class="gh">guidelines/database-design/clock-systems.md</a></td></tr>
+      <tr><td>offline-first-architecture</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">WAL as offline foundation, operation queue pattern, optimistic UI, rollback on rejection, connectivity-aware sync</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/offline-first-architecture.md" class="gh">guidelines/database-design/offline-first-architecture.md</a></td></tr>
+      <tr><td>sync-engine-design</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Orchestrator layers, Syncable interface, sync cycle, scheduling, snapshot rebuilding, circuit breakers</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/sync-engine-design.md" class="gh">guidelines/database-design/sync-engine-design.md</a></td></tr>
+      <tr><td>sync-tooling</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">SQLite Session Extension, cr-sqlite, Litestream, ElectricSQL, PowerSync, Turso/libSQL, sqlite-sync evaluation</td><td><a href="http://agentic-cookbook.com/guidelines/database-design/sync-tooling.md" class="gh">guidelines/database-design/sync-tooling.md</a></td></tr>
+      <tr><td colspan="3" style="color:var(--green);font-family:var(--mono);font-size:0.75rem;letter-spacing:0.1em;padding:8px 0 4px;">CONSULTING TEAMS (3)</td></tr>
+      <tr><td>cross-database-compatibility</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Verifies every schema decision works on both SQLite and PostgreSQL &mdash; type mappings, PK strategies, constraints</td><td><span style="color:var(--text-dim);font-size:0.8rem;">consulting gate</span></td></tr>
+      <tr><td>sync-impact</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Catches non-sync team decisions that would break sync, create merge conflicts, or hinder offline operation</td><td><span style="color:var(--text-dim);font-size:0.8rem;">consulting gate</span></td></tr>
+      <tr><td>access-pattern-coherence</td><td style="color:var(--text-muted);font-family:var(--sans);font-size:0.8rem;">Ensures structural decisions serve actual query patterns &mdash; catches schemas that look correct but perform poorly</td><td><span style="color:var(--text-dim);font-size:0.8rem;">consulting gate</span></td></tr>
     </table></div>
   </details>
   <details>
@@ -1398,9 +1428,101 @@ on native; no client_secret in public clients</code></pre>
   </details>
 </section>
 
+<!-- Observers -->
+<section id="observers">
+  <h2><span class="num">09</span>Observers</h2>
+  <p class="lead">System-level observation of subagent activity via Claude Code hooks. Zero changes to agents or orchestration &mdash; observers capture process narrative deterministically.</p>
+
+  <svg viewBox="0 0 800 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:800px;margin:20px auto;display:block;">
+    <defs>
+      <marker id="obs-arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#5a5a6a"/></marker>
+      <marker id="obs-arrow-a" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#c4a35a"/></marker>
+    </defs>
+
+    <!-- SubagentStop hook -->
+    <rect x="20" y="30" width="160" height="50" rx="6" fill="rgba(212,84,84,0.06)" stroke="#d45454" stroke-width="1"/>
+    <text x="100" y="52" text-anchor="middle" fill="#d45454" font-family="DM Mono,monospace" font-size="10" font-weight="500">SubagentStop</text>
+    <text x="100" y="68" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="9">hook fires on completion</text>
+
+    <!-- Arrow to dispatch -->
+    <line x1="180" y1="55" x2="238" y2="55" stroke="#5a5a6a" stroke-width="1" marker-end="url(#obs-arrow)"/>
+
+    <!-- dispatch.py -->
+    <rect x="240" y="20" width="160" height="70" rx="6" fill="#14141a" stroke="#c4a35a" stroke-width="1"/>
+    <text x="320" y="44" text-anchor="middle" fill="#c4a35a" font-family="DM Mono,monospace" font-size="10" font-weight="500">dispatch.py</text>
+    <text x="320" y="60" text-anchor="middle" fill="#8a8a9a" font-family="Manrope,sans-serif" font-size="9">reads transcript JSONL</text>
+    <text x="320" y="74" text-anchor="middle" fill="#8a8a9a" font-family="Manrope,sans-serif" font-size="9">extracts normalized event</text>
+
+    <!-- Arrow to observers -->
+    <line x1="400" y1="40" x2="478" y2="40" stroke="#c4a35a" stroke-width="1" marker-end="url(#obs-arrow-a)"/>
+    <line x1="400" y1="70" x2="478" y2="70" stroke="#c4a35a" stroke-width="1" marker-end="url(#obs-arrow-a)"/>
+
+    <!-- Stenographer -->
+    <rect x="480" y="14" width="280" height="42" rx="6" fill="rgba(92,178,112,0.04)" stroke="#5cb270" stroke-width="1"/>
+    <text x="530" y="38" text-anchor="start" fill="#5cb270" font-family="DM Mono,monospace" font-size="10" font-weight="500">stenographer</text>
+    <text x="620" y="38" text-anchor="start" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="9">session.log JSONL</text>
+
+    <!-- oslog -->
+    <rect x="480" y="62" width="280" height="42" rx="6" fill="rgba(90,143,212,0.06)" stroke="#5a8fd4" stroke-width="1"/>
+    <text x="530" y="86" text-anchor="start" fill="#5a8fd4" font-family="DM Mono,monospace" font-size="10" font-weight="500">oslog</text>
+    <text x="570" y="86" text-anchor="start" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="9">system log via logger CLI</text>
+
+    <!-- Drop-in note -->
+    <rect x="480" y="120" width="280" height="42" rx="6" fill="rgba(196,163,90,0.06)" stroke="#c4a35a" stroke-width="1" stroke-dasharray="3,3"/>
+    <text x="530" y="144" text-anchor="start" fill="#c4a35a" font-family="DM Mono,monospace" font-size="10" font-weight="500">your-observer.py</text>
+    <text x="660" y="144" text-anchor="start" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="9">auto-discovered</text>
+
+    <line x1="400" y1="55" x2="440" y2="141" stroke="#c4a35a" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#obs-arrow-a)"/>
+
+    <!-- Label -->
+    <text x="170" y="200" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="9">no LLM involved &mdash; deterministic extraction</text>
+    <text x="560" y="185" text-anchor="middle" fill="#5a5a6a" font-family="Manrope,sans-serif" font-size="9">each observer writes independently &mdash; one failure doesn't block others</text>
+  </svg>
+
+  <details>
+    <summary>Architecture <span class="tag tag-arch">system</span></summary>
+    <div class="detail-body">
+      <p>The observer system uses a <code>SubagentStop</code> hook configured in <code>.claude/settings.json</code>. When any subagent completes, <code>dispatch.py</code> reads the agent transcript JSONL, extracts a normalized event (tools used, duration, status, summary), and dispatches to all auto-discovered observer modules in <code>scripts/observers/</code>.</p>
+      <p><strong>Zero agent changes</strong> &mdash; observers are invisible to participants. The pipeline doesn't know it's being observed.</p>
+      <p><strong>Deterministic</strong> &mdash; no LLM involved. Pure data extraction from transcript JSONL.</p>
+      <p><strong>Extensible</strong> &mdash; drop a <code>.py</code> file with <code>def observe(event: dict)</code> into <code>scripts/observers/</code>. Auto-discovered at dispatch time.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Built-in Observers (2) <span class="tag tag-data">observers</span></summary>
+    <div class="detail-body">
+      <table>
+        <tr><th>Observer</th><th>Output</th><th>Purpose</th></tr>
+        <tr><td>stenographer</td><td>session.log (JSONL)</td><td>Structured session log &mdash; timestamp, agent type, description, status, duration, tools used, call count, summary</td></tr>
+        <tr><td>oslog</td><td>system log</td><td>Real-time one-liners via POSIX <code>logger</code> CLI &mdash; visible in Console.app or <code>log stream</code></td></tr>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>Normalized Event <span class="tag tag-data">schema</span></summary>
+    <div class="detail-body">
+      <p>Every observer receives the same event dict:</p>
+      <pre><code>{
+  "timestamp": "2026-04-06T...",
+  "session_id": "abc123",
+  "agent_id": "a1b2c3d4",
+  "agent_type": "general-purpose",
+  "agent_description": "Create schema files",
+  "status": "completed",
+  "duration_ms": 45200,
+  "tools_used": ["Read", "Write", "Glob"],
+  "tool_call_count": 12,
+  "summary": "Created 9 specialty team files..."
+}</code></pre>
+    </div>
+  </details>
+</section>
+
 <!-- Data Flow -->
 <section id="data-flow">
-  <h2><span class="num">09</span>Data Flow</h2>
+  <h2><span class="num">10</span>Data Flow</h2>
   <p class="lead">Two abstraction layers handle all data exchange. Neither reveals its storage implementation to callers.</p>
 
   <div class="diagram"><span class="accent">Communication</span> (Arbitrator)
@@ -1424,7 +1546,7 @@ on native; no client_secret in public clients</code></pre>
 
 <!-- Configuration -->
 <section id="configuration">
-  <h2><span class="num">10</span>Configuration</h2>
+  <h2><span class="num">11</span>Configuration</h2>
   <p class="lead">Minimal config. Created on first run of <code>/dev-team interview</code>.</p>
 
   <pre><code>~/.agentic-cookbook/dev-team/config.json
@@ -1439,13 +1561,14 @@ on native; no client_secret in public clients</code></pre>
 
 <!-- File Map -->
 <section id="file-map">
-  <h2><span class="num">11</span>File Map</h2>
+  <h2><span class="num">12</span>File Map</h2>
   <p class="lead">Repository structure at a glance.</p>
 
   <pre><code>.claude-plugin/              Plugin manifest
 agents/                      20 agent definitions
 specialists/                 20 specialists (13 domain + 6 platform + 1 PM)
-specialty-teams/             212 specialty-team files in 20 categories
+specialty-teams/             231 specialty-team files in 20 categories
+consulting-teams/            Consulting-team files (cross-cutting verification)
 skills/
   dev-team/
     SKILL.md                 Router (v0.6.0)
@@ -1457,6 +1580,11 @@ scripts/
   project-storage/markdown/  8 scripts
   db/                        Database shell script API
   run-specialty-teams.sh     Parses specialist manifests to JSON
+  observers/
+    dispatch.py              Hook entry point (SubagentStop)
+    _lib.py                  Shared utilities
+    stenographer.py          Session log observer (JSONL)
+    oslog.py                 System log observer (logger CLI)
 services/
   dashboard/                 Live workflow dashboard (Flask, port 9876)
 docs/
@@ -1467,14 +1595,14 @@ docs/
 
 <!-- Tests -->
 <section id="tests">
-  <h2><span class="num">12</span>Tests</h2>
+  <h2><span class="num">13</span>Tests</h2>
   <p class="lead">Backend-agnostic contract tests validate APIs regardless of storage implementation.</p>
 
   <table>
     <tr><th>Suite</th><th>Tests</th><th>Coverage</th></tr>
     <tr><td>tests/arbitrator/</td><td>72</td><td>All 11 arbitrator resources: session lifecycle, state transitions, messages, gates, results, findings, interpretations, artifacts, references, retries, reports, consulting reviews, error handling</td></tr>
     <tr><td>tests/project-storage/</td><td>64</td><td>All 7 project-storage resources: project lifecycle, milestones, todos, issues, concerns, dependencies, decisions, CRUD, filtering, error handling</td></tr>
-    <tr><td>tests/specialty-teams/</td><td>2330</td><td>File structure, frontmatter, content, script output, manifest integrity across 212 specialty-team files</td></tr>
+    <tr><td>tests/specialty-teams/</td><td>2330+</td><td>File structure, frontmatter, content, script output, manifest integrity across 231 specialty-team files</td></tr>
   </table>
 
   <pre><code># Run arbitrator contract tests
