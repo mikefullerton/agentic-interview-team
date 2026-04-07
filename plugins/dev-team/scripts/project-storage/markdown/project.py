@@ -3,7 +3,7 @@
 import json
 import sys
 from pathlib import Path
-from _lib import (
+from project_store import (
     parse_flags, require_flag, project_dir, require_project,
     today_iso, json_output, json_build,
 )

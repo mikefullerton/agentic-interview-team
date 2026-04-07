@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Dependency CRUD for markdown project-storage."""
 import sys
-from _lib import (
+from project_store import (
     parse_flags, require_flag, require_project,
     next_id, slugify, today_iso, read_frontmatter, read_body,
     write_item, update_item, json_output, json_build,
