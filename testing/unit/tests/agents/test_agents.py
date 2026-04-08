@@ -202,7 +202,7 @@ def test_agents_directory_exists():
 
 
 def test_has_expected_number_of_agent_files():
-    assert len(AGENT_FILES) == 20, (
-        f"Expected 20 agent files, found {len(AGENT_FILES)}: "
+    assert len(AGENT_FILES) == 21, (
+        f"Expected 21 agent files, found {len(AGENT_FILES)}: "
         f"{[name for name, _ in AGENT_FILES]}"
     )
