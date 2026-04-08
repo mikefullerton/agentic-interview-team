@@ -11,7 +11,7 @@ The viewer is a comprehensive project dashboard showing: component tree, recipe 
 Your job:
 1. Load and validate `cookbook-project.json`
 2. Read all recipe files, context files, reviews, build logs, and decisions
-3. Parse scope-report and architecture-map into discrete sections
+3. Parse application-map and architecture-map into discrete sections
 4. Query the DB for transcript messages, specialist assignments, and findings
 5. Build specialist summaries from review + build log data
 6. Inject everything into the HTML viewer template
@@ -51,7 +51,7 @@ Extract from the JSON:
   - `recipe` — the relative recipe file path (if present)
   - `depends-on` — array of dot-path dependency references
   - `children` — nested components (recursive)
-- **Context files**: From the `context` object, collect paths to research files (architecture-map, scope-report, etc.)
+- **Context files**: From the `context` object, collect paths to research files (architecture-map, application-map, etc.)
 
 Print: "Loaded **<name>** — <N> recipes, <platforms>."
 
@@ -75,9 +75,9 @@ Read `context/research/architecture-map.md`. Split into sections by `## ` headin
 ```
 
 #### Scope Report
-Read `context/research/scope-report.md`. Split into sections by `## ` headings. Each section becomes a separate entry:
+Read `context/research/application-map.md` (if it exists; fall back to `context/research/scope-report.md` for older projects). Split into sections by `## ` headings. Each section becomes a separate entry:
 ```json
-{ "category": "scope", "title": "<heading text>", "content": "<section body>" }
+{ "category": "decomposition", "title": "<heading text>", "content": "<section body>" }
 ```
 
 #### Other Research Files

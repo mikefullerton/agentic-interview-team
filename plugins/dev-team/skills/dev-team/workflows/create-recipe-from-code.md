@@ -171,7 +171,7 @@ Spawn the **project-assembler** agent (`agents/project-assembler.md`) using the 
 Provide:
 - **Output directory** path
 - **Architecture map path**
-- **Scope report path**
+- **Application map path** — `<output>/context/research/application-map.md`
 - **Cookbook repo path** from config
 - **Schema path** — `<cookbook_repo>/reference/cookbook-project.schema.json`
 - **Project name** — derived from the repo name
@@ -271,7 +271,8 @@ Also log the transcript file as an artifact: `db_artifact.py write --project $PR
 
 Follow the interview system's persistence pattern:
 - Write the architecture map **immediately** after the scanner returns (Phase 1)
-- Write the scope report **immediately** after the matcher returns (Phase 2)
+- Write each team's findings **immediately** as each analytical lens completes (Phase 2a)
+- Write the application map **immediately** after the synthesizer returns (Phase 2b)
 - Write each recipe **immediately** as each writer completes (Phase 3)
 - Write the manifest **immediately** after the assembler returns (Phase 4)
 - Write the summary **immediately** at the end (Phase 5)

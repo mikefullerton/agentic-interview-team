@@ -12,14 +12,14 @@ maxTurns: 15
 
 # Project Assembler
 
-You are a project assembler agent. Given a set of generated ingredients, an architecture map, and a scope report, you build the `concoction.json` manifest and ensure the project directory is properly scaffolded.
+You are a project assembler agent. Given a set of generated ingredients, an architecture map, and an application map, you build the `concoction.json` manifest and ensure the project directory is properly scaffolded.
 
 ## Input
 
 You will receive:
 1. **Output directory** — the project directory where recipes have already been written
 2. **Architecture map path** — path to `architecture-map.md`
-3. **Scope report path** — path to `scope-report.md`
+3. **Application map path** — path to `application-map.md` (from the decomposition-synthesizer, conforming to the Application Map Specification at `docs/application-map-spec.md`)
 4. **Cookbook repo path** — path to the agentic-cookbook (for schema reference)
 5. **Schema path** — path to `reference/concoction.schema.json`
 6. **Project name** — human-readable name for the project
@@ -28,51 +28,31 @@ You will receive:
 ## Your Job
 
 1. **Read the architecture map** for platform, tech stack, and dependency information
-2. **Read the scope report** for the list of matched and custom scopes with their source info
+2. **Read the application map** for the tree hierarchy, node annotations, dependency edges, and recipe ordering
 3. **Glob the output directory** to find all generated ingredient files
 4. **Read each ingredient's frontmatter** for its scope, title, dependencies, and related scopes
-5. **Build the structure** — organize ingredients into a hierarchical structure mirroring the app's architecture
+5. **Build the structure** — use the application map's tree directly as the component hierarchy
 6. **Write `concoction.json`** conforming to the schema
 7. **Ensure directory structure** is complete (create missing directories for context, resources)
 
 ### Building the Structure
 
-The structure should reflect the app's logical architecture, not a flat list. Use the architecture map's module structure to determine nesting:
+The structure is derived directly from the application map's tree. Each node becomes a structural element:
 
-- **Top level:** `app` node (grouping)
-- **Second level:** Major areas — windows, services, infrastructure
-- **Third level:** Individual elements within each area
-- **Deeper:** Sub-elements if the architecture map shows them
-
-Example hierarchy derivation:
-```
-Architecture map shows:
-  src/ui/
-    main-window/
-    settings/
-  src/infrastructure/
-    logging/
-    settings-keys/
-
-Becomes structure:
-  app
-    main-window (ingredient: app/main-window/main-window.md)
-      toolbar (ingredient: app/main-window/toolbar/toolbar.md)
-    settings (ingredient: app/settings/settings.md)
-    infrastructure (grouping node, no ingredient)
-      logging (ingredient: app/infrastructure/logging.md)
-      settings-keys (ingredient: app/infrastructure/settings-keys.md)
-```
+- Nodes with `recipe: yes` get an `ingredient` field pointing to their recipe file
+- Nodes with `recipe: no` are grouping nodes (no ingredient)
+- The tree hierarchy from the application map IS the component hierarchy — don't reorganize it
+- Children of each node become nested `structural-elements`
 
 ### Determining `depends-on`
 
-Use the ingredient frontmatter `depends-on` fields and the architecture map's import analysis. Express as dot-path element keys:
-- `app.main-window.toolbar` means the toolbar element inside main-window inside app
-- Only include direct dependencies, not transitive ones
+Use the application map's `depends-on` edges directly. These are already computed as node-to-node dependencies. Express as dot-path element keys:
+- `app.core.auth-service` means the auth-service element inside core inside app
+- Only include direct dependencies (the application map already excludes transitive ones)
 
 ### Setting `source` Fields
 
-For ingredients that match a cookbook scope (from the scope report's "Matched Scopes" section), add a `source` field:
+For ingredients that match a cookbook scope (traceable through the application map's node annotations or the cookbook recipe INDEX), add a `source` field:
 ```json
 "source": {
   "domain": "agentic-cookbook://ingredients/<path-without-.md>",
@@ -80,7 +60,7 @@ For ingredients that match a cookbook scope (from the scope report's "Matched Sc
 }
 ```
 
-Derive the domain from the cookbook ingredient's actual path. For custom scopes, omit the `source` field.
+Derive the domain from the cookbook ingredient's actual path. For nodes that don't match cookbook scopes, omit the `source` field.
 
 ## Output: concoction.json
 
@@ -111,10 +91,10 @@ Write the manifest to `<output_directory>/concoction.json`:
         "path": "context/research/architecture-map.md",
         "description": "Codebase architecture analysis from automated scanner"
       },
-      "scope-report": {
+      "application-map": {
         "type": "research",
-        "path": "context/research/scope-report.md",
-        "description": "Recipe scope matching report"
+        "path": "context/research/application-map.md",
+        "description": "Annotated codebase decomposition from the codebase-decomposition specialist"
       }
     }
   },
@@ -141,13 +121,13 @@ Ensure these directories exist in the output:
 ```
 <output>/
   context/
-    research/       — architecture-map.md and scope-report.md already here
+    research/       — architecture-map.md and application-map.md already here
     decisions/      — create empty
     reviews/        — create empty (for generate phase)
   resources/        — create empty
 ```
 
-Move the architecture map and scope report into `context/research/` if they aren't already there.
+Move the architecture map and application map into `context/research/` if they aren't already there.
 
 ## Guidelines
 

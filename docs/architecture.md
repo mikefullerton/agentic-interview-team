@@ -20,8 +20,9 @@ Entry point: `/dev-team <command>` — a single skill router that dispatches to 
 | **Team-Lead** | Runs a workflow, has a persona, talks to the user. Types: interview, analysis, review, build, audit. |
 | **Playbook** | Static definition of a workflow — which team-lead, which specialists, phases, inputs, outputs. (TBD — not yet implemented as a stored type.) |
 | **Session** | A playbook being executed — runtime instance with state, tracked by the arbitrator. |
-| **Specialist** | Self-enclosed component with a role, persona, cookbook sources, and a manifest of specialty-teams. 20 specialists: 13 domain + 6 platform + 1 project-management. |
-| **Specialty-Team** | Standalone file defining a worker-verifier pair focused on one cookbook artifact. 212 teams across 20 categories in `specialty-teams/`. |
+| **Specialist** | Self-enclosed component with a role, persona, cookbook sources, and a manifest of specialty-teams. 22 specialists: 13 domain + 6 platform + 1 project-management + 1 codebase-decomposition + 1 recipe-quality. |
+| **Specialty-Team** | Standalone file defining a worker-verifier pair focused on one cookbook artifact. 230 teams across 22 categories in `specialty-teams/`. |
+| **Application Map** | Annotated hierarchical decomposition of a codebase produced by the codebase-decomposition specialist. Formal spec at `plugins/dev-team/docs/application-map-spec.md`. Tree structure, file traceability, dependency edges, feature flows, and bottom-up recipe ordering. |
 | **Specialty-Worker** | LLM agent. Reads one cookbook artifact, produces structured findings. Isolated — never sees verifier instructions. |
 | **Specialty-Verifier** | LLM agent. Checks specialty-worker output for completeness. Returns PASS/FAIL. Isolated — never sees worker instructions. Max 3 retries before escalation. |
 | **Consulting-Team** | Standalone file defining a consulting worker-verifier pair focused on one cross-cutting concern. Reviews every specialty-team's output within a specialist. Lives in `consulting-teams/`. |
