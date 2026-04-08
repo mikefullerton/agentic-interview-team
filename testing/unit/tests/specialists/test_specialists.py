@@ -20,7 +20,7 @@ PLUGIN_ROOT = REPO_ROOT / "plugins" / "dev-team"
 SPECIALISTS_DIR = PLUGIN_ROOT / "specialists"
 ASSIGN_SCRIPT = PLUGIN_ROOT / "scripts" / "assign_specialists.py"
 
-EXPECTED_SPECIALIST_COUNT = 21
+EXPECTED_SPECIALIST_COUNT = 23
 
 
 # ---------------------------------------------------------------------------
@@ -303,15 +303,15 @@ class TestAssignSpecialists:
         rc, _, _ = run_assign(nonexistent)
         assert rc != 0, "Expected non-zero exit code for missing recipe file"
 
-    def test_recipe_with_no_keywords_produces_no_output(self, tmp_path):
-        """A recipe with no matching keywords and no platforms should produce no output."""
+    def test_recipe_with_no_keywords_produces_only_universal(self, tmp_path):
+        """A recipe with no matching keywords and no platforms should produce only universal specialists."""
         recipe = make_recipe(
             tmp_path,
             "This is a completely generic recipe with no specific technology mentions.",
         )
         rc, out, _ = run_assign(recipe)
-        # Script exits 0 with no output when no specialists are matched
-        assert out == "", f"Expected empty output, got: {out!r}"
+        # Universal specialists (recipe) are always assigned
+        assert out == "recipe", f"Expected only universal specialists, got: {out!r}"
 
     def test_multiple_platforms_combined(self, tmp_path):
         """Passing multiple platforms should include all their specialists."""
