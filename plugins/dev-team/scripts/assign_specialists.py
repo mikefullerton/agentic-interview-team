@@ -95,6 +95,10 @@ def main():
             if s and s != "null":
                 specialists.append(s)
 
+    # 4. Universal specialists (assigned to every recipe)
+    universal = mapping.get("universal-specialists", [])
+    specialists.extend(universal)
+
     # Deduplicate
     if not specialists:
         sys.exit(0)

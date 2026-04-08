@@ -40,9 +40,17 @@ From `cookbook-project.json` `platforms` array:
 | windows | platform-windows |
 | web | platform-web-frontend, platform-web-backend |
 
+### 4. Universal Specialists
+
+These specialists are assigned to **every recipe** regardless of category, content, or platform:
+
+| Specialist | Reason |
+|-----------|--------|
+| Recipe | Meta-quality: template conformance, behavioral requirement rigor, source fidelity, completeness, cross-recipe consistency |
+
 ### Limits
 
-Assign at most **3-4 specialists per recipe**. Priority: domain specialist most related to recipe category → platform specialists → cross-cutting specialists.
+Assign at most **3-4 specialists per recipe** (not counting universal specialists). Priority: domain specialist most related to recipe category → platform specialists → cross-cutting specialists.
 
 ## Specialist Tier Ordering (Build Only)
 
@@ -52,5 +60,5 @@ When specialists augment code sequentially in the build workflow, order by tier:
 |------|------|------------|
 | 1 | Foundation | software-architecture |
 | 2 | Core Domain | reliability, data-persistence, networking-api |
-| 3 | Cross-Cutting | security, ui-ux-design, accessibility, localization-i18n, testing-qa, devops-observability, code-quality, development-process, claude-code |
+| 3 | Cross-Cutting | security, ui-ux-design, accessibility, localization-i18n, testing-qa, devops-observability, code-quality, development-process, claude-code, recipe |
 | 4 | Platform | platform-ios-apple, platform-android, platform-windows, platform-web-frontend, platform-web-backend, platform-database |

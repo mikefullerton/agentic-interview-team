@@ -38,6 +38,7 @@
     "windows": ["platform-windows"],
     "web": ["platform-web-frontend", "platform-web-backend"]
   },
+  "universal-specialists": ["recipe"],
   "tier-order": [
     "software-architecture",
     "reliability",
@@ -52,6 +53,7 @@
     "code-quality",
     "development-process",
     "claude-code",
+    "recipe",
     "platform-ios-apple",
     "platform-android",
     "platform-windows",
