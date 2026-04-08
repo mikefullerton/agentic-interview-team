@@ -1,0 +1,10 @@
+{
+  "name": "name-a-puppy",
+  "version": "0.1.0",
+  "description": "Name your puppy with help from a team of dog experts",
+  "author": {
+    "name": "Mike Fullerton"
+  },
+  "license": "MIT",
+  "skills": "./skills/"
+}
