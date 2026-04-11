@@ -1,6 +1,6 @@
 # Plan: System Terminology & Component Architecture
 
-> **Status:** Superseded by [`2026-04-11-conductor-architecture.md`](./2026-04-11-conductor-architecture.md). This doc captured the first DB-centric rearchitecture pass, which assumed the team-lead runs in the user's Claude Code conversation. The April 11 doc pushes the outer loop out of Claude entirely (headless conductor + Agent SDK dispatch). Read v2 for terminology foundations and the disposition table; read the April 11 doc for the current target architecture.
+> **Status:** Superseded by [`2026-04-11-conductor-architecture.md`](./2026-04-11-conductor-architecture.md). This doc captured the first DB-centric rearchitecture pass, which assumed the team-lead runs in the user's Claude Code conversation. The April 11 doc pushes the outer loop out of Claude entirely (headless conductor + `claude -p` subprocess dispatch). Read v2 for terminology foundations and the disposition table; read the April 11 doc for the current target architecture.
 
 ## Context
 
