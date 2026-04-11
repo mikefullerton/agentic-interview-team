@@ -1,4 +1,0 @@
-- [User billing constraint](user_billing_constraint.md) — $200 Claude Max; no per-token API. Affects all LLM tooling choices.
-- [Conductor architecture pivot](project_conductor_pivot.md) — dev-team pivoting to headless conductor; spec landed 2026-04-11.
-- [agentic-daemon reference](reference_agentic_daemon.md) — user's macOS launchd daemon; target phase-2 host for conductor.
-- [Key architecture docs](reference_key_docs.md) — spec/research/v2/current-state doc locations for dev-team.
