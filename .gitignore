@@ -1,6 +1,12 @@
 # macOS
 .DS_Store
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
 # Claude Code worktrees
 .claude/worktrees/
 
