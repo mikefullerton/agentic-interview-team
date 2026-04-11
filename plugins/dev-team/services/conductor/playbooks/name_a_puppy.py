@@ -1,20 +1,22 @@
-"""name-a-puppy team playbook — walking skeleton.
+"""name-a-puppy team playbook — full flow (step 2).
 
-The simplest possible end-to-end flow: greet, dispatch a single `breed`
-specialist with a single specialty that produces breed-based name
-candidates, present the aggregated names, done.
+Flow:
+    start
+      └─ gather_traits (loops via judgment, decides when to proceed)
+           └─ dispatch_specialists (3 in parallel: breed, lifestyle, temperament)
+                └─ aggregate (ranking judgment)
+                     └─ present (gate: accept/reject/refine)
+                          └─ done
 
-Step 2 will expand this to three specialists running in parallel plus a
-user-facing judgment node.
+The state tree has real depth here — `dispatch_specialists` spawns three
+children, each of which spawns grandchildren for its specialty runs.
 """
 from __future__ import annotations
 
 import sys
 from pathlib import Path
 
-# Allow this playbook to be loaded via absolute file path (which is how the
-# loader finds it) without requiring the caller to have the package on sys.path.
-_PKG_ROOT = Path(__file__).resolve().parents[3]  # plugins/dev-team
+_PKG_ROOT = Path(__file__).resolve().parents[3]
 if str(_PKG_ROOT) not in sys.path:
     sys.path.insert(0, str(_PKG_ROOT))
 
@@ -32,7 +34,11 @@ from services.conductor.playbook.types import (  # noqa: E402
 )
 
 
-_BREED_SCHEMA = {
+# ---------------------------------------------------------------------------
+# Specialty schemas / prompts
+# ---------------------------------------------------------------------------
+
+_CANDIDATE_LIST_SCHEMA = {
     "type": "object",
     "properties": {
         "candidates": {
@@ -45,54 +51,167 @@ _BREED_SCHEMA = {
     "required": ["candidates"],
 }
 
-_BREED_PROMPT = (
-    "Suggest 5 puppy names inspired by popular dog breeds. "
-    "Return JSON matching the schema: "
-    '{{"candidates": ["name1", "name2", ...]}}.'
-)
-
 
 BREED_SPECIALTY = SpecialtySpec(
     name="breed-name-suggester",
     worker_agent="breed-name-worker",
-    worker_prompt_template=_BREED_PROMPT,
-    response_schema=_BREED_SCHEMA,
+    worker_prompt_template=(
+        "Suggest 5 puppy names inspired by popular dog breeds. "
+        'Return JSON: {{"candidates": ["name1", "name2", ...]}}.'
+    ),
+    response_schema=_CANDIDATE_LIST_SCHEMA,
     logical_model="fast-cheap",
 )
 
-BREED_SPECIALIST = SpecialistSpec(
-    name="breed",
-    specialties=[BREED_SPECIALTY],
+LIFESTYLE_SPECIALTY = SpecialtySpec(
+    name="lifestyle-name-suggester",
+    worker_agent="lifestyle-name-worker",
+    worker_prompt_template=(
+        "Suggest 5 puppy names inspired by an active outdoor lifestyle "
+        '(hiking, camping, water, adventure). Return JSON: {{"candidates": [...] }}.'
+    ),
+    response_schema=_CANDIDATE_LIST_SCHEMA,
+    logical_model="fast-cheap",
 )
 
+TEMPERAMENT_SPECIALTY = SpecialtySpec(
+    name="temperament-name-suggester",
+    worker_agent="temperament-name-worker",
+    worker_prompt_template=(
+        "Suggest 5 puppy names that fit a playful, friendly temperament. "
+        'Return JSON: {{"candidates": [...] }}.'
+    ),
+    response_schema=_CANDIDATE_LIST_SCHEMA,
+    logical_model="fast-cheap",
+)
+
+
+BREED_SPECIALIST = SpecialistSpec(
+    name="breed", specialties=[BREED_SPECIALTY]
+)
+LIFESTYLE_SPECIALIST = SpecialistSpec(
+    name="lifestyle", specialties=[LIFESTYLE_SPECIALTY]
+)
+TEMPERAMENT_SPECIALIST = SpecialistSpec(
+    name="temperament", specialties=[TEMPERAMENT_SPECIALTY]
+)
+
+
+# ---------------------------------------------------------------------------
+# Judgment specs
+# ---------------------------------------------------------------------------
+
+GATHER_TRAITS_JUDGMENT = JudgmentSpec(
+    prompt_template=(
+        "We are helping the user name a puppy. Decide whether we have enough "
+        "context to start dispatching specialists, or whether we should ask "
+        "another question first. Session: {session_id}. "
+        'Return JSON: {{"next_state": "gather_traits" | "dispatch_specialists", '
+        '"question": "optional follow-up question"}}.'
+    ),
+    response_schema={
+        "type": "object",
+        "properties": {
+            "next_state": {
+                "type": "string",
+                "enum": ["gather_traits", "dispatch_specialists"],
+            },
+            "question": {"type": "string"},
+        },
+        "required": ["next_state"],
+    },
+    legal_next_states=["gather_traits", "dispatch_specialists"],
+    logical_model="balanced",
+    agent_name="team-lead-gather",
+)
+
+RANK_JUDGMENT = JudgmentSpec(
+    prompt_template=(
+        "Three specialists proposed candidate puppy names. Read the result "
+        "rows and return a single ranked list of the top 5 names. "
+        'Return JSON: {{"ranked_candidates": ["name1", "name2", ...], '
+        '"next_state": "present"}}.'
+    ),
+    response_schema={
+        "type": "object",
+        "properties": {
+            "ranked_candidates": {
+                "type": "array",
+                "items": {"type": "string"},
+                "minItems": 1,
+                "maxItems": 10,
+            },
+            "next_state": {"type": "string", "enum": ["present"]},
+        },
+        "required": ["ranked_candidates", "next_state"],
+    },
+    legal_next_states=["present"],
+    logical_model="balanced",
+    agent_name="team-lead-aggregator",
+)
+
+
+# ---------------------------------------------------------------------------
+# State machine
+# ---------------------------------------------------------------------------
 
 STATES = [
     State(
         name="start",
         entry_actions=(
-            EmitMessage("Let's find a name for your puppy.", type="notification"),
+            EmitMessage(
+                "Let's find a name for your puppy.", type="notification"
+            ),
         ),
     ),
     State(
+        name="gather_traits",
+        entry_actions=(
+            EmitMessage(
+                "Tell me about your puppy — breed, lifestyle, temperament.",
+                type="question",
+            ),
+        ),
+        judgment="ask_next_question",
+    ),
+    State(
         name="dispatch_specialists",
-        entry_actions=(DispatchSpecialist("breed"),),
+        entry_actions=(
+            DispatchSpecialist("breed"),
+            DispatchSpecialist("lifestyle"),
+            DispatchSpecialist("temperament"),
+        ),
+    ),
+    State(
+        name="aggregate",
+        entry_actions=(),
+        judgment="rank_candidates",
     ),
     State(
         name="present",
-        entry_actions=(PresentResults("Candidate names:"),),
+        entry_actions=(PresentResults("Top candidate names:"),),
     ),
     State(name="done", terminal=True),
 ]
 
 TRANSITIONS = [
-    Transition("start", "dispatch_specialists"),
-    Transition("dispatch_specialists", "present"),
+    Transition("start", "gather_traits"),
+    Transition("gather_traits", "gather_traits"),  # loop
+    Transition("gather_traits", "dispatch_specialists"),
+    Transition("dispatch_specialists", "aggregate"),
+    Transition("aggregate", "present"),
     Transition("present", "done"),
+    Transition("present", "gather_traits"),  # on refine
 ]
 
-JUDGMENT_SPECS: dict[str, JudgmentSpec] = {}
+JUDGMENT_SPECS = {
+    "ask_next_question": GATHER_TRAITS_JUDGMENT,
+    "rank_candidates": RANK_JUDGMENT,
+}
 
-MANIFEST = Manifest(specialists=[BREED_SPECIALIST])
+MANIFEST = Manifest(
+    specialists=[BREED_SPECIALIST, LIFESTYLE_SPECIALIST, TEMPERAMENT_SPECIALIST]
+)
 
 PLAYBOOK = TeamPlaybook(
     name="name-a-puppy",
