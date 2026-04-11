@@ -222,7 +222,7 @@ The user runs `conductor start --playbook=... --ui=tui` from a terminal. Conduct
 
 ### Daemon-hosted (phase 2)
 
-The `agentic-daemon` project (user's existing Swift launchd daemon at `~/projects/agentic-daemon`) gains the ability to host conductor jobs:
+The `agentic-daemon` project (user's existing Swift launchd daemon at `~/projects/active/agentic-daemon`) gains the ability to host conductor jobs:
 
 - One conductor process per session, managed as a daemon job.
 - Job lifecycle decoupled from terminal lifecycle — a user can start a job, close the terminal, open another, and reattach.

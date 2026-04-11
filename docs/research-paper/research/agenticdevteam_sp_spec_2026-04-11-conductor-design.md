@@ -583,7 +583,7 @@ This is the starting point. Simple, debuggable, tight feedback loop.
 
 ### 9.2 Daemon host (phase 2)
 
-The existing `agentic-daemon` project gains the ability to host conductor jobs. See `~/projects/agentic-daemon/README.md`.
+The existing `agentic-daemon` project gains the ability to host conductor jobs. See `~/projects/active/agentic-daemon/README.md`.
 
 **Required daemon changes:**
 - **Non-Swift job types.** Current daemon compiles and runs Swift `job.swift` scripts. Must also support Python service jobs (running `conductor start ...` as a subprocess with lifecycle management).
@@ -756,7 +756,7 @@ Captured for the implementation plan to resolve, not this spec:
 - **Research predecessor:** `docs/planning/2026-04-11-conductor-architecture.md` — brainstorming history and alternatives.
 - **Terminology ancestor:** `docs/planning/2026-04-03-system-architecture-v2.md` — v2 DB-centric rearchitecture.
 - **Current architecture:** `docs/architecture.md` — the current (pre-conductor) state.
-- **Agentic daemon:** `~/projects/agentic-daemon/README.md` — the target phase-2 host.
+- **Agentic daemon:** `~/projects/active/agentic-daemon/README.md` — the target phase-2 host.
 - **DB schema rules:** `.claude/rules/db-schema-design.md`.
 - **Directory conventions:** `.claude/rules/use-project-directories.md`.
 

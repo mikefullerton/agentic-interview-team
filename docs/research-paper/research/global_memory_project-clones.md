@@ -16,12 +16,12 @@ for i in 1 2 3 4; do git clone git@github.com:QualityTimeStudios/QualityTime.git
 for i in 1 2 3 4; do git clone git@github.com:temporal-company/temporal.git ~/projects/temporal$i; done
 
 # Personal sites
-git clone git@github.com:mikefullerton/mikefullerton.com.git ~/projects/mikefullerton.com
-git clone git@github.com:mikefullerton/mikeisdrumming.git ~/projects/mikeisdrumming
-git clone git@github.com:mikefullerton/scratchyfish.com.git ~/projects/scratchyfish.com
+git clone git@github.com:mikefullerton/mikefullerton.com.git ~/projects/active/mikefullerton.com
+git clone git@github.com:mikefullerton/mikeisdrumming.git ~/projects/paused/mikeisdrumming
+git clone git@github.com:mikefullerton/scratchyfish.com.git ~/projects/paused/scratchyfish.com
 
 # Tools
-git clone git@github.com:mikefullerton/market-research.git ~/projects/market-research
+git clone git@github.com:mikefullerton/market-research.git ~/projects/paused/market-research
 ```
 
 ## Duplicate Clones (same remote)

@@ -4,7 +4,7 @@
 
 For a description, reference, and index of **all current projects**, see the repo at:
 
-    ~/projects/my-projects-overview/
+    ~/projects/active/my-projects-overview/
 
 This repo contains `projects/<name>/overview.md` files for each active project, a top-level `index.md`, and a generated HTML site under `site/`. Consult it when you need the big picture across projects.
 

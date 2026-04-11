@@ -4,7 +4,7 @@ description: User's existing macOS launchd-based job-runner daemon. Target phase
 type: reference
 originSessionId: 1529e1c6-c334-497e-83d0-d341413f38f4
 ---
-Project at `~/projects/agentic-daemon`. A macOS user-space daemon (Swift) managed by launchd that watches a jobs directory, compiles Swift scripts, and runs them on configurable schedules. Installed via `./install.sh`; stdout/stderr go to `~/Library/Logs/com.agentic-cookbook.daemon/` and macOS unified logging.
+Project at `~/projects/active/agentic-daemon`. A macOS user-space daemon (Swift) managed by launchd that watches a jobs directory, compiles Swift scripts, and runs them on configurable schedules. Installed via `./install.sh`; stdout/stderr go to `~/Library/Logs/com.agentic-cookbook.daemon/` and macOS unified logging.
 
 **Relevance to dev-team:** Designated phase-2 host for conductor sessions (see project_conductor_pivot). Needs these additions before it can host conductors:
 - Non-Swift job types (Python service jobs).
