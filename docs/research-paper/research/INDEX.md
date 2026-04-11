@@ -6,7 +6,7 @@ scope of rules, skills, and agents.
 
 Each file is preserved with its original content. The filename prefix indicates the source project.
 
-**Total files**: 236
+**Total files**: 241
 
 ## Contents by Category
 
@@ -80,6 +80,14 @@ Each file is preserved with its original content. The filename prefix indicates 
 - **[agenticdevteam_plugin_team-pipeline_specialist-spec.md](agenticdevteam_plugin_team-pipeline_specialist-spec.md)** — from `~/projects/agenticdevteam/plugins/team-pipeline/docs/specialist-spec.md`
 - **[agenticdevteam_plugin_team-pipeline_specialty-team-spec.md](agenticdevteam_plugin_team-pipeline_specialty-team-spec.md)** — from `~/projects/agenticdevteam/plugins/team-pipeline/docs/specialty-team-spec.md`
 - **[agenticdevteam_plugin_team-pipeline_team-lead-spec.md](agenticdevteam_plugin_team-pipeline_team-lead-spec.md)** — from `~/projects/agenticdevteam/plugins/team-pipeline/docs/team-lead-spec.md`
+
+### 07-agenticdevteam-memory
+
+- **[agenticdevteam_memory_MEMORY.md](agenticdevteam_memory_MEMORY.md)** — from `~/.claude/projects/-Users-mfullerton-projects-agenticdevteam/memory/MEMORY.md`
+- **[agenticdevteam_memory_user_billing_constraint.md](agenticdevteam_memory_user_billing_constraint.md)** — from `~/.claude/projects/-Users-mfullerton-projects-agenticdevteam/memory/user_billing_constraint.md`
+- **[agenticdevteam_memory_project_conductor_pivot.md](agenticdevteam_memory_project_conductor_pivot.md)** — from `~/.claude/projects/-Users-mfullerton-projects-agenticdevteam/memory/project_conductor_pivot.md`
+- **[agenticdevteam_memory_reference_agentic_daemon.md](agenticdevteam_memory_reference_agentic_daemon.md)** — from `~/.claude/projects/-Users-mfullerton-projects-agenticdevteam/memory/reference_agentic_daemon.md`
+- **[agenticdevteam_memory_reference_key_docs.md](agenticdevteam_memory_reference_key_docs.md)** — from `~/.claude/projects/-Users-mfullerton-projects-agenticdevteam/memory/reference_key_docs.md`
 
 ### 10-cookbook-claude-research
 
