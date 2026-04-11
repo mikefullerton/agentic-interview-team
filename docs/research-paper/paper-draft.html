@@ -4,104 +4,101 @@
 <meta charset="utf-8">
 <title>Designing an Autonomous Multi-Agent Development System</title>
 <style>
+/* Print-optimized layout for US Letter (8.5 x 11). Two columns, 10pt body. */
 :root { color-scheme: light; }
 * { box-sizing: border-box; }
+
+@page { size: letter; margin: 0.6in 0.55in; }
+
+html { background: #e5e5e2; }
 body {
   font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-  max-width: 84em;
-  margin: 3em auto;
-  padding: 0 1.5em 6em;
-  color: #1a1a1a;
-  background: #fafaf7;
-  line-height: 1.55;
-  font-size: 14px;
+  color: #111;
+  font-size: 10pt;
+  line-height: 1.38;
   hyphens: auto;
   text-rendering: optimizeLegibility;
+  column-count: 2;
+  column-gap: 0.3in;
+  column-fill: auto;
+  /* Simulate an 8.5x11 page on screen so the layout is WYSIWYG */
+  width: 7.4in;          /* 8.5 - 2*0.55 */
+  margin: 0.5in auto;
+  padding: 0.6in 0.55in;
+  background: white;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.12);
+  min-height: 9.8in;     /* 11 - 2*0.6 */
 }
+
 h1, h2, h3 {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  line-height: 1.25;
-  color: #111;
+  line-height: 1.2;
+  color: #000;
+  break-after: avoid;
 }
 h1 {
-  font-size: 2.0em;
-  margin: 0.2em 0 0.1em;
+  font-size: 18pt;
+  margin: 0 0 2pt;
   font-weight: 700;
   letter-spacing: -0.01em;
+  column-span: all;
 }
 h1 + h2 {
-  font-size: 1.15em;
+  font-size: 11pt;
   font-weight: 400;
-  color: #555;
-  margin: 0 0 2em;
+  color: #444;
+  margin: 0 0 8pt;
   border: none;
   padding: 0;
   font-style: italic;
+  column-span: all;
 }
 h2 {
-  font-size: 1.45em;
-  margin-top: 2.4em;
-  margin-bottom: 0.6em;
-  padding-bottom: 0.25em;
-  border-bottom: 1px solid #ddd;
+  font-size: 12.5pt;
+  margin: 14pt 0 4pt;
+  padding-bottom: 1pt;
+  border-bottom: 0.5pt solid #bbb;
 }
 h3 {
-  font-size: 1.15em;
-  margin-top: 1.8em;
-  margin-bottom: 0.4em;
+  font-size: 10.5pt;
+  margin: 10pt 0 2pt;
+  font-weight: 700;
 }
-p { margin: 0 0 1em; text-align: justify; }
-em { color: #333; }
+
+p {
+  margin: 0 0 5pt;
+  text-align: justify;
+  orphans: 3;
+  widows: 3;
+}
+em { color: #222; }
 strong { color: #000; }
 code {
   font-family: "SF Mono", Menlo, Consolas, monospace;
   font-size: 0.88em;
   background: #eeece3;
-  padding: 0.08em 0.35em;
-  border-radius: 3px;
+  padding: 0.05em 0.3em;
+  border-radius: 2px;
 }
-ul { margin: 0 0 1em 0; padding-left: 1.3em; }
-li { margin: 0.25em 0; }
+ul { margin: 0 0 5pt 0; padding-left: 14pt; }
+li { margin: 1pt 0; break-inside: avoid; }
 hr {
   border: none;
-  border-top: 1px solid #ccc;
-  margin: 2.5em 0;
+  border-top: 0.5pt solid #bbb;
+  margin: 6pt 0;
 }
-blockquote {
-  border-left: 3px solid #ccc;
-  margin: 1em 0;
-  padding: 0.2em 1em;
-  color: #444;
-}
-
-/* Italic subtitle paragraph right after the title */
-h1 + h2 + p em { font-style: italic; }
 
 @media print {
+  html { background: white; }
   body {
-    background: white;
-    color: black;
-    font-size: 11pt;
-    max-width: none;
+    width: auto;
+    min-height: 0;
     margin: 0;
     padding: 0;
+    box-shadow: none;
+    background: white;
   }
-  h1 { font-size: 20pt; }
-  h2 {
-    font-size: 14pt;
-    margin-top: 18pt;
-    page-break-after: avoid;
-  }
-  h3 {
-    font-size: 12pt;
-    page-break-after: avoid;
-  }
-  p, li { orphans: 3; widows: 3; }
-  h2, h3 { break-after: avoid; }
-  p, ul { break-inside: avoid-page; }
-  hr { border: none; border-top: 1px solid #999; margin: 12pt 0; }
   a { color: black; text-decoration: none; }
-  @page { margin: 0.85in 0.9in; }
 }
 </style>
 </head>
