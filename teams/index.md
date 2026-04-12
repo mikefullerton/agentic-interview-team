@@ -1,5 +1,5 @@
-# Teams
+# teams/
 
-- [Dev Team](devteam/index.md)
-- [Project Team](projectteam/index.md)
-- [Puppy Naming Team](puppynamingteam/index.md)
+- [devteam/](devteam/index.md)
+- [projectteam/](projectteam/index.md)
+- [puppynamingteam/](puppynamingteam/index.md)
