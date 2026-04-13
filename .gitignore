@@ -22,3 +22,6 @@ node_modules/
 # Test harness logs
 tests/harness/.logs/
 .superpowers/
+
+# graphify output (generated)
+graphify-out/
