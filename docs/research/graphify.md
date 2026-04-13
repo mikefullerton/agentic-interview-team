@@ -109,3 +109,168 @@ The compounding benefit: the graph is shared state. One extraction pass, every a
 - Confidence tagging at extraction time (not post-hoc)
 - Domain-aware Whisper prompts bootstrapped from the graph's own god nodes (the graph improves its own extraction quality)
 - Unified graph for both structural and semantic edges — Leiden sees both simultaneously
+
+## Landscape — other tools doing codebase analysis
+
+### GitNexus
+https://github.com/abhigyanpatwari/GitNexus
+
+Zero-server — runs entirely in the browser. Drop in a GitHub repo or ZIP, get an interactive knowledge graph with a built-in Graph RAG agent. No code leaves your machine. The key architectural choice: it precomputes structure at index time (clustering, call tracing, scoring) so AI agent queries return complete context in one call rather than requiring multi-hop lookups. Exposes as an MCP server. Hit #1 on GitHub trending April 2026.
+
+### CodePrism
+https://github.com/rustic-ai/codeprism
+
+100% AI-generated codebase (every line of code, test, and config written by AI agents). Does semantic pattern detection rather than syntactic: identifies framework patterns (Flask, Django, FastAPI), data access patterns (Repository, Active Record), security patterns — based on what the code means, not just its structure. Rust-powered, exposes 23 MCP tools.
+
+### Emerge
+https://github.com/glato/emerge
+
+Older tool, good technique. Applies Louvain community detection (predecessor to Leiden) combined with TF-IDF semantic search on source files. Does fan-in/fan-out analysis and generates heatmaps based on combined SLOC + fan-out scores — visually identifies files that are both large and heavily depended on. Browser-based D3 visualization.
+
+### Drift
+https://github.com/marketplace/actions/drift-architectural-erosion-check
+
+Entirely different angle. Detects architectural erosion specifically from AI-generated code. Uses 23 deterministic signals (no LLM) to find: error handling fragmented across multiple patterns, layer boundary violations, pattern fragmentation. 97.3% precision claimed. Runs as a GitHub Action.
+
+The insight is the opposite of graphify: instead of "help me understand this codebase," it's "alert me when AI coding assistants are degrading the architecture."
+
+### analysis-tools-dev/static-analysis
+https://github.com/analysis-tools-dev/static-analysis
+
+Not a tool — a curated directory of hundreds of static analysis tools organized by language. Useful reference.
+
+### Common patterns across the space
+
+Most tools converge on: tree-sitter AST → graph → community detection → LLM or Graph RAG on top. Differentiation is in where it runs (browser, MCP server, local skill), what it detects (structural vs. semantic patterns; erosion vs. comprehension), and whether it uses LLMs.
+
+## Cross-project meta-graph — proposed approach
+
+### The problem
+
+Each project has its own graphify graph — an island. When an LLM helps plan across projects, it either reads a curated overview (shallow) or gets manual context. It has no structural understanding of how projects relate.
+
+### What a cross-project graph gives you
+
+**Commonality detection.** Take god nodes from each project's graph, merge into one graph, run Leiden. Communities that form across project boundaries are shared abstractions. Three projects might all have an "arbitrator" pattern or a "storage provider" pattern — the graph surfaces it without manual inspection.
+
+**Dependency mapping.** Edges between projects reveal coupling. If project A's `SharedDB` god node is referenced by project B's `StorageProvider`, that's a real dependency. Change one, the other breaks.
+
+**Planning leverage.** God nodes in a cross-project graph are the highest-leverage work items — a change there ripples across the most projects. An LLM can say: "these 5 projects share a common auth pattern; fixing it once is 5x the value."
+
+### Architecture
+
+```
+graphify (per project)          already have this
+        │
+        ▼
+   graph.json × N projects      existing output
+        │
+        ▼
+   meta-graph builder            ~200 lines of Python
+        │
+        ▼
+   meta-graph.json + report      cross-project structural map
+        │
+        ▼
+   LLM reads at session start    like GRAPH_REPORT.md but portfolio-wide
+```
+
+### The meta-graph builder
+
+A Python script that:
+1. Walks `~/projects/active/*/graphify-out/graph.json`
+2. Extracts god nodes (top N by edge count) with their edges from each project
+3. Matches nodes across projects — same name, same import target, or LLM-judged semantic similarity
+4. Builds a single NetworkX graph where each node carries a `project` attribute
+5. Runs Leiden on the merged graph
+6. Outputs `meta-graph.json` and `META_REPORT.md`
+
+### Key design choice: god nodes only
+
+The naive approach — merge all graphs — produces noise. 4,000 nodes per project × 10 projects = 40,000 nodes, useless. The meta-graph uses god nodes only: each project contributes its top 10-20 most-connected abstractions. ~200 nodes total. Communities that form at this level tell you which projects cluster together and why.
+
+### META_REPORT.md contents
+
+- Cross-project communities (which projects cluster and why)
+- Shared god nodes (abstractions appearing in multiple projects)
+- Cross-project bridges (coupling points between projects)
+- Orphan projects (no edges to anything else — fully independent)
+
+### Planning annotations
+
+A lightweight YAML or SQLite layer mapping god nodes to status, priority, blockers. The builder reads these and includes them in the report:
+
+```
+Arbitrator (agenticdevteam) — 50 edges, bridges 3 communities
+  Status: active development
+  Blocks: conductor migration, storage refactor
+  Shared with: projectteam (similar pattern)
+```
+
+### Where it lives
+
+`~/projects/active/my-projects-overview/` — already indexes all projects. Add:
+
+```
+my-projects-overview/
+├── meta-graph/
+│   ├── build.py              the builder script
+│   ├── meta-graph.json       output
+│   └── META_REPORT.md        output — the thing LLMs read
+├── annotations/
+│   └── planning.yaml         status, priority, blockers per node
+└── projects/                 already exists
+    └── <name>/overview.md
+```
+
+### Build order
+
+1. The builder script — god node extraction + merge + Leiden. Get META_REPORT.md generating. Core value.
+2. CLAUDE.md integration — wire it so sessions automatically read the report.
+3. Planning annotations — add after the structural map reveals what's worth annotating.
+
+## Integration with the devteam project management team
+
+### Existing architecture
+
+The devteam routes work through: skill router → team-lead → arbitrator → specialists → specialty-teams (worker-verifier pairs). There's already a project-manager specialist with 6 teams: schedule, todos, issues, concerns, dependencies, decisions. Specialists read artifacts (cookbook guidelines, project storage files).
+
+### Three integration points
+
+**1. Data source for existing project-manager teams.** The meta-graph report becomes another artifact the existing teams read. No new specialists needed:
+
+- **Dependencies team** — currently tracks dependencies within one project. The meta-graph gives it cross-project dependencies. "Project A's storage layer is structurally identical to project B's."
+- **Concerns team** — cross-project coupling points are concerns. A god node bridging 3 projects is a risk.
+- **Schedule team** — shared god nodes mean work can't be fully parallelized. The meta-graph tells the schedule team what's actually independent.
+
+**2. New specialist: portfolio analyst.** Operates on the meta-graph (cross-project view), not single-project data. Specialty-teams:
+
+- **commonalities** — shared patterns across projects, candidates for shared libraries
+- **coupling** — cross-project bridges, risk of change propagation
+- **prioritization** — ranks work items by structural leverage (how many projects benefit)
+- **duplication** — where multiple projects solve the same problem independently
+
+Portfolio analyst output feeds back into the project-manager specialist's todos, concerns, and dependencies.
+
+**3. Scoping/interview phase enrichment.** When a team-lead interviews about a new project, it consults the meta-graph: "this looks structurally similar to community X — you already have patterns for this in projects A and B." The interview phase inherits structural context from existing work.
+
+### Data flow
+
+```
+graphify (per project)
+        │
+        ▼
+meta-graph builder (my-projects-overview/)
+        │
+        ▼
+META_REPORT.md (artifact)
+        │
+        ├──▶ project-manager specialist (dependencies, concerns, schedule teams)
+        │         reads meta-graph as additional context for single-project analysis
+        │
+        └──▶ portfolio-analyst specialist (new)
+                  reads meta-graph as primary input for cross-project analysis
+                  outputs → project-manager's todos, concerns, dependencies
+```
+
+The devteam doesn't need to know how the meta-graph was built. It reads a report, same as every other artifact. Graphify stays external, the builder stays external, and the devteam gets structural intelligence about the whole portfolio through a file it already knows how to read.
