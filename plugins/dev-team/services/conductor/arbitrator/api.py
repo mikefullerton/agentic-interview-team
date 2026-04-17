@@ -198,10 +198,10 @@ class Arbitrator:
                 "plan_node_id": plan_node_id,
                 "direction": direction,
                 "type": type,
-                "body": body,
                 "creation_date": now,
             },
         )
+        await self.set_body("message", message_id, body, BodyFormat.PLAIN)
         return Message(
             message_id=message_id,
             session_id=session_id,
@@ -222,7 +222,11 @@ class Arbitrator:
         rows = await self._storage.fetch_all(
             "message", where=where, order_by="creation_date"
         )
-        return [_row_to_message(r) for r in rows]
+        messages: list[Message] = []
+        for r in rows:
+            body = await self.get_body("message", r["message_id"])
+            messages.append(_row_to_message(r, body.body_text if body else ""))
+        return messages
 
     # ---- Gates ------------------------------------------------------------
 
@@ -323,19 +327,23 @@ class Arbitrator:
         severity: str,
         body: str,
         source_artifact: str | None = None,
+        plan_node_id: str | None = None,
     ) -> Finding:
         finding_id = _new_id("find")
+        now = _utcnow_iso()
         await self._storage.insert(
             "finding",
             {
                 "finding_id": finding_id,
                 "result_id": result_id,
+                "plan_node_id": plan_node_id,
                 "kind": kind,
                 "severity": severity,
-                "body": body,
                 "source_artifact": source_artifact,
+                "creation_date": now,
             },
         )
+        await self.set_body("finding", finding_id, body, BodyFormat.PLAIN)
         return Finding(
             finding_id=finding_id,
             result_id=result_id,
@@ -343,6 +351,8 @@ class Arbitrator:
             severity=severity,
             body=body,
             source_artifact=source_artifact,
+            creation_date=datetime.fromisoformat(now),
+            plan_node_id=plan_node_id,
         )
 
     # ---- Events -----------------------------------------------------------
@@ -703,19 +713,22 @@ class Arbitrator:
         title: str,
         rationale: str,
         decided_by: str | None = None,
+        plan_node_id: str | None = None,
     ) -> dict[str, Any]:
         decision_id = _new_id("dec")
         row = {
             "decision_id": decision_id,
             "session_id": str(session_id),
             "team_id": team_id,
+            "plan_node_id": plan_node_id,
             "title": title,
-            "rationale": rationale,
             "decided_by": decided_by,
             "creation_date": _utcnow_iso(),
         }
         await self._storage.insert("decision", row)
-        return row
+        await self.set_body("decision", decision_id, rationale, BodyFormat.PLAIN)
+        # Return a dict shaped like the old API (callers iterate over it).
+        return {**row, "rationale": rationale}
 
     async def list_decision_items(
         self, session_id: UUID, team_id: str | None = None
@@ -723,9 +736,15 @@ class Arbitrator:
         where: dict[str, Any] = {"session_id": str(session_id)}
         if team_id is not None:
             where["team_id"] = team_id
-        return await self._storage.fetch_all(
+        rows = await self._storage.fetch_all(
             "decision", where=where, order_by="creation_date"
         )
+        # Attach rationale from body side-table.
+        out: list[dict[str, Any]] = []
+        for r in rows:
+            body = await self.get_body("decision", r["decision_id"])
+            out.append({**r, "rationale": body.body_text if body else ""})
+        return out
 
     # ---- Roadmap ----------------------------------------------------------
     #
@@ -1065,14 +1084,14 @@ def _row_to_state_node(row: dict[str, Any]) -> StateNode:
     )
 
 
-def _row_to_message(row: dict[str, Any]) -> Message:
+def _row_to_message(row: dict[str, Any], body: str) -> Message:
     return Message(
         message_id=row["message_id"],
         session_id=UUID(row["session_id"]),
         team_id=row["team_id"],
         direction=row["direction"],
         type=row["type"],
-        body=row["body"],
+        body=body,
         creation_date=datetime.fromisoformat(row["creation_date"]),
         plan_node_id=row.get("plan_node_id"),
     )

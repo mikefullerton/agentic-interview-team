@@ -145,8 +145,11 @@ def test_result_and_finding_round_trip(arb, session_id, run_async):
             "finding", where={"result_id": result.result_id}
         )
         assert len(findings) == 1
-        assert findings[0]["body"] == "finding body"
         assert findings[0]["source_artifact"] == "a.txt"
+        # body now lives in the body side-table.
+        finding_body = await arb.get_body("finding", findings[0]["finding_id"])
+        assert finding_body is not None
+        assert finding_body.body_text == "finding body"
         await arb.close()
 
     run_async(_t())

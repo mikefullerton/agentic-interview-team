@@ -127,7 +127,9 @@ class Finding:
     kind: str
     severity: str
     body: str
+    creation_date: datetime
     source_artifact: str | None = None
+    plan_node_id: str | None = None
 
 
 @dataclass

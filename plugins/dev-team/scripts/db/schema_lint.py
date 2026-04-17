@@ -31,24 +31,32 @@ from pathlib import Path
 
 # Tables we don't expect to carry plan_node_id: top-level containers,
 # the body side-table, junction-style tables, pure session-scoped config,
-# and sub-resources whose parent already carries plan_node_id (attempt
-# belongs to result; gate_option and verdict belong to gate).
+# sub-resources whose parent already carries plan_node_id (attempt
+# belongs to result; gate_option and verdict belong to gate), and
+# PM annotation tables (schedule / todo) which are project-storage
+# records not stream entries — they're optionally linked via other
+# domain fields rather than a plan_node_id join key.
 PLAN_NODE_ID_EXEMPT = {
     "roadmap", "plan_node", "node_dependency", "node_state_event",
     "session", "session_property", "team", "task",
     "gate_option", "verdict",
     "attempt",
     "body",
+    "schedule", "todo",
 }
 
 # Column names that strongly suggest narrative blob content.
+# These MUST route through the body side-table, not inline.
 BLOB_COLUMN_NAMES = {
     "body", "summary", "rationale", "description", "detail", "interpretation",
     "prose", "narrative", "notes", "content",
 }
 
 # Column name suffixes that signal blob-ish content.
-BLOB_COLUMN_SUFFIXES = ("_json", "_text", "_body", "_blob")
+# Note: *_json is deliberately excluded — schema-validated structured JSON
+# content (e.g. event.payload_json gated by event.kind) is permitted on
+# primary rows. True narrative blobs use the names in BLOB_COLUMN_NAMES.
+BLOB_COLUMN_SUFFIXES = ("_text", "_body", "_blob")
 
 # Allowed primary tables where a *_text column is fine because the table
 # exists specifically to hold narrative content.

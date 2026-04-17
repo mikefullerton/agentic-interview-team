@@ -60,7 +60,7 @@ def test_message_plan_node_id_defaults_to_null(seeded):
     now = _now()
     seeded.execute(
         "INSERT INTO message (message_id, session_id, team_id, direction, type, "
-        "body, creation_date) VALUES ('m1', 's', 't', 'in', 'question', 'hi', ?)",
+        "creation_date) VALUES ('m1', 's', 't', 'in', 'question', ?)",
         (now,),
     )
     seeded.commit()
@@ -74,8 +74,8 @@ def test_message_plan_node_id_set_works(seeded):
     now = _now()
     seeded.execute(
         "INSERT INTO message (message_id, session_id, team_id, plan_node_id, "
-        "direction, type, body, creation_date) "
-        "VALUES ('m1', 's', 't', 'n1', 'in', 'question', 'hi', ?)", (now,),
+        "direction, type, creation_date) "
+        "VALUES ('m1', 's', 't', 'n1', 'in', 'question', ?)", (now,),
     )
     seeded.commit()
     row = seeded.execute(
@@ -89,8 +89,8 @@ def test_message_plan_node_id_fk_rejects_unknown(seeded):
     with pytest.raises(sqlite3.IntegrityError):
         seeded.execute(
             "INSERT INTO message (message_id, session_id, team_id, plan_node_id, "
-            "direction, type, body, creation_date) "
-            "VALUES ('m1', 's', 't', 'does-not-exist', 'in', 'question', 'hi', ?)",
+            "direction, type, creation_date) "
+            "VALUES ('m1', 's', 't', 'does-not-exist', 'in', 'question', ?)",
             (now,),
         )
 
@@ -146,7 +146,7 @@ def test_cross_stream_filter_returns_all_rows(seeded):
     # Plant one row per stream, all tagged with plan_node_id='n1'.
     seeded.execute(
         "INSERT INTO message (message_id, session_id, team_id, plan_node_id, direction, "
-        "type, body, creation_date) VALUES ('m', 's', 't', 'n1', 'in', 'q', 'b', ?)", (now,),
+        "type, creation_date) VALUES ('m', 's', 't', 'n1', 'in', 'q', ?)", (now,),
     )
     seeded.execute(
         "INSERT INTO event (event_id, session_id, plan_node_id, sequence, kind, "
@@ -176,7 +176,7 @@ def test_existing_insert_patterns_still_work(seeded):
     now = _now()
     seeded.execute(
         "INSERT INTO message (message_id, session_id, team_id, direction, type, "
-        "body, creation_date) VALUES ('m', 's', 't', 'in', 'q', 'b', ?)", (now,),
+        "creation_date) VALUES ('m', 's', 't', 'in', 'q', ?)", (now,),
     )
     seeded.commit()
     row = seeded.execute(

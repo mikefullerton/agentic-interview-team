@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS message (
     plan_node_id      TEXT,                         -- optional: roadmap node this message is about
     direction         TEXT NOT NULL,
     type              TEXT NOT NULL,
-    body              TEXT NOT NULL,
+    -- narrative body lives in body(owner_type='message', owner_id=message_id)
     creation_date     TEXT NOT NULL,
     FOREIGN KEY (session_id)   REFERENCES session(session_id),
     FOREIGN KEY (plan_node_id) REFERENCES plan_node(node_id)
@@ -78,13 +78,17 @@ CREATE INDEX IF NOT EXISTS idx_result_plan_node ON result(plan_node_id);
 CREATE TABLE IF NOT EXISTS finding (
     finding_id        TEXT PRIMARY KEY,
     result_id         TEXT NOT NULL,
+    plan_node_id      TEXT,                         -- optional: roadmap node this finding concerns
     kind              TEXT NOT NULL,
     severity          TEXT NOT NULL,
-    body              TEXT NOT NULL,
+    -- narrative body lives in body(owner_type='finding', owner_id=finding_id)
     source_artifact   TEXT,
-    FOREIGN KEY (result_id) REFERENCES result(result_id)
+    creation_date     TEXT NOT NULL,
+    FOREIGN KEY (result_id)    REFERENCES result(result_id),
+    FOREIGN KEY (plan_node_id) REFERENCES plan_node(node_id)
 );
-CREATE INDEX IF NOT EXISTS idx_finding_result ON finding(result_id);
+CREATE INDEX IF NOT EXISTS idx_finding_result    ON finding(result_id);
+CREATE INDEX IF NOT EXISTS idx_finding_plan_node ON finding(plan_node_id);
 
 CREATE TABLE IF NOT EXISTS event (
     event_id          TEXT PRIMARY KEY,
@@ -187,11 +191,13 @@ CREATE TABLE IF NOT EXISTS decision (
     decision_id    TEXT PRIMARY KEY,
     session_id     TEXT NOT NULL,
     team_id        TEXT NOT NULL,
+    plan_node_id   TEXT,                          -- optional: roadmap node this decision concerns
     title          TEXT NOT NULL,
-    rationale      TEXT NOT NULL,
+    -- rationale lives in body(owner_type='decision', owner_id=decision_id)
     decided_by     TEXT,
     creation_date  TEXT NOT NULL,
-    FOREIGN KEY (session_id) REFERENCES session(session_id)
+    FOREIGN KEY (session_id)   REFERENCES session(session_id),
+    FOREIGN KEY (plan_node_id) REFERENCES plan_node(node_id)
 );
 CREATE INDEX IF NOT EXISTS idx_decision_session_team
     ON decision(session_id, team_id);

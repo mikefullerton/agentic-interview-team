@@ -163,9 +163,14 @@ def test_pm_team_round_trip(tmp_path):
         )
         assert len(decision_rows) == 1
         assert decision_rows[0]["title"] == "use standalone PM team"
-        assert "refactor" in decision_rows[0]["rationale"]
         assert decision_rows[0]["decided_by"] == "user"
         assert decision_rows[0]["team_id"] == "project-management"
+        # Rationale lives in body side-table.
+        decision_body = await arbitrator.get_body(
+            "decision", decision_rows[0]["decision_id"]
+        )
+        assert decision_body is not None
+        assert "refactor" in decision_body.body_text
 
         # Three handler state nodes — one per PM kind — all popped.
         state_rows = await backend.fetch_all(

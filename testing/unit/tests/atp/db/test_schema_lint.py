@@ -15,11 +15,23 @@ import schema_lint  # noqa: E402
 
 
 SCHEMA_PATH = SCRIPTS_DB / "schema-v3.sql"
+CONDUCTOR_SCHEMA_PATH = (
+    REPO_ROOT / "plugins" / "dev-team" / "services" / "conductor"
+    / "arbitrator" / "backends" / "schema.sql"
+)
 
 
 def test_schema_v3_is_clean():
     violations = schema_lint.lint(SCHEMA_PATH.read_text())
     assert violations == [], "schema-v3.sql has violations:\n" + "\n".join(violations)
+
+
+def test_conductor_schema_is_clean():
+    """The conductor's live schema must also conform after PRs A/B/C."""
+    violations = schema_lint.lint(CONDUCTOR_SCHEMA_PATH.read_text())
+    assert violations == [], (
+        "conductor schema.sql has violations:\n" + "\n".join(violations)
+    )
 
 
 def test_lint_catches_at_suffix():
@@ -61,7 +73,11 @@ def test_lint_catches_blob_column():
     assert any("widget.summary" in v for v in violations), violations
 
 
-def test_lint_catches_json_suffix():
+def test_lint_tolerates_json_suffix():
+    """*_json columns are permitted — schema-validated structured content
+    is allowed on primary rows (e.g. event.payload_json gated by event.kind).
+    Only narrative text (body, summary, rationale, etc.) must route through
+    the body side-table."""
     schema = """
     CREATE TABLE widget (
         widget_id TEXT PRIMARY KEY,
@@ -78,7 +94,9 @@ def test_lint_catches_json_suffix():
     );
     """
     violations = schema_lint.lint(schema)
-    assert any("metadata_json" in v for v in violations), violations
+    assert not any("metadata_json" in v for v in violations), (
+        f"*_json columns must not be flagged: {violations}"
+    )
 
 
 def test_lint_catches_missing_body_table():
