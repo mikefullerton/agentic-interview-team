@@ -62,7 +62,19 @@ async def gather_context(arbitrator, session_id: UUID) -> WhatsNextContext:
     session_row = await storage.fetch_one(
         "session", {"session_id": str(session_id)}
     )
-    roadmap_id = session_row.get("roadmap_id") if session_row else None
+    # Session schema today has no roadmap_id column; caller stashes it
+    # in metadata_json under "roadmap_id". A schema migration will
+    # promote this to a first-class column in a follow-up.
+    roadmap_id: str | None = None
+    if session_row:
+        raw_meta = session_row.get("metadata_json") or "{}"
+        try:
+            meta = json.loads(raw_meta) if isinstance(raw_meta, str) else raw_meta
+            roadmap_id = meta.get("roadmap_id") if isinstance(meta, dict) else None
+        except (TypeError, ValueError):
+            roadmap_id = None
+        # Tolerate a future schema where roadmap_id is a column.
+        roadmap_id = session_row.get("roadmap_id") or roadmap_id
 
     plan_nodes: list[dict[str, Any]] = []
     dependencies: list[dict[str, Any]] = []
