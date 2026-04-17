@@ -1,6 +1,7 @@
 # Top MIT-licensed Open-Source Apps for Apple Platforms
 
 **Date captured:** 2026-04-16
+**Next review:** 2026-07-16 (quarterly)
 **Source:** GitHub `gh search repos` with `--license=mit --archived=false --sort=stars`
 **Point-in-time:** star counts and push dates change continuously; re-run to refresh.
 
