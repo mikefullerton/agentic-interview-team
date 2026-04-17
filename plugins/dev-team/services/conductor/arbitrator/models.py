@@ -40,6 +40,26 @@ class RequestStatus(str, Enum):
     TIMEOUT = "timeout"
 
 
+class NodeKind(str, Enum):
+    COMPOUND = "compound"
+    PRIMITIVE = "primitive"
+
+
+class NodeStateEventType(str, Enum):
+    PLANNED = "planned"
+    READY = "ready"
+    RUNNING = "running"
+    DONE = "done"
+    FAILED = "failed"
+    SUPERSEDED = "superseded"
+
+
+class BodyFormat(str, Enum):
+    MARKDOWN = "markdown"
+    PLAIN = "plain"
+    JSON = "json"
+
+
 @dataclass
 class Session:
     session_id: UUID
@@ -148,3 +168,58 @@ class Request:
     in_flight_at: datetime | None
     completed_at: datetime | None
     timeout_at: datetime
+
+
+# ---------------------------------------------------------------------------
+# Roadmap graph — project-scoped, survives across sessions.
+# See docs/planning/2026-04-17-atp-roadmap-design.md.
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class Roadmap:
+    roadmap_id: str
+    title: str
+    creation_date: datetime
+    modification_date: datetime
+
+
+@dataclass
+class PlanNode:
+    node_id: str
+    roadmap_id: str
+    parent_id: str | None
+    position: float
+    node_kind: NodeKind
+    title: str
+    creation_date: datetime
+    modification_date: datetime
+    specialist: str | None = None
+    speciality: str | None = None
+
+
+@dataclass
+class NodeDependency:
+    dependency_id: int
+    node_id: str             # dependent
+    depends_on_id: str       # prerequisite
+    creation_date: datetime
+
+
+@dataclass
+class NodeStateEvent:
+    event_id: int
+    node_id: str
+    event_type: NodeStateEventType
+    actor: str
+    event_date: datetime
+    session_id: UUID | None = None
+
+
+@dataclass
+class Body:
+    owner_type: str          # plan_node | message | finding | ...
+    owner_id: str
+    body_format: BodyFormat
+    body_text: str
+    modification_date: datetime

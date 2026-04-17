@@ -12,13 +12,21 @@ from uuid import UUID
 
 from .backends.base import Storage
 from .models import (
+    Body,
+    BodyFormat,
     Event,
     Finding,
     Gate,
     Message,
+    NodeDependency,
+    NodeKind,
+    NodeStateEvent,
+    NodeStateEventType,
+    PlanNode,
     Request,
     RequestStatus,
     Result,
+    Roadmap,
     Session,
     SessionStatus,
     StateNode,
@@ -698,10 +706,326 @@ class Arbitrator:
             "decision", where=where, order_by="creation_date"
         )
 
+    # ---- Roadmap ----------------------------------------------------------
+    #
+    # Project-scoped resources (persist across sessions). See
+    # docs/planning/2026-04-17-atp-roadmap-design.md.
+
+    async def create_roadmap(self, title: str, roadmap_id: str | None = None) -> Roadmap:
+        rid = roadmap_id or _new_id("rm")
+        now = _utcnow_iso()
+        await self._storage.insert(
+            "roadmap",
+            {
+                "roadmap_id": rid,
+                "title": title,
+                "creation_date": now,
+                "modification_date": now,
+            },
+        )
+        return Roadmap(
+            roadmap_id=rid,
+            title=title,
+            creation_date=datetime.fromisoformat(now),
+            modification_date=datetime.fromisoformat(now),
+        )
+
+    async def get_roadmap(self, roadmap_id: str) -> Roadmap | None:
+        row = await self._storage.fetch_one("roadmap", {"roadmap_id": roadmap_id})
+        if not row:
+            return None
+        return _row_to_roadmap(row)
+
+    async def create_plan_node(
+        self,
+        roadmap_id: str,
+        title: str,
+        node_kind: NodeKind,
+        *,
+        parent_id: str | None = None,
+        position: float = 1.0,
+        specialist: str | None = None,
+        speciality: str | None = None,
+        node_id: str | None = None,
+    ) -> PlanNode:
+        nid = node_id or _new_id("node")
+        now = _utcnow_iso()
+        await self._storage.insert(
+            "plan_node",
+            {
+                "node_id": nid,
+                "roadmap_id": roadmap_id,
+                "parent_id": parent_id,
+                "position": position,
+                "node_kind": node_kind.value,
+                "title": title,
+                "specialist": specialist,
+                "speciality": speciality,
+                "creation_date": now,
+                "modification_date": now,
+            },
+        )
+        return PlanNode(
+            node_id=nid,
+            roadmap_id=roadmap_id,
+            parent_id=parent_id,
+            position=position,
+            node_kind=node_kind,
+            title=title,
+            specialist=specialist,
+            speciality=speciality,
+            creation_date=datetime.fromisoformat(now),
+            modification_date=datetime.fromisoformat(now),
+        )
+
+    async def get_plan_node(self, node_id: str) -> PlanNode | None:
+        row = await self._storage.fetch_one("plan_node", {"node_id": node_id})
+        if not row:
+            return None
+        return _row_to_plan_node(row)
+
+    async def list_plan_nodes(self, roadmap_id: str) -> list[PlanNode]:
+        """List every plan_node in the roadmap, ordered by position.
+
+        To filter by parent, use `list_plan_nodes_by_parent`.
+        """
+        rows = await self._storage.fetch_all(
+            "plan_node", where={"roadmap_id": roadmap_id}, order_by="position",
+        )
+        return [_row_to_plan_node(r) for r in rows]
+
+    async def list_plan_nodes_by_parent(
+        self, roadmap_id: str, parent_id: str | None
+    ) -> list[PlanNode]:
+        """List direct children of a parent (or roots when parent_id=None).
+
+        Needed because fetch_all treats None as 'filter absent' rather than
+        'IS NULL'. Roots are queried through a small inline query here.
+        """
+        storage = self._storage
+        if parent_id is None:
+            rows = await storage.fetch_all(
+                "plan_node",
+                where={"roadmap_id": roadmap_id},
+                order_by="position",
+            )
+            return [_row_to_plan_node(r) for r in rows if r["parent_id"] is None]
+        rows = await storage.fetch_all(
+            "plan_node",
+            where={"roadmap_id": roadmap_id, "parent_id": parent_id},
+            order_by="position",
+        )
+        return [_row_to_plan_node(r) for r in rows]
+
+    async def add_dependency(
+        self, node_id: str, depends_on_id: str
+    ) -> NodeDependency:
+        """Add a DAG edge. Raises CycleError if it would create a cycle."""
+        if await self._would_create_cycle(node_id, depends_on_id):
+            raise CycleError(
+                f"adding ({node_id} depends_on {depends_on_id}) would create a cycle"
+            )
+        now = _utcnow_iso()
+        await self._storage.insert(
+            "node_dependency",
+            {
+                "node_id": node_id,
+                "depends_on_id": depends_on_id,
+                "creation_date": now,
+            },
+        )
+        # Read back to pick up the AUTOINCREMENT dependency_id.
+        rows = await self._storage.fetch_all(
+            "node_dependency",
+            where={"node_id": node_id, "depends_on_id": depends_on_id},
+        )
+        r = rows[-1]
+        return NodeDependency(
+            dependency_id=r["dependency_id"],
+            node_id=r["node_id"],
+            depends_on_id=r["depends_on_id"],
+            creation_date=datetime.fromisoformat(r["creation_date"]),
+        )
+
+    async def list_dependencies_of(self, node_id: str) -> list[NodeDependency]:
+        rows = await self._storage.fetch_all(
+            "node_dependency", where={"node_id": node_id}
+        )
+        return [
+            NodeDependency(
+                dependency_id=r["dependency_id"],
+                node_id=r["node_id"],
+                depends_on_id=r["depends_on_id"],
+                creation_date=datetime.fromisoformat(r["creation_date"]),
+            )
+            for r in rows
+        ]
+
+    async def record_node_state_event(
+        self,
+        node_id: str,
+        event_type: NodeStateEventType,
+        actor: str,
+        session_id: UUID | None = None,
+    ) -> NodeStateEvent:
+        now = _utcnow_iso()
+        await self._storage.insert(
+            "node_state_event",
+            {
+                "node_id": node_id,
+                "session_id": str(session_id) if session_id else None,
+                "event_type": event_type.value,
+                "actor": actor,
+                "event_date": now,
+            },
+        )
+        rows = await self._storage.fetch_all(
+            "node_state_event",
+            where={"node_id": node_id},
+            order_by="event_id DESC",
+            limit=1,
+        )
+        r = rows[0]
+        return NodeStateEvent(
+            event_id=r["event_id"],
+            node_id=r["node_id"],
+            session_id=UUID(r["session_id"]) if r["session_id"] else None,
+            event_type=NodeStateEventType(r["event_type"]),
+            actor=r["actor"],
+            event_date=datetime.fromisoformat(r["event_date"]),
+        )
+
+    async def latest_node_state(self, node_id: str) -> NodeStateEvent | None:
+        rows = await self._storage.fetch_all(
+            "node_state_event",
+            where={"node_id": node_id},
+            order_by="event_id DESC",
+            limit=1,
+        )
+        if not rows:
+            return None
+        r = rows[0]
+        return NodeStateEvent(
+            event_id=r["event_id"],
+            node_id=r["node_id"],
+            session_id=UUID(r["session_id"]) if r["session_id"] else None,
+            event_type=NodeStateEventType(r["event_type"]),
+            actor=r["actor"],
+            event_date=datetime.fromisoformat(r["event_date"]),
+        )
+
+    # ---- Body side-table --------------------------------------------------
+
+    async def set_body(
+        self,
+        owner_type: str,
+        owner_id: str,
+        body_text: str,
+        body_format: BodyFormat = BodyFormat.MARKDOWN,
+    ) -> Body:
+        existing = await self._storage.fetch_one(
+            "body", {"owner_type": owner_type, "owner_id": owner_id}
+        )
+        now = _utcnow_iso()
+        if existing:
+            await self._storage.update(
+                "body",
+                {"owner_type": owner_type, "owner_id": owner_id},
+                {
+                    "body_text": body_text,
+                    "body_format": body_format.value,
+                    "modification_date": now,
+                },
+            )
+        else:
+            await self._storage.insert(
+                "body",
+                {
+                    "owner_type": owner_type,
+                    "owner_id": owner_id,
+                    "body_format": body_format.value,
+                    "body_text": body_text,
+                    "modification_date": now,
+                },
+            )
+        return Body(
+            owner_type=owner_type,
+            owner_id=owner_id,
+            body_format=body_format,
+            body_text=body_text,
+            modification_date=datetime.fromisoformat(now),
+        )
+
+    async def get_body(self, owner_type: str, owner_id: str) -> Body | None:
+        row = await self._storage.fetch_one(
+            "body", {"owner_type": owner_type, "owner_id": owner_id}
+        )
+        if not row:
+            return None
+        return Body(
+            owner_type=row["owner_type"],
+            owner_id=row["owner_id"],
+            body_format=BodyFormat(row["body_format"]),
+            body_text=row["body_text"],
+            modification_date=datetime.fromisoformat(row["modification_date"]),
+        )
+
+    # ---- Internal helpers -------------------------------------------------
+
+    async def _would_create_cycle(
+        self, dependent: str, prerequisite: str
+    ) -> bool:
+        """True if adding (dependent depends_on prerequisite) creates a cycle."""
+        if dependent == prerequisite:
+            return True
+        visited: set[str] = {prerequisite}
+        frontier = [prerequisite]
+        while frontier:
+            current = frontier.pop()
+            rows = await self._storage.fetch_all(
+                "node_dependency", where={"node_id": current}
+            )
+            for r in rows:
+                nxt = r["depends_on_id"]
+                if nxt == dependent:
+                    return True
+                if nxt not in visited:
+                    visited.add(nxt)
+                    frontier.append(nxt)
+        return False
+
+
+class CycleError(ValueError):
+    """Raised when adding a node_dependency edge would create a cycle."""
+
 
 # ---------------------------------------------------------------------------
 # Row → dataclass helpers
 # ---------------------------------------------------------------------------
+
+
+def _row_to_roadmap(row: dict[str, Any]) -> Roadmap:
+    return Roadmap(
+        roadmap_id=row["roadmap_id"],
+        title=row["title"],
+        creation_date=datetime.fromisoformat(row["creation_date"]),
+        modification_date=datetime.fromisoformat(row["modification_date"]),
+    )
+
+
+def _row_to_plan_node(row: dict[str, Any]) -> PlanNode:
+    return PlanNode(
+        node_id=row["node_id"],
+        roadmap_id=row["roadmap_id"],
+        parent_id=row["parent_id"],
+        position=row["position"],
+        node_kind=NodeKind(row["node_kind"]),
+        title=row["title"],
+        specialist=row["specialist"],
+        speciality=row["speciality"],
+        creation_date=datetime.fromisoformat(row["creation_date"]),
+        modification_date=datetime.fromisoformat(row["modification_date"]),
+    )
 
 
 def _row_to_state_node(row: dict[str, Any]) -> StateNode:
