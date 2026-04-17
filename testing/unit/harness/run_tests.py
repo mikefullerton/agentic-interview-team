@@ -10,6 +10,7 @@ UNIT_DIR = HARNESS_DIR.parent
 TESTS_DIR = UNIT_DIR / "tests"
 
 AREAS = [
+    ("atp",              "testing/unit/tests/atp"),
     ("arbitrator",       "testing/unit/tests/arbitrator"),
     ("project-storage",  "testing/unit/tests/project-storage"),
     ("specialty-teams",  "testing/unit/tests/specialty-teams"),

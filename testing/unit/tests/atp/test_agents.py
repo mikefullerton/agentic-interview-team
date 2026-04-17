@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent
-AGENTS_DIR = REPO_ROOT / "plugins" / "team-pipeline" / "agents"
+AGENTS_DIR = REPO_ROOT / "skills" / "atp" / "agents"
 
 EXPECTED_AGENTS = [
     "specialty-team-worker.md",

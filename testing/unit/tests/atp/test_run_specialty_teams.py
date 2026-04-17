@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent
-PARSER = str(REPO_ROOT / "plugins" / "team-pipeline" / "scripts" / "run_specialty_teams.py")
+PARSER = str(REPO_ROOT / "skills" / "atp" / "scripts" / "run_specialty_teams.py")
 
 
 def write_specialist(tmp_path, manifest_entries, consulting_entries=None):

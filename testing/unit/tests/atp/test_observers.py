@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent
-OBSERVERS_DIR = REPO_ROOT / "plugins" / "team-pipeline" / "scripts" / "observers"
+OBSERVERS_DIR = REPO_ROOT / "skills" / "atp" / "scripts" / "observers"
 sys.path.insert(0, str(OBSERVERS_DIR))
 
 
