@@ -86,7 +86,7 @@ def test_cross_team_request_round_trip(tmp_path):
         ]
         assert len(handler_nodes) == 1
         assert handler_nodes[0]["team_id"] == "pet-coach"
-        assert handler_nodes[0]["exited_at"] is not None
+        assert handler_nodes[0]["exit_date"] is not None
 
         # Caller's themed specialist ran afterwards.
         results = await arbitrator.list_results(sid)

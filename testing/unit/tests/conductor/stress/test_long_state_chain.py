@@ -76,7 +76,7 @@ def test_thousand_state_linear_chain(tmp_path):
             "state", where={"session_id": str(session_id)}
         )
         assert len(state_rows) == CHAIN_LEN
-        assert all(r["exited_at"] is not None for r in state_rows)
+        assert all(r["exit_date"] is not None for r in state_rows)
         assert await arb.active_state_nodes(session_id) == []
 
         # Every state_enter event present and in declaration order.

@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS state (
     plan_node_id      TEXT,                         -- optional: roadmap node this dispatch addresses
     state_name        TEXT NOT NULL,
     status            TEXT NOT NULL,
-    entered_at        TEXT NOT NULL,
-    exited_at         TEXT,
+    entry_date        TEXT NOT NULL,
+    exit_date         TEXT,
     FOREIGN KEY (session_id)   REFERENCES session(session_id),
     FOREIGN KEY (plan_node_id) REFERENCES plan_node(node_id)
 );
@@ -37,12 +37,12 @@ CREATE TABLE IF NOT EXISTS message (
     direction         TEXT NOT NULL,
     type              TEXT NOT NULL,
     body              TEXT NOT NULL,
-    created_at        TEXT NOT NULL,
+    creation_date     TEXT NOT NULL,
     FOREIGN KEY (session_id)   REFERENCES session(session_id),
     FOREIGN KEY (plan_node_id) REFERENCES plan_node(node_id)
 );
 CREATE INDEX IF NOT EXISTS idx_message_session_created
-    ON message(session_id, created_at);
+    ON message(session_id, creation_date);
 CREATE INDEX IF NOT EXISTS idx_message_plan_node
     ON message(plan_node_id);
 
@@ -54,8 +54,8 @@ CREATE TABLE IF NOT EXISTS gate (
     category          TEXT NOT NULL,
     options_json      TEXT NOT NULL,
     verdict           TEXT,
-    created_at        TEXT NOT NULL,
-    resolved_at       TEXT,
+    creation_date     TEXT NOT NULL,
+    verdict_date      TEXT,
     FOREIGN KEY (session_id)   REFERENCES session(session_id),
     FOREIGN KEY (plan_node_id) REFERENCES plan_node(node_id)
 );
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS result (
     specialist_id     TEXT NOT NULL,
     passed            INTEGER NOT NULL,
     summary_json      TEXT NOT NULL,
-    created_at        TEXT NOT NULL,
+    creation_date     TEXT NOT NULL,
     FOREIGN KEY (session_id)   REFERENCES session(session_id),
     FOREIGN KEY (plan_node_id) REFERENCES plan_node(node_id)
 );
@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS event (
     sequence          INTEGER NOT NULL,
     kind              TEXT NOT NULL,
     payload_json      TEXT NOT NULL,
-    emitted_at        TEXT NOT NULL,
+    event_date        TEXT NOT NULL,
     FOREIGN KEY (session_id)   REFERENCES session(session_id),
     FOREIGN KEY (plan_node_id) REFERENCES plan_node(node_id)
 );
@@ -139,7 +139,7 @@ CREATE TABLE IF NOT EXISTS request (
     enqueued_at       TEXT NOT NULL,
     in_flight_at      TEXT,
     completed_at      TEXT,
-    timeout_at        TEXT NOT NULL,
+    timeout_date      TEXT NOT NULL,
     FOREIGN KEY (session_id)   REFERENCES session(session_id),
     FOREIGN KEY (plan_node_id) REFERENCES plan_node(node_id)
 );

@@ -60,7 +60,7 @@ def test_message_plan_node_id_defaults_to_null(seeded):
     now = _now()
     seeded.execute(
         "INSERT INTO message (message_id, session_id, team_id, direction, type, "
-        "body, created_at) VALUES ('m1', 's', 't', 'in', 'question', 'hi', ?)",
+        "body, creation_date) VALUES ('m1', 's', 't', 'in', 'question', 'hi', ?)",
         (now,),
     )
     seeded.commit()
@@ -74,7 +74,7 @@ def test_message_plan_node_id_set_works(seeded):
     now = _now()
     seeded.execute(
         "INSERT INTO message (message_id, session_id, team_id, plan_node_id, "
-        "direction, type, body, created_at) "
+        "direction, type, body, creation_date) "
         "VALUES ('m1', 's', 't', 'n1', 'in', 'question', 'hi', ?)", (now,),
     )
     seeded.commit()
@@ -89,7 +89,7 @@ def test_message_plan_node_id_fk_rejects_unknown(seeded):
     with pytest.raises(sqlite3.IntegrityError):
         seeded.execute(
             "INSERT INTO message (message_id, session_id, team_id, plan_node_id, "
-            "direction, type, body, created_at) "
+            "direction, type, body, creation_date) "
             "VALUES ('m1', 's', 't', 'does-not-exist', 'in', 'question', 'hi', ?)",
             (now,),
         )
@@ -99,24 +99,24 @@ def test_message_plan_node_id_fk_rejects_unknown(seeded):
     (
         "state",
         "INSERT INTO state (node_id, session_id, team_id, plan_node_id, state_name, "
-        "status, entered_at) VALUES ('st', 's', 't', 'n1', 'start', 'active', :now)",
+        "status, entry_date) VALUES ('st', 's', 't', 'n1', 'start', 'active', :now)",
     ),
     (
         "gate",
         "INSERT INTO gate (gate_id, session_id, team_id, plan_node_id, category, "
-        "options_json, created_at) "
+        "options_json, creation_date) "
         "VALUES ('g', 's', 't', 'n1', 'flow', '[]', :now)",
     ),
     (
         "result",
         "INSERT INTO result (result_id, session_id, team_id, plan_node_id, "
-        "specialist_id, passed, summary_json, created_at) "
+        "specialist_id, passed, summary_json, creation_date) "
         "VALUES ('r', 's', 't', 'n1', 'sp', 1, '{}', :now)",
     ),
     (
         "event",
         "INSERT INTO event (event_id, session_id, plan_node_id, sequence, kind, "
-        "payload_json, emitted_at) VALUES ('e', 's', 'n1', 1, 'lifecycle', '{}', :now)",
+        "payload_json, event_date) VALUES ('e', 's', 'n1', 1, 'lifecycle', '{}', :now)",
     ),
     (
         "task",
@@ -127,7 +127,7 @@ def test_message_plan_node_id_fk_rejects_unknown(seeded):
     (
         "request",
         "INSERT INTO request (request_id, session_id, from_team, to_team, plan_node_id, "
-        "kind, input_json, status, enqueued_at, timeout_at) "
+        "kind, input_json, status, enqueued_at, timeout_date) "
         "VALUES ('rq', 's', 't', 't', 'n1', 'k', '{}', 'pending', :now, :now)",
     ),
 ])
@@ -146,15 +146,15 @@ def test_cross_stream_filter_returns_all_rows(seeded):
     # Plant one row per stream, all tagged with plan_node_id='n1'.
     seeded.execute(
         "INSERT INTO message (message_id, session_id, team_id, plan_node_id, direction, "
-        "type, body, created_at) VALUES ('m', 's', 't', 'n1', 'in', 'q', 'b', ?)", (now,),
+        "type, body, creation_date) VALUES ('m', 's', 't', 'n1', 'in', 'q', 'b', ?)", (now,),
     )
     seeded.execute(
         "INSERT INTO event (event_id, session_id, plan_node_id, sequence, kind, "
-        "payload_json, emitted_at) VALUES ('e', 's', 'n1', 1, 'lifecycle', '{}', ?)", (now,),
+        "payload_json, event_date) VALUES ('e', 's', 'n1', 1, 'lifecycle', '{}', ?)", (now,),
     )
     seeded.execute(
         "INSERT INTO request (request_id, session_id, from_team, to_team, plan_node_id, "
-        "kind, input_json, status, enqueued_at, timeout_at) "
+        "kind, input_json, status, enqueued_at, timeout_date) "
         "VALUES ('rq', 's', 't', 't', 'n1', 'k', '{}', 'pending', ?, ?)", (now, now),
     )
     seeded.commit()
@@ -176,7 +176,7 @@ def test_existing_insert_patterns_still_work(seeded):
     now = _now()
     seeded.execute(
         "INSERT INTO message (message_id, session_id, team_id, direction, type, "
-        "body, created_at) VALUES ('m', 's', 't', 'in', 'q', 'b', ?)", (now,),
+        "body, creation_date) VALUES ('m', 's', 't', 'in', 'q', 'b', ?)", (now,),
     )
     seeded.commit()
     row = seeded.execute(

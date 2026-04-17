@@ -113,7 +113,7 @@ def test_gate_round_trip(arb, session_id, run_async):
             "gate", {"gate_id": gate.gate_id}
         )
         assert row2["verdict"] == "a"
-        assert row2["resolved_at"] is not None
+        assert row2["verdict_date"] is not None
         await arb.close()
 
     run_async(_t())

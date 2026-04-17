@@ -138,7 +138,7 @@ async def assert_session_invariants(
     tests explicitly opt into known-incomplete state.
 
     Checks:
-        1. state tree balance — every row has exited_at (unless allow_active)
+        1. state tree balance — every row has exit_date (unless allow_active)
         2. event sequence is a contiguous 1..N with no duplicates
         3. no dangling requests (unless allow_pending)
         4. finding.result_id points to a real result row
@@ -160,9 +160,9 @@ async def assert_session_invariants(
     state_rows = await backend.fetch_all("state", where={"session_id": sid})
     if not allow_active_states:
         for row in state_rows:
-            assert row["exited_at"] is not None, (
+            assert row["exit_date"] is not None, (
                 f"state {row['node_id']} ({row['state_name']}) "
-                f"left active with exited_at=NULL"
+                f"left active with exit_date=NULL"
             )
             assert row["status"] == StateStatus.COMPLETED.value, (
                 f"state {row['node_id']} status={row['status']!r} "

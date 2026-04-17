@@ -176,7 +176,7 @@ def test_pm_team_round_trip(tmp_path):
         ]
         assert len(handler_nodes) == 3
         assert all(s["team_id"] == "project-management" for s in handler_nodes)
-        assert all(s["exited_at"] is not None for s in handler_nodes)
+        assert all(s["exit_date"] is not None for s in handler_nodes)
 
         await arbitrator.close()
 

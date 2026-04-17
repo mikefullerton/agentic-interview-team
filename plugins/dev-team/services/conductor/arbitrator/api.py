@@ -139,8 +139,8 @@ class Arbitrator:
                 "plan_node_id": plan_node_id,
                 "state_name": state_name,
                 "status": StateStatus.ACTIVE.value,
-                "entered_at": now,
-                "exited_at": None,
+                "entry_date": now,
+                "exit_date": None,
             },
         )
         return StateNode(
@@ -150,7 +150,7 @@ class Arbitrator:
             parent_node_id=parent_node_id,
             state_name=state_name,
             status=StateStatus.ACTIVE,
-            entered_at=datetime.fromisoformat(now),
+            entry_date=datetime.fromisoformat(now),
             plan_node_id=plan_node_id,
         )
 
@@ -160,7 +160,7 @@ class Arbitrator:
         await self._storage.update(
             "state",
             {"node_id": node_id},
-            {"status": status.value, "exited_at": _utcnow_iso()},
+            {"status": status.value, "exit_date": _utcnow_iso()},
         )
 
     async def active_state_nodes(
@@ -172,7 +172,7 @@ class Arbitrator:
                 "session_id": str(session_id),
                 "status": StateStatus.ACTIVE.value,
             },
-            order_by="entered_at",
+            order_by="entry_date",
         )
         return [_row_to_state_node(r) for r in rows]
 
@@ -199,7 +199,7 @@ class Arbitrator:
                 "direction": direction,
                 "type": type,
                 "body": body,
-                "created_at": now,
+                "creation_date": now,
             },
         )
         return Message(
@@ -209,7 +209,7 @@ class Arbitrator:
             direction=direction,
             type=type,
             body=body,
-            created_at=datetime.fromisoformat(now),
+            creation_date=datetime.fromisoformat(now),
             plan_node_id=plan_node_id,
         )
 
@@ -220,7 +220,7 @@ class Arbitrator:
         if team_id is not None:
             where["team_id"] = team_id
         rows = await self._storage.fetch_all(
-            "message", where=where, order_by="created_at"
+            "message", where=where, order_by="creation_date"
         )
         return [_row_to_message(r) for r in rows]
 
@@ -246,8 +246,8 @@ class Arbitrator:
                 "category": category,
                 "options_json": json.dumps(options),
                 "verdict": None,
-                "created_at": now,
-                "resolved_at": None,
+                "creation_date": now,
+                "verdict_date": None,
             },
         )
         return Gate(
@@ -257,7 +257,7 @@ class Arbitrator:
             category=category,
             options_json=options,
             verdict=None,
-            created_at=datetime.fromisoformat(now),
+            creation_date=datetime.fromisoformat(now),
             plan_node_id=plan_node_id,
         )
 
@@ -265,7 +265,7 @@ class Arbitrator:
         await self._storage.update(
             "gate",
             {"gate_id": gate_id},
-            {"verdict": verdict, "resolved_at": _utcnow_iso()},
+            {"verdict": verdict, "verdict_date": _utcnow_iso()},
         )
 
     # ---- Results / Findings ----------------------------------------------
@@ -291,7 +291,7 @@ class Arbitrator:
                 "specialist_id": specialist_id,
                 "passed": 1 if passed else 0,
                 "summary_json": json.dumps(summary),
-                "created_at": now,
+                "creation_date": now,
             },
         )
         return Result(
@@ -301,7 +301,7 @@ class Arbitrator:
             specialist_id=specialist_id,
             passed=passed,
             summary_json=summary,
-            created_at=datetime.fromisoformat(now),
+            creation_date=datetime.fromisoformat(now),
             plan_node_id=plan_node_id,
         )
 
@@ -312,7 +312,7 @@ class Arbitrator:
         if team_id is not None:
             where["team_id"] = team_id
         rows = await self._storage.fetch_all(
-            "result", where=where, order_by="created_at"
+            "result", where=where, order_by="creation_date"
         )
         return [_row_to_result(r) for r in rows]
 
@@ -374,7 +374,7 @@ class Arbitrator:
                 "sequence": seq,
                 "kind": kind,
                 "payload_json": json.dumps(payload),
-                "emitted_at": now,
+                "event_date": now,
             },
         )
         return Event(
@@ -386,7 +386,7 @@ class Arbitrator:
             sequence=seq,
             kind=kind,
             payload_json=payload,
-            emitted_at=datetime.fromisoformat(now),
+            event_date=datetime.fromisoformat(now),
             plan_node_id=plan_node_id,
         )
 
@@ -537,7 +537,7 @@ class Arbitrator:
                 "enqueued_at": now.isoformat(),
                 "in_flight_at": None,
                 "completed_at": None,
-                "timeout_at": (now + timedelta(seconds=timeout)).isoformat(),
+                "timeout_date": (now + timedelta(seconds=timeout)).isoformat(),
             },
         )
         return Request(
@@ -553,7 +553,7 @@ class Arbitrator:
             enqueued_at=now,
             in_flight_at=None,
             completed_at=None,
-            timeout_at=now + timedelta(seconds=timeout),
+            timeout_date=now + timedelta(seconds=timeout),
             plan_node_id=plan_node_id,
         )
 
@@ -1057,9 +1057,9 @@ def _row_to_state_node(row: dict[str, Any]) -> StateNode:
         parent_node_id=row["parent_node_id"],
         state_name=row["state_name"],
         status=StateStatus(row["status"]),
-        entered_at=datetime.fromisoformat(row["entered_at"]),
-        exited_at=(
-            datetime.fromisoformat(row["exited_at"]) if row["exited_at"] else None
+        entry_date=datetime.fromisoformat(row["entry_date"]),
+        exit_date=(
+            datetime.fromisoformat(row["exit_date"]) if row["exit_date"] else None
         ),
         plan_node_id=row.get("plan_node_id"),
     )
@@ -1073,7 +1073,7 @@ def _row_to_message(row: dict[str, Any]) -> Message:
         direction=row["direction"],
         type=row["type"],
         body=row["body"],
-        created_at=datetime.fromisoformat(row["created_at"]),
+        creation_date=datetime.fromisoformat(row["creation_date"]),
         plan_node_id=row.get("plan_node_id"),
     )
 
@@ -1086,7 +1086,7 @@ def _row_to_result(row: dict[str, Any]) -> Result:
         specialist_id=row["specialist_id"],
         passed=bool(row["passed"]),
         summary_json=json.loads(row["summary_json"]),
-        created_at=datetime.fromisoformat(row["created_at"]),
+        creation_date=datetime.fromisoformat(row["creation_date"]),
         plan_node_id=row.get("plan_node_id"),
     )
 
@@ -1101,7 +1101,7 @@ def _row_to_event(row: dict[str, Any]) -> Event:
         sequence=int(row["sequence"]),
         kind=row["kind"],
         payload_json=json.loads(row["payload_json"]),
-        emitted_at=datetime.fromisoformat(row["emitted_at"]),
+        event_date=datetime.fromisoformat(row["event_date"]),
         plan_node_id=row.get("plan_node_id"),
     )
 
@@ -1158,6 +1158,6 @@ def _row_to_request(
             if row["completed_at"]
             else None
         ),
-        timeout_at=datetime.fromisoformat(row["timeout_at"]),
+        timeout_date=datetime.fromisoformat(row["timeout_date"]),
         plan_node_id=row.get("plan_node_id"),
     )

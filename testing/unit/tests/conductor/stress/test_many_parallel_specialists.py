@@ -121,7 +121,7 @@ def test_fifty_parallel_specialists_run_concurrently(tmp_path):
             if r["state_name"].startswith("specialty:")
         ]
         assert len(specialty_nodes) == N_SPECIALISTS
-        assert all(r["exited_at"] is not None for r in state_rows)
+        assert all(r["exit_date"] is not None for r in state_rows)
         assert await arb.active_state_nodes(session_id) == []
 
         await arb.close()

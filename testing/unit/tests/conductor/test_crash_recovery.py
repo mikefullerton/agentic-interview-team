@@ -66,7 +66,7 @@ def _crash_playbook() -> TeamPlaybook:
 def test_persisted_state_after_simulated_crash(tmp_path):
     """A RuntimeError from an illegal action leaves the state tree mid-run.
 
-    The active state node remains unpopped with exited_at=NULL, the
+    The active state node remains unpopped with exit_date=NULL, the
     session stays OPEN, and the event sequence is still contiguous
     from 1..N despite the truncation.
     """
@@ -92,9 +92,9 @@ def test_persisted_state_after_simulated_crash(tmp_path):
         assert session_row["status"] == SessionStatus.OPEN.value
         assert session_row["ended_at"] is None
 
-        # At least one state row is still active (exited_at=NULL, status=active).
+        # At least one state row is still active (exit_date=NULL, status=active).
         state_rows = await backend.fetch_all("state", where={"session_id": sid})
-        active = [r for r in state_rows if r["exited_at"] is None]
+        active = [r for r in state_rows if r["exit_date"] is None]
         assert len(active) >= 1, (
             "expected at least one active state row after mid-run crash"
         )

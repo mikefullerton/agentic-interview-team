@@ -90,7 +90,7 @@ def test_full_name_a_puppy_end_to_end(tmp_path):
         )
         assert len(gate_rows) == 1
         assert gate_rows[0]["verdict"] == "accept"
-        assert gate_rows[0]["resolved_at"] is not None
+        assert gate_rows[0]["verdict_date"] is not None
 
         # State tree: every node popped (no active nodes).
         active = await arbitrator.active_state_nodes(session_id)
