@@ -1,45 +1,59 @@
-"""Tests for team-pipeline team-lead definitions."""
+"""Tests for team-pipeline team-lead definitions.
+
+Team-leads live in two places:
+- `skills/atp/team-leads/`   — leads provided by the atp skill itself (interview)
+- `teams/devteam/team-leads/` — leads owned by individual teams (analysis, …)
+
+The `analysis` team-lead moved from atp → devteam in commit 414cfe5.
+"""
 from pathlib import Path
 
 import pytest
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent
-TEAM_LEADS_DIR = REPO_ROOT / "skills" / "atp" / "team-leads"
 
-EXPECTED_LEADS = ["interview.md", "analysis.md"]
+# (team-lead file, containing directory relative to repo root)
+EXPECTED_LEADS = [
+    ("interview.md", Path("skills") / "atp" / "team-leads"),
+    ("analysis.md",  Path("teams") / "devteam" / "team-leads"),
+]
 
 REQUIRED_SECTIONS = ["# ", "## Role", "## Persona", "## Phases", "## Interaction Style"]
 REQUIRED_PERSONA_SUBS = ["### Archetype", "### Voice", "### Priorities"]
 
 
-@pytest.mark.parametrize("lead_file", EXPECTED_LEADS)
-def test_lead_file_exists(lead_file):
-    assert (TEAM_LEADS_DIR / lead_file).is_file()
+def _lead_path(lead_file: str, subdir: Path) -> Path:
+    return REPO_ROOT / subdir / lead_file
 
 
-@pytest.mark.parametrize("lead_file", EXPECTED_LEADS)
-def test_lead_has_required_sections(lead_file):
-    content = (TEAM_LEADS_DIR / lead_file).read_text()
+@pytest.mark.parametrize("lead_file,subdir", EXPECTED_LEADS)
+def test_lead_file_exists(lead_file, subdir):
+    assert _lead_path(lead_file, subdir).is_file()
+
+
+@pytest.mark.parametrize("lead_file,subdir", EXPECTED_LEADS)
+def test_lead_has_required_sections(lead_file, subdir):
+    content = _lead_path(lead_file, subdir).read_text()
     for section in REQUIRED_SECTIONS:
         assert section in content, f"{lead_file} missing section: {section}"
 
 
-@pytest.mark.parametrize("lead_file", EXPECTED_LEADS)
-def test_lead_has_persona_subsections(lead_file):
-    content = (TEAM_LEADS_DIR / lead_file).read_text()
+@pytest.mark.parametrize("lead_file,subdir", EXPECTED_LEADS)
+def test_lead_has_persona_subsections(lead_file, subdir):
+    content = _lead_path(lead_file, subdir).read_text()
     for sub in REQUIRED_PERSONA_SUBS:
         assert sub in content, f"{lead_file} missing persona sub-section: {sub}"
 
 
-@pytest.mark.parametrize("lead_file", EXPECTED_LEADS)
-def test_lead_title_ends_with_team_lead(lead_file):
-    content = (TEAM_LEADS_DIR / lead_file).read_text()
+@pytest.mark.parametrize("lead_file,subdir", EXPECTED_LEADS)
+def test_lead_title_ends_with_team_lead(lead_file, subdir):
+    content = _lead_path(lead_file, subdir).read_text()
     first_line = content.strip().split("\n")[0]
     assert first_line.startswith("# ")
     assert "Team-Lead" in first_line
 
 
-@pytest.mark.parametrize("lead_file", EXPECTED_LEADS)
-def test_lead_no_cookbook_references(lead_file):
-    content = (TEAM_LEADS_DIR / lead_file).read_text().lower()
+@pytest.mark.parametrize("lead_file,subdir", EXPECTED_LEADS)
+def test_lead_no_cookbook_references(lead_file, subdir):
+    content = _lead_path(lead_file, subdir).read_text().lower()
     assert "cookbook" not in content
