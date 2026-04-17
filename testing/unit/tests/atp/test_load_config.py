@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent
-LOADER = str(REPO_ROOT / "plugins" / "team-pipeline" / "scripts" / "load_config.py")
+LOADER = str(REPO_ROOT / "skills" / "atp" / "scripts" / "load_config.py")
 
 
 def write_config(tmp_path, data):

@@ -4,7 +4,7 @@ import subprocess
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent.parent
-ARBITRATOR = str(REPO_ROOT / "plugins" / "team-pipeline" / "scripts" / "arbitrator.py")
+ARBITRATOR = str(REPO_ROOT / "skills" / "atp" / "scripts" / "arbitrator.py")
 
 
 def run_arbitrator(*args):

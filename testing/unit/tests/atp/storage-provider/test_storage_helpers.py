@@ -7,7 +7,7 @@ import pytest
 
 # Add the storage-provider markdown directory to sys.path
 REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent.parent
-SP_DIR = REPO_ROOT / "plugins" / "team-pipeline" / "scripts" / "storage-provider" / "markdown"
+SP_DIR = REPO_ROOT / "skills" / "atp" / "scripts" / "storage-provider" / "markdown"
 sys.path.insert(0, str(SP_DIR))
 
 from storage_helpers import (

@@ -7,7 +7,7 @@ import pytest
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent
 PUPPY_DIR = REPO_ROOT / "plugins" / "name-a-puppy"
-PARSER = str(REPO_ROOT / "plugins" / "team-pipeline" / "scripts" / "run_specialty_teams.py")
+PARSER = str(REPO_ROOT / "skills" / "atp" / "scripts" / "run_specialty_teams.py")
 
 SPECIALISTS = ["temperament.md", "breed.md", "lifestyle.md"]
 
