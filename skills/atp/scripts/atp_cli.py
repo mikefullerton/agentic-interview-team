@@ -366,23 +366,29 @@ def cmd_rollcall(
     teams_root: Path,
     team: str | None,
     output_format: str,
-    concurrency: int,
     timeout: float,
 ) -> int:
-    """Ping every role in one or all teams.
+    """Live roll-call: stream each role's real response through the
+    integration surface, one role at a time — as if the team were
+    standing in a group taking turns."""
+    import shutil
+    import time as _time
 
-    v1 uses a scripted in-process runner — proves discovery + integration
-    surface + formatting end to end without an LLM call. Real-LLM variant
-    is the functional smoke (see 2026-04-18-rollcall-design.md task 5).
-    """
     from services.integration_surface import InProcessSession
     from services.rollcall import (
+        ROLL_CALL_PROMPT,
+        RollCallError,
+        RollCallResult,
         discover_team,
         discover_teams,
         render_json,
         render_table,
-        roll_call,
     )
+
+    claude_bin = shutil.which("claude")
+    if claude_bin is None:
+        print("atp: `claude` CLI not found on PATH", file=sys.stderr)
+        return 2
 
     if team is not None:
         team_dir = teams_root / team
@@ -404,19 +410,124 @@ def cmd_rollcall(
         print("atp: no roles discovered", file=sys.stderr)
         return 2
 
-    async def scripted_runner(io, user_turn, ctx):
-        await io.emit("state", {"phase": "starting"})
-        await io.emit(
-            "text",
-            {"text": f"roll-call ack ({ctx.team})"},
+    def _streaming_claude_runner(claude_bin: str):
+        """TeamRunner that shells to `claude --output-format stream-json`
+        and emits one `text` event per assistant-message delta. All
+        claude-specific parsing lives here; clients consume plain
+        protocol events."""
+        async def _runner(io, user_turn, ctx):
+            await io.emit("state", {"phase": "starting"})
+            proc = await asyncio.create_subprocess_exec(
+                claude_bin,
+                "--model", "haiku",
+                "--output-format", "stream-json",
+                "--verbose",
+                "-p", user_turn,
+                stdin=asyncio.subprocess.DEVNULL,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            assert proc.stdout is not None
+            async for raw in proc.stdout:
+                try:
+                    msg = json.loads(raw.decode("utf-8"))
+                except json.JSONDecodeError:
+                    continue
+                if msg.get("type") == "assistant":
+                    for block in msg.get("message", {}).get("content", []):
+                        if block.get("type") == "text":
+                            delta = block.get("text", "")
+                            if delta:
+                                await io.emit("text", {"text": delta})
+            rc = await proc.wait()
+            if rc != 0:
+                assert proc.stderr is not None
+                err = (await proc.stderr.read()).decode(
+                    "utf-8", errors="replace"
+                )
+                await io.emit(
+                    "error",
+                    {"kind": "subprocess",
+                     "message": f"claude exit {rc}: {err[-200:]}",
+                     "retryable": False},
+                )
+                return
+            await io.emit("result", {"stop_reason": "end_turn"})
+
+        return _runner
+
+    runner = _streaming_claude_runner(claude_bin)
+
+    async def _run_one(role) -> RollCallResult:
+        """Start a session, stream deltas to stdout live, and collect a
+        RollCallResult for the final summary."""
+        session = InProcessSession(runner)
+        parts: list[str] = []
+        err: RollCallError | None = None
+        t0 = _time.monotonic()
+        handle = await session.start(
+            team=role.team, prompt=ROLL_CALL_PROMPT,
         )
-        await io.emit("result", {"stop_reason": "end_turn"})
+        try:
+            async def _consume():
+                async for ev in session.events(handle.session_id):
+                    if ev.type == "text":
+                        delta = ev.payload.get("text", "")
+                        if delta:
+                            parts.append(delta)
+                            sys.stdout.write(delta)
+                            sys.stdout.flush()
+                    elif ev.type == "error":
+                        raise RuntimeError(
+                            ev.payload.get("message", "error event")
+                        )
+                    elif ev.type == "result":
+                        return
 
-    session = InProcessSession(scripted_runner)
-    results = asyncio.run(roll_call(
-        session, roles, concurrency=concurrency, timeout=timeout,
-    ))
+            await asyncio.wait_for(_consume(), timeout=timeout)
+        except asyncio.TimeoutError:
+            err = RollCallError(kind="timeout", message=f">{timeout}s")
+        except Exception as exc:
+            err = RollCallError(kind="error", message=str(exc))
+        finally:
+            try:
+                await session.close(handle.session_id)
+            except Exception:
+                pass
+        return RollCallResult(
+            role=role,
+            response="".join(parts),
+            duration_ms=int((_time.monotonic() - t0) * 1000),
+            error=err,
+        )
 
+    async def _run_all() -> list[RollCallResult]:
+        results: list[RollCallResult] = []
+        bar = "-" * 72
+        for i, role in enumerate(roles, 1):
+            sys.stdout.write(
+                f"\n[{i}/{len(roles)}] {role.kind} :: "
+                f"{role.team}/{role.name}\n{bar}\n"
+            )
+            sys.stdout.flush()
+            result = await _run_one(role)
+            if result.error is not None:
+                sys.stdout.write(
+                    f"\n[error] {result.error.kind}: "
+                    f"{result.error.message}\n"
+                )
+            sys.stdout.write(f"\n└── ({result.duration_ms} ms)\n")
+            sys.stdout.flush()
+            results.append(result)
+        return results
+
+    sys.stdout.write(
+        f"rollcall: {len(roles)} roles, live via InProcessSession.events()\n"
+    )
+    sys.stdout.flush()
+    results = asyncio.run(_run_all())
+
+    sys.stdout.write("\n")
     if output_format == "json":
         sys.stdout.write(render_json(results))
     else:
@@ -456,18 +567,20 @@ def main(argv: list[str] | None = None) -> int:
 
     p_roll = sub.add_parser(
         "rollcall",
-        help="Ping every role in one or all teams via the integration surface.",
+        help=(
+            "Live roll-call: stream each role's real response through "
+            "the integration surface, one role at a time."
+        ),
     )
     p_roll.add_argument("team", nargs="?", default=None)
     p_roll.add_argument(
         "--format", choices=["table", "json"], default="table"
     )
-    p_roll.add_argument("--concurrency", type=int, default=4)
     p_roll.add_argument(
         "--timeout",
         type=float,
-        default=30.0,
-        help="Per-role timeout in seconds (default 30).",
+        default=120.0,
+        help="Per-role timeout in seconds (default 120).",
     )
 
     args = parser.parse_args(argv)
@@ -484,8 +597,7 @@ def main(argv: list[str] | None = None) -> int:
         )
     if args.command == "rollcall":
         return cmd_rollcall(
-            teams_root, args.team, args.format,
-            args.concurrency, args.timeout,
+            teams_root, args.team, args.format, args.timeout,
         )
 
     parser.print_help()
