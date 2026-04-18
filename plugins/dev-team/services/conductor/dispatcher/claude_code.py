@@ -10,9 +10,11 @@ the caller's event_sink and return a DispatchResult built from the final
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import shutil
 import time
+import uuid
 from typing import Any
 
 from .base import (
@@ -29,6 +31,15 @@ DEFAULT_MODEL_MAP: dict[str, str] = {
     "balanced": "claude-sonnet-4-6",
     "fast-cheap": "claude-haiku-4-5-20251001",
 }
+
+
+def _uuid_from_dispatch_id(dispatch_id: str) -> str:
+    """Map a dispatch_id (e.g. "disp_a1b2c3d4") to a deterministic UUID
+    string the Claude CLI will accept as --session-id. Using a UUID v5
+    namespace keeps the mapping stable across replays while still being
+    unique per dispatch."""
+    namespace = uuid.NAMESPACE_OID
+    return str(uuid.uuid5(namespace, dispatch_id))
 
 
 class ClaudeCodeDispatcher(Dispatcher):
@@ -77,10 +88,17 @@ class ClaudeCodeDispatcher(Dispatcher):
             agents_json,
             "--output-format",
             "stream-json",
+            # --output-format=stream-json with --print requires --verbose
+            # (the CLI rejects the combination otherwise).
+            "--verbose",
             "--include-partial-messages",
             "--include-hook-events",
+            # Claude CLI --session-id must be unique per invocation — it's
+            # the CLI's conversation identifier, not the conductor's. We
+            # derive a valid UUID from the dispatch_id so parallel
+            # dispatches within one conductor session don't collide.
             "--session-id",
-            str(correlation.session_id),
+            _uuid_from_dispatch_id(correlation.dispatch_id),
             "--model",
             model,
         ]
