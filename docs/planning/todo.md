@@ -23,6 +23,14 @@ _Last refreshed 2026-04-18 — see `docs/architecture.md` for current state._
 
 - **`atp plan <team>` command.** Drives the planner specialty against a team to produce a roadmap. Was the next item before the contract-tests pivot — needs a fresh plan doc.
 
+### Team roles
+
+- **Persona support for team-lead and specialists.** Give each role a persona surface (voice, perspective, priors) so prompts aren't anonymous. Decide where it lives — team.md front-matter vs. per-role file — and how it feeds into specialist invocations.
+
+### Integration surface
+
+- **Plugin scheme for interacting with the team.** Expose the team as a bidirectional headless Claude session — see `docs/research/headless-claude-bidirectional.md`. Likely shape: HITL router pattern (§ "System architecture"), custom MCP tools like `ask_product_owner` / `ask_sre_oncall`, resumable sessions via `--resume <sid>` for async checkpoints. Needs a design doc before implementation.
+
 ### Tooling
 
 - **Session-start submodule staleness advisory.** Stop hook no longer enforces submodule freshness (per fix `cat-herding/main` `fae0faa`). Replace with informational surfacing at session start (e.g. via `cc-repo-state` or a session-start hook) so drift is visible without forcing random bumps.
