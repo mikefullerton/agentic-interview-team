@@ -17,17 +17,17 @@ import asyncio
 import json
 import uuid
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Awaitable, Callable
 from uuid import UUID
 
 from .arbitrator import Arbitrator, SessionStatus
+from .arbitrator.models import NodeStateEventType, Request
 from .dispatcher import (
     AgentDefinition,
     DispatchCorrelation,
     DispatchError,
     Dispatcher,
 )
-from .arbitrator.models import Request
 from .playbook.types import (
     Action,
     DispatchSpecialist,
@@ -40,7 +40,30 @@ from .playbook.types import (
     WriteProjectResource,
 )
 from .specialist_runner import run_specialist
+from .specialty import (
+    ACTION_ADVANCE_TO,
+    ACTION_DONE,
+    ConductorSpecialty,
+)
 from .team_lead import TeamLead
+
+
+RealizePrimitive = Callable[
+    [Arbitrator, Dispatcher, UUID, str], Awaitable[None]
+]
+
+
+async def _noop_realize_primitive(
+    arbitrator: Arbitrator,
+    dispatcher: Dispatcher,
+    session_id: UUID,
+    node_id: str,
+) -> None:
+    """Default realizer: does nothing. The conductor records running/done
+    node state events around this call, so a noop realizer still produces
+    the right node_state_event history for tests that only exercise walk
+    order."""
+    return None
 
 
 @dataclass
@@ -63,16 +86,19 @@ class Conductor:
         self,
         arbitrator: Arbitrator,
         dispatcher: Dispatcher,
-        team_lead: TeamLead,
+        team_lead: TeamLead | None,
         session_id: UUID,
         max_steps: int = 200,
         aux_team_leads: list[TeamLead] | None = None,
+        conductor_team_id: str = "conductor",
     ):
         self._arb = arbitrator
         self._dispatcher = dispatcher
         self._team_lead = team_lead
         self._session_id = session_id
-        self._team_id = team_lead.playbook.name
+        self._team_id = (
+            team_lead.playbook.name if team_lead is not None else conductor_team_id
+        )
         self._ctx = ConductorContext(
             session_id=session_id, team_id=self._team_id
         )
@@ -154,6 +180,108 @@ class Conductor:
                 )
             self._team_lead.validate_transition(state.name, next_state)
             current = next_state
+
+    async def run_roadmap(
+        self,
+        specialties: list[ConductorSpecialty],
+        realize_primitive: RealizePrimitive | None = None,
+    ) -> None:
+        """Drive a roadmap-backed session via conductor-owned specialties.
+
+        One specialty in `specialties` must be named `"whats-next"`; it's
+        the scheduler. Other specialties are accepted for future hooks
+        but not invoked by the phase-1 loop.
+
+        `realize_primitive` is called when the scheduler returns
+        `advance-to` for a primitive node. It runs whatever domain work
+        the node requires (dispatch a specialty, mark it mechanically,
+        etc.) between `running` and `done` state events. If None, a
+        no-op realizer is used — useful for tests that only exercise
+        the walk order.
+        """
+        scheduler: ConductorSpecialty | None = None
+        for s in specialties:
+            if s.name == "whats-next":
+                scheduler = s
+                break
+        if scheduler is None:
+            raise ValueError(
+                "run_roadmap requires a specialty named 'whats-next'"
+            )
+
+        if realize_primitive is None:
+            realize_primitive = _noop_realize_primitive
+
+        await self._arb.open_session(
+            self._session_id, initial_team_id=self._team_id
+        )
+
+        step = 0
+        while True:
+            step += 1
+            if step > self._max_steps:
+                await self._arb.close_session(
+                    self._session_id, SessionStatus.FAILED
+                )
+                raise RuntimeError(
+                    f"run_roadmap exceeded max_steps={self._max_steps}"
+                )
+
+            decision = await scheduler.decide(
+                self._arb, self._dispatcher, self._session_id
+            )
+
+            await self._arb.emit_event(
+                session_id=self._session_id,
+                team_id=self._team_id,
+                kind="whats_next_decision",
+                payload={
+                    "action": decision.action,
+                    "node_id": decision.node_id,
+                    "reason": decision.reason,
+                    "deterministic": decision.deterministic,
+                },
+            )
+
+            if decision.action == ACTION_DONE:
+                await self._arb.close_session(
+                    self._session_id, SessionStatus.COMPLETED
+                )
+                return
+
+            if decision.action == ACTION_ADVANCE_TO:
+                if decision.node_id is None:
+                    raise RuntimeError(
+                        "whats-next returned advance-to without node_id"
+                    )
+                await self._arb.record_node_state_event(
+                    node_id=decision.node_id,
+                    event_type=NodeStateEventType.RUNNING,
+                    actor="conductor",
+                    session_id=self._session_id,
+                )
+                await realize_primitive(
+                    self._arb,
+                    self._dispatcher,
+                    self._session_id,
+                    decision.node_id,
+                )
+                await self._arb.record_node_state_event(
+                    node_id=decision.node_id,
+                    event_type=NodeStateEventType.DONE,
+                    actor="conductor",
+                    session_id=self._session_id,
+                )
+                continue
+
+            # decompose / await-gate / re-decompose / await-request /
+            # present-results: not yet supported in phase 1.
+            await self._arb.close_session(
+                self._session_id, SessionStatus.FAILED
+            )
+            raise NotImplementedError(
+                f"run_roadmap does not yet handle action {decision.action!r}"
+            )
 
     def _register_cross_team_handlers(self) -> None:
         """Register every aux team's declared request handlers on the arbitrator."""
