@@ -123,6 +123,91 @@ The integration surface sits **above** the conductor and **beside** the arbitrat
 - **Sessions** — `session_id` here is the same `session_id` the arbitrator already tracks. `resume(session_id)` maps to the existing session-resume path that `run_roadmap` uses.
 - **Policy** — tool allowlist / max turns / permission mode flow through to whichever runtime is handling the turn (conductor's own tool dispatch, or a spawned headless Claude process for a specialist invocation).
 
+## Testing
+
+The whole point of a transport-neutral protocol is that hosts can swap transports without reasoning about the team runtime. Tests prove that promise. Six layers, mirroring the arbitrator contract-test pattern established in PR #23.
+
+### Layout
+
+```
+testing/unit/tests/integration_surface/
+├── contract/                    # protocol conformance — runs against every transport
+│   ├── conftest.py               # transport_factory fixture (parametrized)
+│   ├── test_session_lifecycle.py      # start / send / events / close / resume
+│   ├── test_state_machine.py          # legal/illegal phase transitions
+│   ├── test_event_ordering.py         # seq monotonic, no gaps, no duplicates
+│   ├── test_event_schema_conforms.py  # schema linter over emitted events
+│   ├── test_hitl_roundtrip.py         # question → answer → continuation
+│   ├── test_hitl_targeting.py         # target field preserved verbatim
+│   ├── test_hitl_unanswered.py        # parked session with pending question
+│   ├── test_policy_flowthrough.py     # allowed_tools, disallowed_tools honored
+│   ├── test_policy_max_turns.py       # terminal result at limit
+│   ├── test_policy_permission_mode.py # default vs bypass observable in events
+│   ├── test_error_kinds.py            # each error kind surfaces, retryable flag correct
+│   ├── test_cancellation.py           # (gated on "cancel" open item)
+│   ├── test_multi_session_isolation.py # session A events don't leak into B
+│   ├── test_fanout.py                 # multiple subscribers, seq-aligned replay
+│   ├── test_resume_fidelity.py        # events resume at stored seq, no drift
+│   ├── test_large_payloads.py         # large tool_call.input, long text blocks
+│   └── test_determinism.py            # scripted team → identical event sequences
+├── transports/                   # transport-specific internals
+│   ├── test_in_process.py             # backpressure, generator close semantics
+│   ├── test_stdio_ndjson.py           # line buffering, partial reads, stderr isolation
+│   └── test_websocket.py              # reconnect with last-seq, auth reject, tls
+├── projection/                   # conductor → protocol event mapping
+│   ├── test_event_projection.py       # conductor `event` rows → `tool_call` / `state`
+│   ├── test_state_projection.py       # node_state_event → protocol `state` event
+│   ├── test_request_projection.py     # `request` rows → `question` events, answer round-trip
+│   ├── test_dispatch_projection.py    # dispatcher attempts → `tool_call` lifecycle
+│   └── test_policy_projection.py      # options.allowed_tools → conductor tool gate
+├── hosts/                        # host/adapter tests driven by fake_team
+│   ├── test_cli_host.py               # reference CLI host → text output, prompts
+│   ├── test_swift_client_bridge.py    # pyobjc/xcrun harness against Swift TeamClient
+│   └── test_slack_host_sketch.py      # smoke for target-based routing
+├── integration/                  # real conductor, one per transport
+│   ├── test_in_process_smoke.py
+│   ├── test_stdio_smoke.py
+│   └── test_websocket_smoke.py
+└── fixtures/
+    ├── fake_team.py                   # scripts event sequences without booting conductor
+    ├── recorded_sessions/             # captured event streams used as golden files
+    └── schemas/                       # typed JSON schemas per event kind
+```
+
+### Six test layers
+
+1. **Protocol contract tests** (`contract/`). One suite, parametrized on a `transport_factory` fixture that yields a live session for each of the three transports. Every test runs three times. A new transport is proven correct by passing this suite — no bespoke tests per transport for protocol behavior. Covers: session lifecycle, state-machine transitions, event ordering (`seq` monotonic with no gaps, no duplicates), event schema conformance, HITL round-trip and targeting, parked-with-pending-question, policy flow-through (allowed/disallowed tools, max turns, permission mode), every `error.kind` and its `retryable` flag, cancellation (if adopted), multi-session isolation, multi-consumer fan-out with replay, resume fidelity, large-payload handling, and determinism (scripted team → identical event sequences across runs and transports).
+
+2. **Event schema conformance** (`test_event_schema_conforms.py`). Analogue of `plugins/dev-team/scripts/db/schema_lint.py`. JSON schemas under `fixtures/schemas/` define the allowed shape of each event kind. The linter fails on (a) unknown `type`, (b) missing required field, (c) extra field, (d) `seq` gap, (e) duplicate `seq`. Every recorded session in `fixtures/recorded_sessions/` is re-validated on each test run; any transport that smuggles a non-conformant payload fails immediately.
+
+3. **Transport internals** (`transports/`). Per-transport edge cases that don't belong in the protocol suite. Stdio: line-buffered readline vs partial reads, stderr isolation so child diagnostics don't pollute stdout NDJSON, subprocess death mid-stream, `SIGPIPE` on closed stdin. WebSocket: reconnect with last-seq replay, auth reject on missing/invalid token, TLS termination, unexpected close frame, backpressure when the slow consumer lags. In-process: async-generator `close()` semantics, task cancellation during iteration, event drop if subscriber awaits too slowly.
+
+4. **Projection layer** (`projection/`). Verifies the translation from conductor primitives to the protocol schema. For each conductor source (`event`, `node_state_event`, `request`, `dispatch`, `attempt`) there's a test that seeds rows, runs the projector, and asserts the emitted protocol events. Includes the inverse: a host `answer(...)` writes the expected row back into `request`-matched storage. Catches drift the moment a new conductor event kind appears without a projection rule.
+
+5. **Host-side tests** (`hosts/`). Reference hosts built against `fake_team` so they can be tested end-to-end without a live conductor. A minimal CLI host (stdio transport) is in-tree and functions as both demo and test subject. The Swift `TeamClient` is exercised via a bridge harness (pyobjc or an `xcrun`-driven swift test) that scripts events from the Python side and asserts the Swift-side callbacks. A Slack host exists only as a smoke test to prove target-based routing works when "current user" isn't the answerer.
+
+6. **Integration smoke** (`integration/`). One end-to-end test per transport against the real conductor. Exercises a canonical team (a three-node roadmap from `teams/puppynamingteam/`), collects the emitted event stream, and diffs it against a golden file in `fixtures/recorded_sessions/`. Purpose: catch projection-layer breakage that contract tests (running against `fake_team`) can't see. Gated by the same `AGENTIC_REAL_LLM_SMOKE=1` pattern used by existing functional tests when the team requires real model calls.
+
+### Fake team runtime
+
+`fixtures/fake_team.py` scripts event sequences without booting the conductor. Constructor takes a list of `(at_seq, event)` pairs plus rules for how to react to `send` / `answer` calls. Host-side tests and the bulk of the contract suite run against the fake so they exercise realistic event shapes without a live team. The fake is the single source of truth for "what the protocol allows" — every shape appearing in the schemas is produced by at least one fake sequence.
+
+### Recorded sessions as golden files
+
+`fixtures/recorded_sessions/` holds captured event streams (NDJSON) from canonical runs: a plain text turn, a tool-call turn, a HITL turn, a parked-and-resumed session, a failed turn, a cancelled turn. Golden-file diff tests in each test layer reference these recordings, so contract regressions show up as a readable unified diff instead of buried asserts.
+
+### Verification items
+
+Borrowing the pattern from the atp roadmap contract tests:
+
+1. **Schema linter runs clean against every transport.** No kind-1 (unknown `type`), kind-2 (missing required field), kind-3 (extra field), kind-4 (`seq` gap), or kind-5 (duplicate `seq`) violations during any canonical session.
+2. **Three-transport parity.** The full `contract/` suite passes against all three `transport_factory` values.
+3. **HITL round-trip across transports.** `question(target: "user")` → host `answer(...)` → team continuation with the answer visible in the next `text` event, identically over in-process, stdio, and WebSocket.
+4. **Resume fidelity.** After `close` + `resume`, events picked up at the stored `seq` match the original stream (modulo replay window policy decided in "Open items").
+5. **Projection round-trip.** Every conductor event/state/request/dispatch row type has a corresponding projection test that asserts the emitted protocol event; inverse mapping for `answer → request` verified.
+6. **Host-side acceptance.** Reference CLI host and Swift `TeamClient` both pass their host-side suites driven by `fake_team`.
+7. **Integration smoke.** One end-to-end run per transport against `puppynamingteam` matches its golden recording.
+
 ## Open items
 
 - **Answer schemas.** `question.schema` is optional today. Decide whether to standardize on JSON Schema, a simpler enum-of-choices, or leave free-form until a real use case demands structure.
@@ -133,11 +218,12 @@ The integration surface sits **above** the conductor and **beside** the arbitrat
 
 ## Followups
 
-- Implementation plan — `docs/planning/2026-04-18-integration-surface-plan.md`. Ordered tasks:
-  1. In-process reference transport + protocol test suite.
-  2. Event projector from conductor `event`/`state`/`dispatch` → transport schema.
-  3. Stdio adapter that wraps headless Claude Code.
-  4. WebSocket transport (Python server).
-  5. Swift `TeamClient` + a minimal chat-view harness that proves the contract end-to-end.
+- Implementation plan — `docs/planning/2026-04-18-integration-surface-plan.md`. Ordered tasks (each lands with its corresponding slice of the test layout above):
+  1. In-process reference transport + `fake_team` + full `contract/` suite + event schemas.
+  2. Projection layer from conductor `event`/`state_event`/`request`/`dispatch` → transport schema + `projection/` tests.
+  3. Stdio adapter that wraps headless Claude Code + `transports/test_stdio_ndjson.py` + `integration/test_stdio_smoke.py`.
+  4. WebSocket transport (Python server) + `transports/test_websocket.py` + `integration/test_websocket_smoke.py`.
+  5. Reference CLI host + `hosts/test_cli_host.py`.
+  6. Swift `TeamClient` + bridge harness + chat-view sample app.
 - Update `docs/planning/todo.md` to point "Plugin scheme for interacting with the team" at this doc.
 - Revisit `docs/architecture.md` after the first two tasks land so the integration surface appears in the file map.
