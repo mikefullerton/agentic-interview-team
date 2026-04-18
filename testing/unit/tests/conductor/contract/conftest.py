@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 LIVE_SCHEMA_PATH = (
-    Path(__file__).resolve().parents[4]
+    Path(__file__).resolve().parents[5]
     / "plugins" / "dev-team" / "services" / "conductor"
     / "arbitrator" / "backends" / "schema.sql"
 )
