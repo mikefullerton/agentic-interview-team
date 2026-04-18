@@ -12,16 +12,19 @@ from .protocol import (
 )
 from .event_schema import Violation, validate_event, validate_stream
 from .in_process import InProcessSession, TeamRunner
+from .stdio_ndjson import StdioSession, serve_stdio
 
 __all__ = [
     "Event",
     "InProcessSession",
     "SessionHandle",
     "SessionOptions",
+    "StdioSession",
     "TeamRunner",
     "TeamSession",
     "TurnIO",
     "Violation",
+    "serve_stdio",
     "validate_event",
     "validate_stream",
 ]

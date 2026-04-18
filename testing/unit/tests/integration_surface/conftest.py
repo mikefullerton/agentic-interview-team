@@ -1,12 +1,13 @@
 """Integration surface test fixtures.
 
-`transport_factory` is parametrized over available transports. For this
-vertical slice only the in-process transport is registered; stdio and
-WebSocket are added in their respective plan tasks.
+`transport_factory` is parametrized over every available transport. Any
+new transport (stdio, WebSocket, …) registers itself here so the full
+`contract/` suite runs against it.
 """
 from __future__ import annotations
 
 import asyncio
+import json
 import sys
 from collections.abc import AsyncIterator, Callable
 from pathlib import Path
@@ -18,8 +19,11 @@ sys.path.insert(0, str(REPO_ROOT / "plugins" / "dev-team"))
 
 from services.integration_surface import (  # noqa: E402
     InProcessSession,
+    StdioSession,
     TeamSession,
 )
+
+from .fixtures.fake_team import FakeTeam  # noqa: E402
 
 
 @pytest.fixture
@@ -35,12 +39,52 @@ def run_async():
     return runner
 
 
-@pytest.fixture(params=["in_process"])
+def _serialize_fake(fake: FakeTeam) -> dict:
+    """Serialize a FakeTeam's scripted replies into JSON that the stdio
+    harness reconstructs in the subprocess. Only the default
+    (always-match) matcher is supported — tests that need custom
+    matchers must stay in-process."""
+    replies = []
+    for r in fake._replies:
+        replies.append(
+            {
+                "events": [list(ev) for ev in r.events],
+                "ask": list(r.ask) if r.ask is not None else None,
+                "after_answer": [list(ev) for ev in r.after_answer],
+            }
+        )
+    return {"replies": replies}
+
+
+_STDIO_ENTRY = (
+    REPO_ROOT
+    / "testing"
+    / "unit"
+    / "tests"
+    / "integration_surface"
+    / "fixtures"
+    / "stdio_server.py"
+)
+
+
+def _stdio_factory(runner) -> TeamSession:
+    if not isinstance(runner, FakeTeam):
+        pytest.skip("stdio transport factory only supports FakeTeam scripts")
+    script = json.dumps(_serialize_fake(runner))
+    return StdioSession(
+        cmd=[sys.executable, str(_STDIO_ENTRY)],
+        env={"AGENTIC_FAKE_SCRIPT": script, "PYTHONUNBUFFERED": "1"},
+    )
+
+
+@pytest.fixture(params=["in_process", "stdio"])
 def transport_factory(request) -> Callable[[object], TeamSession]:
     """Returns a factory callable: (runner) -> TeamSession."""
     kind = request.param
     if kind == "in_process":
         return lambda runner: InProcessSession(runner)
+    if kind == "stdio":
+        return _stdio_factory
     raise AssertionError(f"unknown transport: {kind}")
 
 
