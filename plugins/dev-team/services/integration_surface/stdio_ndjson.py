@@ -45,6 +45,17 @@ from .protocol import (
 # ---------------------------------------------------------------------------
 
 
+def _decode_options(raw: dict[str, Any]) -> SessionOptions:
+    """Rehydrate SessionOptions from JSON. Tuples serialize as lists, so
+    we convert the sequence fields back before constructing."""
+    return SessionOptions(
+        allowed_tools=tuple(raw.get("allowed_tools", ())),
+        disallowed_tools=tuple(raw.get("disallowed_tools", ())),
+        max_turns=raw.get("max_turns"),
+        permission_mode=raw.get("permission_mode", "default"),
+    )
+
+
 async def serve_stdio(
     session: TeamSession,
     stdin: asyncio.StreamReader,
@@ -123,7 +134,7 @@ async def serve_stdio(
         try:
             if op == "start":
                 options = (
-                    SessionOptions(**cmd["options"])
+                    _decode_options(cmd["options"])
                     if cmd.get("options")
                     else None
                 )

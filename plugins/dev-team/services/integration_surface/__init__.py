@@ -13,6 +13,7 @@ from .protocol import (
 from .event_schema import Violation, validate_event, validate_stream
 from .in_process import InProcessSession, TeamRunner
 from .stdio_ndjson import StdioSession, serve_stdio
+from .websocket_json import WebSocketSession, serve_websocket
 
 __all__ = [
     "Event",
@@ -24,7 +25,9 @@ __all__ = [
     "TeamSession",
     "TurnIO",
     "Violation",
+    "WebSocketSession",
     "serve_stdio",
+    "serve_websocket",
     "validate_event",
     "validate_stream",
 ]
