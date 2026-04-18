@@ -1,24 +1,36 @@
 ---
 name: atp
-version: 0.1.0
-description: Agentic Team Pipeline — runs workflows (interview, analyze) against a team directory. Discovery roots, subcommands, and team-loader are follow-up work; this skeleton reserves the skill path and name.
-argument-hint: <subcommand> [team] — skeleton only; subcommands not yet implemented
+version: 0.2.0
+description: Agentic Team Pipeline — load a team from teams/<name>/ and drive it through the conductor. Phase-1 subcommands: list, describe, run. Wider discovery roots and richer planning are follow-ups.
+argument-hint: <subcommand> [team] — list | describe <team> | run <team> [--dispatcher mock|claude-code] [--db <path>]
 ---
 
-# atp v0.1.0
+# atp v0.2.0
 
 ## Status
 
-Skeleton. This skill is reserved for the agentic team pipeline runtime defined in the plan at `~/.claude/plans/let-talk-about-the-cozy-rabin.md`. Subcommands, team discovery (`./teams/`, `~/.agentic-teams/`, `~/.claude/plugins/cache/`), and the `required_atp_version` gate are follow-up work.
+Phase 1 — subcommands wired end-to-end against `teams/devteam/`, `teams/puppynamingteam/`, and `teams/projectteam/`. Roadmap planning agents and wider discovery (`~/.agentic-teams/`, `~/.claude/plugins/cache/`) are follow-up work.
 
 ## Startup
 
-If `$ARGUMENTS` is `--version`, print `atp v0.1.0` and stop.
+If `$ARGUMENTS` is `--version`, print `atp v0.2.0` and stop.
 
-Otherwise, print:
+Otherwise, shell out to the CLI with the remaining arguments and stream its output verbatim:
 
 ```
-atp v0.1.0 — skeleton only. Subcommands and team discovery are not yet implemented. See ~/.claude/plans/let-talk-about-the-cozy-rabin.md for the design.
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/atp/scripts/atp_cli.py $ARGUMENTS
 ```
 
-Then stop.
+## Subcommands
+
+- `atp list` — print discovered teams in `./teams/`.
+- `atp describe <team>` — print a team's manifest (specialists + specialties).
+- `atp run <team> [--dispatcher mock|claude-code] [--db <path>]` — build a one-node-per-specialty demo roadmap for the team and run it through the conductor. `--dispatcher mock` uses canned responses; `--dispatcher claude-code` shells out to the real CLI.
+
+The mock dispatcher auto-generates a response for every worker in the team's manifest plus the scheduler pair, so `atp run` always has a complete canned response set regardless of team size.
+
+## Follow-ups
+
+- `atp plan <team>` — drive a real planning conversation to produce a meaningful roadmap (not one-node-per-specialty).
+- Discovery beyond `./teams/` — `~/.agentic-teams/`, `~/.claude/plugins/cache/`.
+- `required_atp_version` gate on team.md frontmatter.

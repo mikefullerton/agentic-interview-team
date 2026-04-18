@@ -3,12 +3,14 @@
 -- Keys: (session_id, team_id) on everything except `request` which has from/to.
 
 CREATE TABLE IF NOT EXISTS session (
-    session_id        TEXT PRIMARY KEY,
-    initial_team_id   TEXT NOT NULL,
-    status            TEXT NOT NULL,
-    creation_date     TEXT NOT NULL,
-    completion_date   TEXT,
-    metadata_json     TEXT NOT NULL DEFAULT '{}'
+    session_id          TEXT PRIMARY KEY,
+    initial_team_id     TEXT NOT NULL,
+    status              TEXT NOT NULL,
+    roadmap_id          TEXT,                        -- optional: roadmap this session drives
+    last_decision_date  TEXT,                        -- for "no new findings since" short-circuit
+    creation_date       TEXT NOT NULL,
+    completion_date     TEXT,
+    metadata_json       TEXT NOT NULL DEFAULT '{}'
 );
 
 CREATE TABLE IF NOT EXISTS state (

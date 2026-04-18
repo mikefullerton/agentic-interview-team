@@ -31,11 +31,10 @@ RANKED = ["Luna", "Biscuit", "Daisy", "Scout", "Rex"]
 
 
 def _build_dispatcher() -> MockDispatcher:
-    # Expected scheduler path:
-    #   gather-traits: 1 runnable → deterministic (no LLM)
-    #   3 siblings runnable → LLM picks breed-names            [LLM #1]
-    #   2 siblings runnable → LLM picks lifestyle-names        [LLM #2]
-    #   temperament-names: 1 runnable → deterministic
+    # Expected scheduler path (with parallel sibling dispatch):
+    #   gather-traits: 1 runnable → deterministic
+    #   3 siblings runnable → scheduler picks breed-names, conductor
+    #   batches breed + lifestyle + temperament in one parallel step  [LLM #1]
     #   aggregate: 1 runnable → deterministic
     #   present: 1 runnable → deterministic
     #   all done → deterministic
@@ -43,13 +42,7 @@ def _build_dispatcher() -> MockDispatcher:
         {
             "action": "advance-to",
             "node_id": "breed-names",
-            "reason": "pick breed first",
-            "deterministic": False,
-        },
-        {
-            "action": "advance-to",
-            "node_id": "lifestyle-names",
-            "reason": "lifestyle next",
+            "reason": "pick breed first (will be batched with siblings)",
             "deterministic": False,
         },
     ]
@@ -78,6 +71,68 @@ def _build_dispatcher() -> MockDispatcher:
             "aggregator-worker": {"ranked_candidates": RANKED},
         }
     )
+
+
+def test_sibling_primitives_run_concurrently(tmp_path):
+    """Three sibling specialties that each sleep 100ms should complete
+    in ~100ms, not 300ms, when batched by the conductor."""
+
+    async def _t():
+        import asyncio as _asyncio
+        import time
+
+        backend = SqliteBackend(tmp_path / "arb.sqlite")
+        arb = Arbitrator(backend)
+        await arb.start()
+        roadmap_id = await build_roadmap(arb)
+
+        session_id = uuid4()
+        await arb.open_session(
+            session_id,
+            initial_team_id=TEAM_ID,
+            metadata={"roadmap_id": roadmap_id},
+        )
+
+        class SlowMock(MockDispatcher):
+            async def dispatch(self, *args, **kwargs):  # type: ignore[override]
+                agent = kwargs.get("agent") or args[0]
+                if agent.name.endswith("-name-worker"):
+                    await _asyncio.sleep(0.1)
+                return await super().dispatch(*args, **kwargs)
+
+        slow = SlowMock(
+            {
+                "whats-next-worker": {
+                    "action": "advance-to",
+                    "node_id": "breed-names",
+                    "reason": "batch",
+                    "deterministic": False,
+                },
+                "whats-next-verifier": {"verdict": "pass", "reason": "ok"},
+                "breed-name-worker": {"candidates": ["A"]},
+                "lifestyle-name-worker": {"candidates": ["B"]},
+                "temperament-name-worker": {"candidates": ["C"]},
+                "aggregator-worker": {"ranked_candidates": ["A", "B", "C"]},
+            }
+        )
+
+        conductor = Conductor(
+            arbitrator=arb,
+            dispatcher=slow,
+            team_lead=None,
+            session_id=session_id,
+        )
+        start = time.monotonic()
+        await conductor.run_roadmap(
+            [WhatsNextSpecialty()], realize_primitive=realize
+        )
+        elapsed = time.monotonic() - start
+        # Serial would be ≥0.30s for the 3 naming workers alone.
+        # Concurrent batched dispatch should be well under 0.25s.
+        assert elapsed < 0.25, f"expected parallel dispatch; took {elapsed:.2f}s"
+        await arb.close()
+
+    asyncio.run(_t())
 
 
 def test_name_a_puppy_roadmap_end_to_end(tmp_path):
@@ -146,9 +201,9 @@ def test_name_a_puppy_roadmap_end_to_end(tmp_path):
         for i, name in enumerate(RANKED, 1):
             assert f"{i}. {name}" in present_body
 
-        # Scheduler LLM called exactly 2 times (branch-point decisions at
-        # the two moments where multiple siblings were runnable). All
-        # other steps short-circuit deterministically.
+        # Scheduler LLM called exactly 1 time. The single branch-point
+        # triggers, and parallel dispatch batches all three sibling
+        # specialties together — no further scheduler calls needed.
         events = await arb.list_events(session_id)
         decisions = [
             e for e in events if e.kind == "whats_next_decision"
@@ -156,8 +211,8 @@ def test_name_a_puppy_roadmap_end_to_end(tmp_path):
         llm_decisions = [
             d for d in decisions if not d.payload_json.get("deterministic")
         ]
-        assert len(llm_decisions) == 2, (
-            f"expected 2 LLM scheduler calls, got {len(llm_decisions)}"
+        assert len(llm_decisions) == 1, (
+            f"expected 1 LLM scheduler call, got {len(llm_decisions)}"
         )
 
         await arb.close()

@@ -1,4 +1,11 @@
-"""name-a-puppy team playbook — full flow (step 2).
+"""name-a-puppy team playbook — legacy state-machine runtime (reference only).
+
+> **Deprecated.** This module exercises `Conductor.run` + `TeamPlaybook`
+> state machines, which are superseded by the roadmap runtime. The
+> equivalent roadmap-driven version lives in `name_a_puppy_roadmap.py`
+> and is what `/atp run puppynamingteam` drives. This file is retained
+> so the existing end-to-end tests documenting the old runtime's
+> behavior continue to pass; no new work should add similar playbooks.
 
 Flow:
     start

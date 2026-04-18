@@ -42,14 +42,31 @@ from .playbook.types import (
 from .specialist_runner import run_specialist
 from .specialty import (
     ACTION_ADVANCE_TO,
+    ACTION_AWAIT_GATE,
+    ACTION_AWAIT_REQUEST,
+    ACTION_DECOMPOSE,
     ACTION_DONE,
+    ACTION_PRESENT_RESULTS,
+    ACTION_RE_DECOMPOSE,
     ConductorSpecialty,
+)
+from .specialty.whats_next import (
+    _runnable_nodes as _compute_runnable_nodes,
+    gather_context as _gather_roadmap_context,
 )
 from .team_lead import TeamLead
 
 
 RealizePrimitive = Callable[
     [Arbitrator, Dispatcher, UUID, str], Awaitable[None]
+]
+
+DecomposeCompound = Callable[
+    [Arbitrator, Dispatcher, UUID, str], Awaitable[None]
+]
+
+PresentResultsFn = Callable[
+    [Arbitrator, Dispatcher, UUID], Awaitable[None]
 ]
 
 
@@ -64,6 +81,38 @@ async def _noop_realize_primitive(
     the right node_state_event history for tests that only exercise walk
     order."""
     return None
+
+
+async def _default_decompose(
+    arbitrator: Arbitrator,
+    dispatcher: Dispatcher,
+    session_id: UUID,
+    node_id: str,
+) -> None:
+    """Default decompose handler: marks the compound node `done` directly.
+
+    Real decomposition expands a compound node by dispatching a
+    specialist planning-mode worker that writes new plan_node children.
+    The default here is a no-op placeholder so sessions that don't need
+    real decomposition still run. Callers pass a real handler via
+    `run_roadmap(decompose_compound=...)` when they need it.
+    """
+    return None
+
+
+async def _default_present_results(
+    arbitrator: Arbitrator,
+    dispatcher: Dispatcher,
+    session_id: UUID,
+) -> None:
+    """Default present-results handler: emits a summary notification."""
+    await arbitrator.create_message(
+        session_id=session_id,
+        team_id="conductor",
+        direction="out",
+        type="notification",
+        body="All roadmap nodes complete.",
+    )
 
 
 @dataclass
@@ -185,6 +234,9 @@ class Conductor:
         self,
         specialties: list[ConductorSpecialty],
         realize_primitive: RealizePrimitive | None = None,
+        decompose_compound: DecomposeCompound | None = None,
+        present_results: PresentResultsFn | None = None,
+        await_poll_seconds: float = 0.05,
     ) -> None:
         """Drive a roadmap-backed session via conductor-owned specialties.
 
@@ -211,6 +263,10 @@ class Conductor:
 
         if realize_primitive is None:
             realize_primitive = _noop_realize_primitive
+        if decompose_compound is None:
+            decompose_compound = _default_decompose
+        if present_results is None:
+            present_results = _default_present_results
 
         await self._arb.open_session(
             self._session_id, initial_team_id=self._team_id
@@ -254,13 +310,40 @@ class Conductor:
                     raise RuntimeError(
                         "whats-next returned advance-to without node_id"
                     )
+                # Parallel batch: two runnable primitives with no
+                # inter-dependency (which by definition holds for any
+                # two concurrently-runnable primitives) can be realized
+                # concurrently. The scheduler's pick is always in the
+                # batch; any other runnable primitives join it.
+                ctx = await _gather_roadmap_context(
+                    self._arb, self._session_id
+                )
+                runnable = [
+                    n
+                    for n in _compute_runnable_nodes(ctx)
+                    if n["node_kind"] == "primitive"
+                ]
+                batch_ids: list[str] = [decision.node_id]
+                for n in runnable:
+                    if n["node_id"] != decision.node_id:
+                        batch_ids.append(n["node_id"])
+                await self._advance_primitive_batch(
+                    batch_ids, realize_primitive
+                )
+                continue
+
+            if decision.action in (ACTION_DECOMPOSE, ACTION_RE_DECOMPOSE):
+                if decision.node_id is None:
+                    raise RuntimeError(
+                        f"{decision.action} returned without node_id"
+                    )
                 await self._arb.record_node_state_event(
                     node_id=decision.node_id,
                     event_type=NodeStateEventType.RUNNING,
                     actor="conductor",
                     session_id=self._session_id,
                 )
-                await realize_primitive(
+                await decompose_compound(
                     self._arb,
                     self._dispatcher,
                     self._session_id,
@@ -274,14 +357,102 @@ class Conductor:
                 )
                 continue
 
-            # decompose / await-gate / re-decompose / await-request /
-            # present-results: not yet supported in phase 1.
+            if decision.action == ACTION_AWAIT_GATE:
+                await self._poll_until(
+                    self._is_gate_resolved, decision.node_id, await_poll_seconds
+                )
+                continue
+
+            if decision.action == ACTION_AWAIT_REQUEST:
+                await self._poll_until(
+                    self._is_request_complete,
+                    decision.node_id,
+                    await_poll_seconds,
+                )
+                continue
+
+            if decision.action == ACTION_PRESENT_RESULTS:
+                await present_results(
+                    self._arb, self._dispatcher, self._session_id
+                )
+                continue
+
+            # Defensive fallback — any future action not covered above.
             await self._arb.close_session(
                 self._session_id, SessionStatus.FAILED
             )
             raise NotImplementedError(
                 f"run_roadmap does not yet handle action {decision.action!r}"
             )
+
+    async def _poll_until(
+        self,
+        predicate: Callable[[str | None], Awaitable[bool]],
+        subject: str | None,
+        interval: float,
+    ) -> None:
+        """Sleep-poll until `predicate` returns True. Minimal implementation
+        suitable for mock tests; a production driver will replace this with
+        event-bus notifications so the conductor doesn't spin."""
+        while not await predicate(subject):
+            await asyncio.sleep(interval)
+
+    async def _is_gate_resolved(self, plan_node_id: str | None) -> bool:
+        storage = self._arb._storage
+        rows = await storage.fetch_all(
+            "gate", where={"session_id": str(self._session_id)}
+        )
+        if plan_node_id is not None:
+            rows = [r for r in rows if r.get("plan_node_id") == plan_node_id]
+        if not rows:
+            # No matching gate — treat as resolved so the conductor
+            # doesn't spin forever on a missing subject.
+            return True
+        return all(r.get("verdict") is not None for r in rows)
+
+    async def _is_request_complete(self, plan_node_id: str | None) -> bool:
+        storage = self._arb._storage
+        rows = await storage.fetch_all(
+            "request", where={"session_id": str(self._session_id)}
+        )
+        if plan_node_id is not None:
+            rows = [r for r in rows if r.get("plan_node_id") == plan_node_id]
+        if not rows:
+            return True
+        return all(
+            r.get("status") in ("completed", "failed", "timeout")
+            for r in rows
+        )
+
+    async def _advance_primitive_batch(
+        self,
+        node_ids: list[str],
+        realize_primitive: RealizePrimitive,
+    ) -> None:
+        """Run the realizer for each node_id in parallel, with each run
+        bracketed by running/done `node_state_event` rows."""
+
+        async def _advance_one(node_id: str) -> None:
+            await self._arb.record_node_state_event(
+                node_id=node_id,
+                event_type=NodeStateEventType.RUNNING,
+                actor="conductor",
+                session_id=self._session_id,
+            )
+            await realize_primitive(
+                self._arb,
+                self._dispatcher,
+                self._session_id,
+                node_id,
+            )
+            await self._arb.record_node_state_event(
+                node_id=node_id,
+                event_type=NodeStateEventType.DONE,
+                actor="conductor",
+                session_id=self._session_id,
+            )
+
+        await asyncio.gather(*(_advance_one(nid) for nid in node_ids))
 
     def _register_cross_team_handlers(self) -> None:
         """Register every aux team's declared request handlers on the arbitrator."""

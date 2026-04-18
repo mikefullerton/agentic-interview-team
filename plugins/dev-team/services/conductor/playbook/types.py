@@ -1,5 +1,13 @@
 """Team-playbook declarative types — spec §5.5.
 
+> **Deprecated for new teams.** The state-machine fields on `TeamPlaybook`
+> (`states`, `transitions`, `judgment_specs`, `initial_state`) are
+> superseded by the roadmap runtime (`Conductor.run_roadmap`). New teams
+> should be authored as `teams/<name>/` markdown (see
+> `services/conductor/team_loader.py`), not as TeamPlaybook Python.
+>
+> The `manifest` and `request_handlers` fields remain relevant.
+
 Declarations, not programs. Authors express a team as data: states,
 transitions, judgment specs, manifest, actions. No imperative business logic
 in state declarations; actions are first-class value objects the conductor

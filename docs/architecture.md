@@ -2,17 +2,73 @@
 
 Single source of truth for the dev-team system. For LLM consumption.
 
-> **In-flight reshaping.** This doc describes the current (pre-conductor)
-> dev-team skill pipeline. Two forward-looking designs are already landing:
+> **Two runtimes coexist.**
 >
-> - [`planning/2026-04-11-conductor-architecture.md`](planning/2026-04-11-conductor-architecture.md)
->   — headless conductor, stream-json observer, typed inter-team requests.
-> - [`planning/2026-04-17-atp-roadmap-design.md`](planning/2026-04-17-atp-roadmap-design.md)
->   — roadmap graph (tree + DAG projections), body side-table, cross-stream
->   `plan_node_id` join key. Already shipped into the conductor arbitrator.
+> 1. **Roadmap runtime (current work)** — `Conductor.run_roadmap` drives a
+>    roadmap graph through `WhatsNextSpecialty` + a realizer. Teams are
+>    declared as markdown (`teams/<name>/`), loaded into a `TeamManifest`,
+>    and executed via the generic realizer. Entry point: the `/atp` skill.
+>    No per-team `TeamPlaybook` Python; the conductor's scheduling
+>    specialty decides each step. See
+>    [`planning/2026-04-17-whats-next-specialty.md`](planning/2026-04-17-whats-next-specialty.md).
 >
-> Where the two overlap, the newer designs win. This doc will be rewritten
-> to describe the combined system once both land in full.
+> 2. **Legacy playbook runtime** — `Conductor.run` still drives hand-authored
+>    `TeamPlaybook` state machines (`services/conductor/playbooks/*.py`).
+>    Retained for backward compat and as reference examples; new teams should
+>    not author one. The `TeamPlaybook.states / transitions / judgment_specs`
+>    fields are deprecated and scheduled for removal once the last playbook-
+>    driven test/session is migrated.
+>
+> Both runtimes share the arbitrator, dispatcher, state/gate/request/event
+> tables, and the roadmap graph schema
+> ([`planning/2026-04-17-atp-roadmap-design.md`](planning/2026-04-17-atp-roadmap-design.md)).
+> The conductor architecture paper is
+> [`planning/2026-04-11-conductor-architecture.md`](planning/2026-04-11-conductor-architecture.md);
+> it remains the reference for inter-team requests, dispatcher semantics,
+> and the event stream.
+
+## Roadmap Runtime (current work)
+
+```
+/atp run <team>
+  │
+  ▼
+atp_cli.py
+  │  load_team(teams/<team>/) → TeamManifest
+  │  build_roadmap(arbitrator) from manifest (one node per specialty)
+  │  open_session with roadmap_id
+  ▼
+Conductor.run_roadmap([WhatsNextSpecialty()], realize_primitive=…)
+  ├── scheduler loop:
+  │     • deterministic short-circuit when unambiguous
+  │     • worker → verifier (with bounded retry) when not
+  │     • fail-path opens a `conflict` gate and awaits resolution
+  ├── advance-to: parallel asyncio.gather over runnable primitives
+  ├── decompose / await-gate / await-request / present-results
+  │   each call out to pluggable handlers
+  └── records node_state_event (running/done) per primitive
+```
+
+Files:
+- `plugins/dev-team/services/conductor/conductor.py` — `run_roadmap`.
+- `plugins/dev-team/services/conductor/specialty/base.py` — `ConductorSpecialty` protocol, `ActionDecision`.
+- `plugins/dev-team/services/conductor/specialty/whats_next.py` — the scheduler specialty.
+- `plugins/dev-team/services/conductor/team_loader.py` — team.md / specialist.md / specialty.md parser.
+- `plugins/dev-team/services/conductor/generic_realizer.py` — manifest-driven realizer.
+- `plugins/dev-team/services/conductor/user_interaction.py` — `ask_user` for interview-style realizers.
+- `skills/atp/scripts/atp_cli.py` — `/atp` subcommands.
+
+Tests:
+- `testing/unit/tests/conductor/test_whats_next_*.py` — scheduler paths.
+- `testing/unit/tests/conductor/test_conductor_roadmap_e2e.py` — linear / diamond / smoke.
+- `testing/unit/tests/conductor/test_run_roadmap_actions.py` — all 7 action handlers.
+- `testing/unit/tests/conductor/test_crash_resume_roadmap.py` — resume.
+- `testing/unit/tests/conductor/test_branch_point_gate.py` — verifier-fail gate.
+- `testing/unit/tests/conductor/test_team_loader_and_generic_realizer.py` — team markdown → run.
+- `testing/unit/tests/conductor/test_name_a_puppy_roadmap.py` + `test_name_a_puppy_interview.py` — puppy roadmap end-to-end.
+- `testing/functional/tests/conductor/test_real_llm_puppy_smoke.py` — real-LLM smoke (gated by `AGENTIC_REAL_LLM_SMOKE=1`).
+
+The rest of this doc describes the pre-conductor dev-team skill pipeline, which remains in place for `/dev-team <command>` workflows. Treat it as historical context; new capabilities land in the roadmap runtime.
 
 ## System Overview
 

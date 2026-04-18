@@ -73,6 +73,7 @@ class Arbitrator:
         session_id: UUID,
         initial_team_id: str,
         metadata: dict[str, Any] | None = None,
+        roadmap_id: str | None = None,
     ) -> Session:
         existing = await self._storage.fetch_one(
             "session", {"session_id": str(session_id)}
@@ -90,11 +91,16 @@ class Arbitrator:
                 ),
                 metadata_json=json.loads(existing["metadata_json"]),
             )
+        # Accept roadmap_id from either the kwarg or metadata (legacy
+        # callers stashed it there). Column wins when both set.
+        effective_roadmap_id = roadmap_id or (metadata or {}).get("roadmap_id")
         now = _utcnow_iso()
         row = {
             "session_id": str(session_id),
             "initial_team_id": initial_team_id,
             "status": SessionStatus.OPEN.value,
+            "roadmap_id": effective_roadmap_id,
+            "last_decision_date": None,
             "creation_date": now,
             "completion_date": None,
             "metadata_json": json.dumps(metadata or {}),
@@ -106,6 +112,18 @@ class Arbitrator:
             status=SessionStatus.OPEN,
             creation_date=datetime.fromisoformat(now),
             metadata_json=metadata or {},
+        )
+
+    async def touch_session_decision_date(
+        self, session_id: UUID
+    ) -> None:
+        """Bump session.last_decision_date to now. Used by the conductor
+        after every scheduler decision so the whats-next short-circuit
+        can reason about "findings newer than the last decision"."""
+        await self._storage.update(
+            "session",
+            {"session_id": str(session_id)},
+            {"last_decision_date": _utcnow_iso()},
         )
 
     async def close_session(
@@ -264,6 +282,26 @@ class Arbitrator:
             creation_date=datetime.fromisoformat(now),
             plan_node_id=plan_node_id,
         )
+
+    async def list_gates(
+        self,
+        session_id: UUID,
+        *,
+        only_open: bool = False,
+        category: str | None = None,
+        plan_node_id: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """Return raw gate rows for a session. Thin convenience around
+        the backend's fetch_all so callers don't reach into _storage."""
+        where: dict[str, Any] = {"session_id": str(session_id)}
+        if category is not None:
+            where["category"] = category
+        if plan_node_id is not None:
+            where["plan_node_id"] = plan_node_id
+        rows = await self._storage.fetch_all("gate", where=where)
+        if only_open:
+            rows = [r for r in rows if r.get("verdict") is None]
+        return rows
 
     async def resolve_gate(self, gate_id: str, verdict: str) -> None:
         await self._storage.update(
@@ -639,6 +677,48 @@ class Arbitrator:
             "request", {"request_id": request_id}
         )
         return _row_to_request(row, None) if row else None
+
+    async def list_requests(
+        self,
+        session_id: UUID,
+        *,
+        statuses: list[str] | None = None,
+        plan_node_id: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """Raw request rows for a session, optionally filtered by
+        status or plan_node_id."""
+        where: dict[str, Any] = {"session_id": str(session_id)}
+        if plan_node_id is not None:
+            where["plan_node_id"] = plan_node_id
+        rows = await self._storage.fetch_all("request", where=where)
+        if statuses is not None:
+            keep = set(statuses)
+            rows = [r for r in rows if r.get("status") in keep]
+        return rows
+
+    async def list_findings_since(
+        self,
+        session_id: UUID,
+        since: str | None,
+    ) -> list[dict[str, Any]]:
+        """Findings written by results in this session, optionally filtered
+        to those whose creation_date > `since` (ISO-8601 string)."""
+        # Join path: result.session_id → finding.result_id.
+        results = await self._storage.fetch_all(
+            "result", where={"session_id": str(session_id)}
+        )
+        result_ids = {r["result_id"] for r in results}
+        findings: list[dict[str, Any]] = []
+        for rid in result_ids:
+            rows = await self._storage.fetch_all(
+                "finding", where={"result_id": rid}
+            )
+            findings.extend(rows)
+        if since is not None:
+            findings = [
+                f for f in findings if f.get("creation_date", "") > since
+            ]
+        return findings
 
     # ---- Project-management resources (spec §6.1) ------------------------
 

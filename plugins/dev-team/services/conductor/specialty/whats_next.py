@@ -62,19 +62,23 @@ async def gather_context(arbitrator, session_id: UUID) -> WhatsNextContext:
     session_row = await storage.fetch_one(
         "session", {"session_id": str(session_id)}
     )
-    # Session schema today has no roadmap_id column; caller stashes it
-    # in metadata_json under "roadmap_id". A schema migration will
-    # promote this to a first-class column in a follow-up.
     roadmap_id: str | None = None
     if session_row:
-        raw_meta = session_row.get("metadata_json") or "{}"
-        try:
-            meta = json.loads(raw_meta) if isinstance(raw_meta, str) else raw_meta
-            roadmap_id = meta.get("roadmap_id") if isinstance(meta, dict) else None
-        except (TypeError, ValueError):
-            roadmap_id = None
-        # Tolerate a future schema where roadmap_id is a column.
-        roadmap_id = session_row.get("roadmap_id") or roadmap_id
+        # Prefer the first-class column; fall back to metadata for
+        # legacy sessions that stashed roadmap_id there.
+        roadmap_id = session_row.get("roadmap_id")
+        if not roadmap_id:
+            raw_meta = session_row.get("metadata_json") or "{}"
+            try:
+                meta = (
+                    json.loads(raw_meta)
+                    if isinstance(raw_meta, str)
+                    else raw_meta
+                )
+                if isinstance(meta, dict):
+                    roadmap_id = meta.get("roadmap_id")
+            except (TypeError, ValueError):
+                roadmap_id = None
 
     plan_nodes: list[dict[str, Any]] = []
     dependencies: list[dict[str, Any]] = []
@@ -102,19 +106,12 @@ async def gather_context(arbitrator, session_id: UUID) -> WhatsNextContext:
         where={"session_id": str(session_id), "status": "active"},
     )
 
-    all_gates = await storage.fetch_all(
-        "gate", where={"session_id": str(session_id)}
+    open_gates = await arbitrator.list_gates(
+        session_id, only_open=True
     )
-    open_gates = [g for g in all_gates if g.get("verdict") is None]
-
-    all_requests = await storage.fetch_all(
-        "request", where={"session_id": str(session_id)}
+    in_flight_requests = await arbitrator.list_requests(
+        session_id, statuses=["pending", "queued", "in-flight"]
     )
-    in_flight_requests = [
-        r
-        for r in all_requests
-        if r.get("status") in ("pending", "queued", "in-flight")
-    ]
 
     return WhatsNextContext(
         session_id=str(session_id),
@@ -426,10 +423,12 @@ class WhatsNextSpecialty:
         worker_agent: str = "whats-next-worker",
         verifier_agent: str = "whats-next-verifier",
         logical_model: str = "balanced",
+        max_verifier_retries: int = 2,
     ):
         self.worker_agent = worker_agent
         self.verifier_agent = verifier_agent
         self.logical_model = logical_model
+        self.max_verifier_retries = max_verifier_retries
 
     async def decide(
         self,
@@ -450,17 +449,57 @@ class WhatsNextSpecialty:
             # Worker self-reported deterministic — trust it without verifier.
             return worker_decision
 
-        verdict = await self._run_verifier(
-            ctx, worker_decision, arbitrator, dispatcher, session_id
+        current_decision = worker_decision
+        for attempt in range(self.max_verifier_retries + 1):
+            verdict = await self._run_verifier(
+                ctx, current_decision, arbitrator, dispatcher, session_id
+            )
+            if verdict.verdict in ("pass", "verified"):
+                return current_decision
+            if (
+                verdict.verdict == "retry-with"
+                and verdict.alternative is not None
+                and attempt < self.max_verifier_retries
+            ):
+                current_decision = verdict.alternative
+                continue
+            # fail or exhausted retries — open an arbitration gate and
+            # tell the conductor to await it.
+            return await self._open_arbitration_gate(
+                arbitrator, session_id, current_decision, verdict
+            )
+
+        # Defensive: loop should only exit via return above.
+        return current_decision
+
+    async def _open_arbitration_gate(
+        self,
+        arbitrator,
+        session_id: UUID,
+        decision: ActionDecision,
+        verdict,  # VerifierVerdict
+    ) -> ActionDecision:
+        """Open a conflict gate so a human (or a supervising process)
+        can arbitrate when verifier cannot accept a decision. Returns
+        an `await-gate` ActionDecision targeting the new gate's plan
+        node (or the session if node_id is None)."""
+        gate = await arbitrator.create_gate(
+            session_id=session_id,
+            team_id="conductor",
+            category="conflict",
+            options=["accept-worker", "accept-verifier", "abort"],
+            plan_node_id=decision.node_id,
         )
-        if verdict.verdict in ("pass", "verified"):
-            return worker_decision
-        if verdict.verdict == "retry-with" and verdict.alternative is not None:
-            return verdict.alternative
-        # fail → return what the worker wanted, but mark with a reason
-        # that makes the conductor open a gate. Phase 1: surface decision
-        # as-is; conductor will see a non-advance action and handle.
-        return worker_decision
+        reason = (
+            f"verifier {verdict.verdict}: {verdict.reason} "
+            f"(gate_id={gate.gate_id})"
+        )
+        return ActionDecision(
+            action="await-gate",
+            node_id=decision.node_id,
+            reason=reason,
+            deterministic=False,
+        )
 
     async def _run_worker(
         self,

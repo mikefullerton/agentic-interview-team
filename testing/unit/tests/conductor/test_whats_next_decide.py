@@ -97,9 +97,29 @@ def test_worker_advance_to_verifier_pass(tmp_path):
     asyncio.run(_t())
 
 
-def test_verifier_retry_with_alternative_overrides(tmp_path):
+def test_verifier_retry_with_alternative_then_passes(tmp_path):
+    """Verifier first retries with an alternative; the re-verification
+    of the alternative passes; the alternative is returned."""
+
     async def _t():
         arb, session_id = await _setup_diamond_arbitrator(tmp_path)
+
+        verifier_calls = {"n": 0}
+
+        def verifier_response(_prompt):
+            verifier_calls["n"] += 1
+            if verifier_calls["n"] == 1:
+                return {
+                    "verdict": "retry-with",
+                    "alternative": {
+                        "action": "advance-to",
+                        "node_id": "c",
+                        "reason": "c is higher-priority",
+                        "deterministic": False,
+                    },
+                    "reason": "c should go first",
+                }
+            return {"verdict": "pass", "reason": "alternative is fine"}
 
         dispatcher = MockDispatcher(
             {
@@ -109,16 +129,7 @@ def test_verifier_retry_with_alternative_overrides(tmp_path):
                     "reason": "pick b",
                     "deterministic": False,
                 },
-                "whats-next-verifier": {
-                    "verdict": "retry-with",
-                    "alternative": {
-                        "action": "advance-to",
-                        "node_id": "c",
-                        "reason": "c is higher-priority",
-                        "deterministic": False,
-                    },
-                    "reason": "c should go first",
-                },
+                "whats-next-verifier": verifier_response,
             }
         )
         specialty = WhatsNextSpecialty()
@@ -126,6 +137,54 @@ def test_verifier_retry_with_alternative_overrides(tmp_path):
 
         assert decision.action == "advance-to"
         assert decision.node_id == "c"
+        assert verifier_calls["n"] == 2
+        await arb.close()
+
+    asyncio.run(_t())
+
+
+def test_verifier_retry_loop_bounded_opens_gate(tmp_path):
+    """If the verifier keeps returning retry-with past max_verifier_retries,
+    the specialty opens an arbitration gate and returns await-gate."""
+
+    async def _t():
+        arb, session_id = await _setup_diamond_arbitrator(tmp_path)
+
+        def verifier_response(_prompt):
+            # Always retry-with; should hit the bound and open a gate.
+            return {
+                "verdict": "retry-with",
+                "alternative": {
+                    "action": "advance-to",
+                    "node_id": "c",
+                    "reason": "again",
+                    "deterministic": False,
+                },
+                "reason": "keep retrying",
+            }
+
+        dispatcher = MockDispatcher(
+            {
+                "whats-next-worker": {
+                    "action": "advance-to",
+                    "node_id": "b",
+                    "reason": "pick b",
+                    "deterministic": False,
+                },
+                "whats-next-verifier": verifier_response,
+            }
+        )
+        specialty = WhatsNextSpecialty(max_verifier_retries=2)
+        decision = await specialty.decide(arb, dispatcher, session_id)
+
+        assert decision.action == "await-gate"
+        assert decision.deterministic is False
+        # A gate was opened on the session.
+        rows = await arb._storage.fetch_all(
+            "gate", where={"session_id": str(session_id)}
+        )
+        assert len(rows) == 1
+        assert rows[0]["category"] == "conflict"
         await arb.close()
 
     asyncio.run(_t())
@@ -158,10 +217,10 @@ def test_worker_self_reports_deterministic_skips_verifier(tmp_path):
     asyncio.run(_t())
 
 
-def test_verifier_fail_still_surfaces_worker_decision(tmp_path):
-    """Phase 1: we don't open a gate on verifier fail yet — the worker's
-    decision is returned so the conductor can at least log it. Future work
-    will upgrade this to open a real gate."""
+def test_verifier_fail_opens_arbitration_gate(tmp_path):
+    """When the verifier returns `fail`, the specialty opens a conflict
+    gate and tells the conductor to await it. No advance-to is returned
+    so no work progresses until a human resolves the gate."""
 
     async def _t():
         arb, session_id = await _setup_diamond_arbitrator(tmp_path)
@@ -176,15 +235,22 @@ def test_verifier_fail_still_surfaces_worker_decision(tmp_path):
                 },
                 "whats-next-verifier": {
                     "verdict": "fail",
-                    "reason": "something is wrong but we can't articulate it",
+                    "reason": "something is wrong",
                 },
             }
         )
         specialty = WhatsNextSpecialty()
         decision = await specialty.decide(arb, dispatcher, session_id)
 
-        assert decision.action == "advance-to"
-        assert decision.node_id == "b"
+        assert decision.action == "await-gate"
+        assert decision.node_id == "b"  # gate attached to the disputed node
+        rows = await arb._storage.fetch_all(
+            "gate", where={"session_id": str(session_id)}
+        )
+        assert len(rows) == 1
+        assert rows[0]["category"] == "conflict"
+        assert rows[0]["plan_node_id"] == "b"
+        assert rows[0]["verdict"] is None
         await arb.close()
 
     asyncio.run(_t())

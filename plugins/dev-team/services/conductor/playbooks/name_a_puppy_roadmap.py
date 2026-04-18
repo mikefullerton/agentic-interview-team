@@ -43,9 +43,35 @@ from services.conductor.dispatcher import (  # noqa: E402
     DispatchCorrelation,
     Dispatcher,
 )
+from services.conductor.user_interaction import ask_user  # noqa: E402
 
 
 TEAM_ID = "name-a-puppy-roadmap"
+
+
+# ---------------------------------------------------------------------------
+# Interview question set used when make_realizer(interview=True).
+# Each tuple is (question text, allowed options, trait key).
+# ---------------------------------------------------------------------------
+
+_INTERVIEW_QUESTIONS: list[tuple[str, list[str], str]] = [
+    (
+        "What breed is your puppy?",
+        ["labrador", "golden retriever", "mixed", "other"],
+        "breed",
+    ),
+    ("What gender?", ["male", "female"], "gender"),
+    (
+        "What color is your puppy's coat?",
+        ["black", "brown", "cream", "white", "mixed"],
+        "coloring",
+    ),
+    (
+        "How would you describe the puppy's temperament?",
+        ["playful", "calm", "shy", "bold"],
+        "temperament",
+    ),
+]
 
 
 # ---------------------------------------------------------------------------
@@ -312,6 +338,74 @@ async def _dispatch_aggregator(
 # ---------------------------------------------------------------------------
 # Public realizer
 # ---------------------------------------------------------------------------
+
+
+async def _gather_traits_interview(
+    arbitrator: Arbitrator, session_id: UUID, node_id: str
+) -> dict[str, Any]:
+    """Interactive gather: asks the user one question per trait via
+    `ask_user`. Blocks until every question is answered. Returns the
+    collected traits dict."""
+    traits: dict[str, Any] = {}
+    for question, options, key in _INTERVIEW_QUESTIONS:
+        answer = await ask_user(
+            arbitrator,
+            session_id,
+            question,
+            options,
+            plan_node_id=node_id,
+            team_id=TEAM_ID,
+        )
+        traits[key] = answer
+    return traits
+
+
+def make_realizer(interview: bool = False):
+    """Factory returning a RealizePrimitive closure.
+
+    When `interview` is False (default), `gather-traits` uses the
+    module-level `DEFAULT_TRAITS` record — appropriate for tests and
+    demos. When True, `gather-traits` asks the user via `ask_user`
+    and blocks until each question is answered.
+    """
+
+    async def _realize(
+        arbitrator: Arbitrator,
+        dispatcher: Dispatcher,
+        session_id: UUID,
+        node_id: str,
+    ) -> None:
+        node = await arbitrator.get_plan_node(node_id)
+        if node is None:
+            raise RuntimeError(f"plan_node {node_id} not found")
+        speciality = node.speciality
+
+        if speciality == "gather":
+            if interview:
+                traits = await _gather_traits_interview(
+                    arbitrator, session_id, node_id
+                )
+            else:
+                await arbitrator.create_message(
+                    session_id=session_id,
+                    team_id=TEAM_ID,
+                    direction="out",
+                    type="notification",
+                    body="Gathering puppy traits…",
+                    plan_node_id=node_id,
+                )
+                traits = DEFAULT_TRAITS
+            await _write_result(
+                arbitrator,
+                session_id,
+                node_id,
+                specialist_id="gather",
+                summary={"traits": traits},
+            )
+            return
+        return await realize(arbitrator, dispatcher, session_id, node_id)
+
+    return _realize
 
 
 async def realize(
