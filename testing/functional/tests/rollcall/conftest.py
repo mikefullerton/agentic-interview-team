@@ -21,6 +21,9 @@ if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
 
+_THIS_DIR = Path(__file__).resolve().parent
+
+
 def pytest_collection_modifyitems(config, items):
     gate_on = os.environ.get("AGENTIC_REAL_LLM_SMOKE") == "1"
     if gate_on:
@@ -29,7 +32,12 @@ def pytest_collection_modifyitems(config, items):
         reason="rollcall real-LLM smoke gated by AGENTIC_REAL_LLM_SMOKE=1"
     )
     for item in items:
-        item.add_marker(skip)
+        try:
+            item_path = Path(str(item.fspath)).resolve()
+        except Exception:
+            continue
+        if _THIS_DIR in item_path.parents:
+            item.add_marker(skip)
 
 
 @pytest.fixture(scope="session")
