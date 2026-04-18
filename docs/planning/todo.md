@@ -29,7 +29,7 @@ _Last refreshed 2026-04-18 — see `docs/architecture.md` for current state._
 
 ### Integration surface
 
-- **Plugin scheme for interacting with the team.** Expose the team as a bidirectional headless Claude session — see `docs/research/headless-claude-bidirectional.md`. Likely shape: HITL router pattern (§ "System architecture"), custom MCP tools like `ask_product_owner` / `ask_sre_oncall`, resumable sessions via `--resume <sid>` for async checkpoints. Needs a design doc before implementation.
+- **Plugin scheme for interacting with the team.** Transport-neutral Session API + event stream so any host (native Mac chat app, CLI, Slack, web) can drive a team. Design: [`2026-04-18-integration-surface-design.md`](./2026-04-18-integration-surface-design.md). Implementation plan pending.
 
 ### Tooling
 
