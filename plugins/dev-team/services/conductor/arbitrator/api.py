@@ -10,6 +10,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, AsyncIterator
 from uuid import UUID
 
+from typing import Awaitable, Callable, Union
+
 from .backends.base import Storage
 from .models import (
     Body,
@@ -34,6 +36,12 @@ from .models import (
     Task,
     TaskStatus,
 )
+
+
+# Callable request handler: receives (arbitrator, request) and returns
+# the response dict. Stored alongside playbook handler-state-name strings
+# in the same _request_handlers map; `isinstance(h, str)` disambiguates.
+RequestHandler = Callable[["Arbitrator", Request], Awaitable[dict]]
 
 
 def _utcnow_iso() -> str:
@@ -547,6 +555,56 @@ class Arbitrator:
         self, team_id: str, kind: str, handler_state_node: str
     ) -> None:
         self._request_handlers[(team_id, kind)] = handler_state_node
+
+    def register_request_callable(
+        self,
+        team_id: str,
+        kind: str,
+        handler: "RequestHandler",
+    ) -> None:
+        """Register an async callable as a request handler.
+
+        The callable receives (arbitrator, request) and returns a JSON
+        response dict. Used by teams that don't need a playbook state
+        machine — see `playbooks/project_management.py` for an example.
+        """
+        self._request_handlers[(team_id, kind)] = handler
+
+    async def run_callable_handlers_once(self, session_id: UUID) -> int:
+        """Process every pending callable request for this session.
+
+        Returns how many requests were dispatched + completed. Used by
+        callers that don't want to run a full conductor loop just to
+        drain PM-style callable handlers — e.g. tests that post a
+        request and immediately expect a response row.
+        """
+        drained = 0
+        while True:
+            req = await self.next_ready_request(session_id)
+            if req is None:
+                return drained
+            handler = self._request_handlers.get((req.to_team, req.kind))
+            if not callable(handler):
+                # Not a callable (likely a handler-state-name for a
+                # playbook). Put it back so a conductor loop can handle
+                # it instead; break to avoid spinning.
+                return drained
+            try:
+                response = await handler(self, req)
+            except Exception as exc:
+                await self.complete_request(
+                    req.request_id,
+                    status=RequestStatus.FAILED,
+                    response={"error": str(exc)},
+                )
+                drained += 1
+                continue
+            await self.complete_request(
+                req.request_id,
+                status=RequestStatus.COMPLETED,
+                response=response,
+            )
+            drained += 1
 
     async def create_request(
         self,

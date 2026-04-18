@@ -1,67 +1,78 @@
-"""project-management team — standalone PM handlers (spec §6.1, step 4).
+"""project-management team — direct request handlers (no playbook shell).
 
-Exposes three request kinds for creating PM resources:
+Registers three callable handlers on the arbitrator:
+  - ``pm.schedule.create``  → inserts a ``schedule`` row
+  - ``pm.todo.create``      → inserts a ``todo`` row
+  - ``pm.decision.create``  → inserts a ``decision`` row
 
-- ``pm.schedule.create`` — insert a row into ``schedule``
-- ``pm.todo.create`` — insert a row into ``todo``
-- ``pm.decision.create`` — insert a row into ``decision``
-
-Each handler state uses a ``WriteProjectResource`` action that reads the
-active request's ``input_json`` as kwargs to the matching arbitrator
-``create_*`` method and responds with the inserted row. No LLM call — PM
-data capture is mechanical.
-
-This team is *new* and does not refactor the existing dev-team (per user
-instruction for step 4). A future step will retire the old
-project-manager specialist in favor of sending requests here.
+No LLM dispatch, no state machine. A caller writes a request of one of
+these kinds; the arbitrator invokes the matching handler and fills the
+response with the inserted row.
 """
 from __future__ import annotations
 
-import sys
-from pathlib import Path
+import json
 
-_PKG_ROOT = Path(__file__).resolve().parents[3]
-if str(_PKG_ROOT) not in sys.path:
-    sys.path.insert(0, str(_PKG_ROOT))
-
-from services.conductor.playbook.types import (  # noqa: E402
-    Manifest,
-    State,
-    TeamPlaybook,
-    WriteProjectResource,
-)
+from services.conductor.arbitrator import Arbitrator
+from services.conductor.arbitrator.models import Request
 
 
-HANDLE_SCHEDULE_CREATE = State(
-    name="handle_schedule_create",
-    entry_actions=(WriteProjectResource(resource_type="schedule"),),
-)
-
-HANDLE_TODO_CREATE = State(
-    name="handle_todo_create",
-    entry_actions=(WriteProjectResource(resource_type="todo"),),
-)
-
-HANDLE_DECISION_CREATE = State(
-    name="handle_decision_create",
-    entry_actions=(WriteProjectResource(resource_type="decision"),),
-)
+TEAM_ID = "project-management"
 
 
-PLAYBOOK = TeamPlaybook(
-    name="project-management",
-    states=[
-        HANDLE_SCHEDULE_CREATE,
-        HANDLE_TODO_CREATE,
-        HANDLE_DECISION_CREATE,
-    ],
-    transitions=[],
-    judgment_specs={},
-    manifest=Manifest(),
-    initial_state="handle_schedule_create",
-    request_handlers={
-        "pm.schedule.create": "handle_schedule_create",
-        "pm.todo.create": "handle_todo_create",
-        "pm.decision.create": "handle_decision_create",
-    },
-)
+async def handle_schedule_create(arb: Arbitrator, request: Request) -> dict:
+    data = request.input_json or {}
+    if isinstance(data, str):
+        data = json.loads(data)
+    row = await arb.create_schedule_item(
+        session_id=request.session_id,
+        team_id=TEAM_ID,
+        **data,
+    )
+    return dict(row) if hasattr(row, "__iter__") and not isinstance(row, str) else row.__dict__
+
+
+async def handle_todo_create(arb: Arbitrator, request: Request) -> dict:
+    data = request.input_json or {}
+    if isinstance(data, str):
+        data = json.loads(data)
+    row = await arb.create_todo_item(
+        session_id=request.session_id,
+        team_id=TEAM_ID,
+        **data,
+    )
+    return dict(row) if hasattr(row, "__iter__") and not isinstance(row, str) else row.__dict__
+
+
+async def handle_decision_create(arb: Arbitrator, request: Request) -> dict:
+    data = request.input_json or {}
+    if isinstance(data, str):
+        data = json.loads(data)
+    row = await arb.create_decision_item(
+        session_id=request.session_id,
+        team_id=TEAM_ID,
+        **data,
+    )
+    return dict(row) if hasattr(row, "__iter__") and not isinstance(row, str) else row.__dict__
+
+
+HANDLERS = {
+    "pm.schedule.create": handle_schedule_create,
+    "pm.todo.create": handle_todo_create,
+    "pm.decision.create": handle_decision_create,
+}
+
+
+def register(arb: Arbitrator) -> None:
+    """Register the PM request kinds + callable handlers on an arbitrator.
+
+    Callers that want to send PM requests should invoke this once after
+    `arb.start()` and before issuing any `pm.*` requests. Idempotent.
+    """
+    open_schema = {"type": "object"}
+    for kind in HANDLERS:
+        arb.register_request_kind(
+            kind=kind, input_schema=open_schema, response_schema=open_schema
+        )
+    for kind, handler in HANDLERS.items():
+        arb.register_request_callable(team_id=TEAM_ID, kind=kind, handler=handler)

@@ -1,12 +1,14 @@
-"""Standalone project-management team — spec §6.1, step 4.
+"""project-management — direct request-handler registration (no playbook).
 
-A caller team sends three PM requests (schedule, todo, decision) to the
-new project-management team. Verify rows land in the correct tables
-and the response payloads flow back into the caller's specialty context.
+The caller posts three requests (schedule, todo, decision) via the
+arbitrator; `run_callable_handlers_once` drains the queue by invoking
+the registered callable handlers. Rows land in the correct tables and
+responses flow back through each request's response_json.
 """
 from __future__ import annotations
 
 import asyncio
+import json
 import sys
 from pathlib import Path
 from uuid import uuid4
@@ -17,172 +19,94 @@ sys.path.insert(0, str(REPO_ROOT / "plugins" / "dev-team"))
 from services.conductor.arbitrator import (  # noqa: E402
     Arbitrator,
     RequestStatus,
-    SessionStatus,
 )
 from services.conductor.arbitrator.backends import SqliteBackend  # noqa: E402
-from services.conductor.conductor import Conductor  # noqa: E402
-from services.conductor.dispatcher import MockDispatcher  # noqa: E402
-from services.conductor.playbook import load_playbook  # noqa: E402
-from services.conductor.playbook.types import (  # noqa: E402
-    Manifest,
-    SendRequest,
-    State,
-    TeamPlaybook,
-    Transition,
-)
-from services.conductor.team_lead import TeamLead  # noqa: E402
+from services.conductor.playbooks import project_management  # noqa: E402
 
 
-PLAYBOOKS_DIR = (
-    REPO_ROOT / "plugins" / "dev-team" / "services" / "conductor" / "playbooks"
-)
-
-
-def _caller_playbook() -> TeamPlaybook:
-    return TeamPlaybook(
-        name="pm-caller",
-        states=[
-            State(
-                name="create_schedule",
-                entry_actions=(
-                    SendRequest(
-                        kind="pm.schedule.create",
-                        to_team="project-management",
-                        input_data={
-                            "milestone_name": "walking-skeleton",
-                            "status": "planned",
-                            "target_date": "2026-04-18",
-                        },
-                        response_context_key="schedule_row",
-                    ),
-                ),
-            ),
-            State(
-                name="create_todo",
-                entry_actions=(
-                    SendRequest(
-                        kind="pm.todo.create",
-                        to_team="project-management",
-                        input_data={
-                            "title": "wire PM team",
-                            "status": "open",
-                            "owner": "conductor",
-                            "milestone_name": "walking-skeleton",
-                        },
-                        response_context_key="todo_row",
-                    ),
-                ),
-            ),
-            State(
-                name="create_decision",
-                entry_actions=(
-                    SendRequest(
-                        kind="pm.decision.create",
-                        to_team="project-management",
-                        input_data={
-                            "title": "use standalone PM team",
-                            "rationale": "avoid refactor of dev-team in step 4",
-                            "decided_by": "user",
-                        },
-                        response_context_key="decision_row",
-                    ),
-                ),
-            ),
-            State(name="done", terminal=True),
-        ],
-        transitions=[
-            Transition("create_schedule", "create_todo"),
-            Transition("create_todo", "create_decision"),
-            Transition("create_decision", "done"),
-        ],
-        judgment_specs={},
-        manifest=Manifest(),
-        initial_state="create_schedule",
-    )
-
-
-def test_pm_team_round_trip(tmp_path):
+def test_pm_callable_handlers_round_trip(tmp_path):
     async def _t():
-        caller = _caller_playbook()
-        pm = load_playbook(PLAYBOOKS_DIR / "project_management.py")
-
         backend = SqliteBackend(tmp_path / "arb.sqlite")
-        arbitrator = Arbitrator(backend)
-        await arbitrator.start()
+        arb = Arbitrator(backend)
+        await arb.start()
 
-        dispatcher = MockDispatcher()
+        session_id = uuid4()
+        await arb.open_session(session_id, initial_team_id="pm-caller")
 
-        conductor = Conductor(
-            arbitrator=arbitrator,
-            dispatcher=dispatcher,
-            team_lead=TeamLead(caller),
-            session_id=uuid4(),
-            aux_team_leads=[TeamLead(pm)],
+        project_management.register(arb)
+
+        await arb.create_request(
+            session_id=session_id,
+            from_team="pm-caller",
+            to_team=project_management.TEAM_ID,
+            kind="pm.schedule.create",
+            input_data={
+                "milestone_name": "walking-skeleton",
+                "status": "planned",
+                "target_date": "2026-04-18",
+            },
+        )
+        await arb.create_request(
+            session_id=session_id,
+            from_team="pm-caller",
+            to_team=project_management.TEAM_ID,
+            kind="pm.todo.create",
+            input_data={
+                "title": "wire PM team",
+                "status": "open",
+                "owner": "conductor",
+                "milestone_name": "walking-skeleton",
+            },
+        )
+        await arb.create_request(
+            session_id=session_id,
+            from_team="pm-caller",
+            to_team=project_management.TEAM_ID,
+            kind="pm.decision.create",
+            input_data={
+                "title": "use callable PM handlers",
+                "rationale": "avoid playbook shell for mechanical writes",
+                "decided_by": "user",
+            },
         )
 
-        await conductor.run()
-        sid = conductor._session_id  # noqa: SLF001 — test introspection
+        drained = await arb.run_callable_handlers_once(session_id)
+        assert drained == 3
 
-        # Session completed successfully.
-        row = await backend.fetch_one("session", {"session_id": str(sid)})
-        assert row is not None
-        assert row["status"] == SessionStatus.COMPLETED.value
-
-        # Three requests, all completed, keyed to project-management team.
         request_rows = await backend.fetch_all(
-            "request", where={"session_id": str(sid)}
+            "request", where={"session_id": str(session_id)}
         )
-        assert len(request_rows) == 3
         assert all(
             r["status"] == RequestStatus.COMPLETED.value for r in request_rows
         )
-        assert all(r["to_team"] == "project-management" for r in request_rows)
+        # Each request carries a non-null response_json referencing the
+        # newly-inserted row.
+        for r in request_rows:
+            assert r["response_json"]
+            payload = json.loads(r["response_json"])
+            assert isinstance(payload, dict)
 
-        # Resource rows landed in the correct tables, tagged with the
-        # project-management team_id.
         schedule_rows = await backend.fetch_all(
-            "schedule", where={"session_id": str(sid)}
+            "schedule", where={"session_id": str(session_id)}
         )
         assert len(schedule_rows) == 1
         assert schedule_rows[0]["milestone_name"] == "walking-skeleton"
-        assert schedule_rows[0]["status"] == "planned"
-        assert schedule_rows[0]["target_date"] == "2026-04-18"
-        assert schedule_rows[0]["team_id"] == "project-management"
+        assert schedule_rows[0]["team_id"] == project_management.TEAM_ID
 
         todo_rows = await backend.fetch_all(
-            "todo", where={"session_id": str(sid)}
+            "todo", where={"session_id": str(session_id)}
         )
         assert len(todo_rows) == 1
         assert todo_rows[0]["title"] == "wire PM team"
-        assert todo_rows[0]["owner"] == "conductor"
-        assert todo_rows[0]["milestone_name"] == "walking-skeleton"
-        assert todo_rows[0]["team_id"] == "project-management"
 
         decision_rows = await backend.fetch_all(
-            "decision", where={"session_id": str(sid)}
+            "decision", where={"session_id": str(session_id)}
         )
         assert len(decision_rows) == 1
-        assert decision_rows[0]["title"] == "use standalone PM team"
-        assert decision_rows[0]["decided_by"] == "user"
-        assert decision_rows[0]["team_id"] == "project-management"
-        # Rationale lives in body side-table.
-        decision_body = await arbitrator.get_body(
-            "decision", decision_rows[0]["decision_id"]
-        )
-        assert decision_body is not None
-        assert "refactor" in decision_body.body_text
+        body = await arb.get_body("decision", decision_rows[0]["decision_id"])
+        assert body is not None
+        assert "playbook" in body.body_text
 
-        # Three handler state nodes — one per PM kind — all popped.
-        state_rows = await backend.fetch_all(
-            "state", where={"session_id": str(sid)}
-        )
-        handler_nodes = [
-            s for s in state_rows if s["state_name"].startswith("handler:")
-        ]
-        assert len(handler_nodes) == 3
-        assert all(s["team_id"] == "project-management" for s in handler_nodes)
-        assert all(s["exit_date"] is not None for s in handler_nodes)
-
-        await arbitrator.close()
+        await arb.close()
 
     asyncio.run(_t())

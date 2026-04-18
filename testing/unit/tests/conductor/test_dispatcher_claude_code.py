@@ -271,7 +271,12 @@ def test_session_id_reaches_argv(tmp_path):
     argv = json.loads(argv_out.read_text())
     assert "--session-id" in argv
     sid_in_argv = argv[argv.index("--session-id") + 1]
-    assert sid_in_argv == str(correlation.session_id)
+    # The dispatcher uses a deterministic UUID derived from the
+    # correlation's dispatch_id (so parallel dispatches within one
+    # conductor session don't collide on Claude's CLI session identifier).
+    import uuid
+    expected = str(uuid.uuid5(uuid.NAMESPACE_OID, correlation.dispatch_id))
+    assert sid_in_argv == expected
 
 
 def test_unknown_logical_model_raises_before_spawn(tmp_path):
