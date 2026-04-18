@@ -29,7 +29,8 @@ _Last refreshed 2026-04-18 — see `docs/architecture.md` for current state._
 
 ### Integration surface
 
-- **Plugin scheme for interacting with the team.** Transport-neutral Session API + event stream so any host (native Mac chat app, CLI, Slack, web) can drive a team. Design: [`2026-04-18-integration-surface-design.md`](./2026-04-18-integration-surface-design.md). Implementation plan pending.
+- **Plugin scheme for interacting with the team.** Transport-neutral Session API + event stream so any host (native Mac chat app, CLI, Slack, web) can drive a team. Design: [`2026-04-18-integration-surface-design.md`](./2026-04-18-integration-surface-design.md). Plan: [`2026-04-18-integration-surface-plan.md`](./2026-04-18-integration-surface-plan.md) — 6 tasks in order.
+- **`atp rollcall` command.** Pings every team-lead / specialist / specialty worker / specialty verifier through the integration surface and reports identity + reachability. Design + plan: [`2026-04-18-rollcall-design.md`](./2026-04-18-rollcall-design.md). Depends on integration surface Task 1.
 
 ### Tooling
 
