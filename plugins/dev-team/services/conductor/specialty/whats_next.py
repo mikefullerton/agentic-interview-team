@@ -106,19 +106,12 @@ async def gather_context(arbitrator, session_id: UUID) -> WhatsNextContext:
         where={"session_id": str(session_id), "status": "active"},
     )
 
-    all_gates = await storage.fetch_all(
-        "gate", where={"session_id": str(session_id)}
+    open_gates = await arbitrator.list_gates(
+        session_id, only_open=True
     )
-    open_gates = [g for g in all_gates if g.get("verdict") is None]
-
-    all_requests = await storage.fetch_all(
-        "request", where={"session_id": str(session_id)}
+    in_flight_requests = await arbitrator.list_requests(
+        session_id, statuses=["pending", "queued", "in-flight"]
     )
-    in_flight_requests = [
-        r
-        for r in all_requests
-        if r.get("status") in ("pending", "queued", "in-flight")
-    ]
 
     return WhatsNextContext(
         session_id=str(session_id),
