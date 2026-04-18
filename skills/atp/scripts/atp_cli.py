@@ -344,6 +344,71 @@ def cmd_run(
     )
 
 
+def cmd_rollcall(
+    teams_root: Path,
+    team: str | None,
+    output_format: str,
+    concurrency: int,
+    timeout: float,
+) -> int:
+    """Ping every role in one or all teams.
+
+    v1 uses a scripted in-process runner — proves discovery + integration
+    surface + formatting end to end without an LLM call. Real-LLM variant
+    is the functional smoke (see 2026-04-18-rollcall-design.md task 5).
+    """
+    from services.integration_surface import InProcessSession
+    from services.rollcall import (
+        discover_team,
+        discover_teams,
+        render_json,
+        render_table,
+        roll_call,
+    )
+
+    if team is not None:
+        team_dir = teams_root / team
+        if not team_dir.is_dir():
+            print(
+                f"atp: no team {team!r} under {teams_root}", file=sys.stderr
+            )
+            return 2
+        roles = discover_team(team_dir)
+    else:
+        if not teams_root.is_dir():
+            print(
+                f"atp: no teams directory at {teams_root}", file=sys.stderr
+            )
+            return 2
+        roles = discover_teams(teams_root)
+
+    if not roles:
+        print("atp: no roles discovered", file=sys.stderr)
+        return 2
+
+    async def scripted_runner(io, user_turn, ctx):
+        await io.emit("state", {"phase": "starting"})
+        await io.emit(
+            "text",
+            {"text": f"roll-call ack ({ctx.team})"},
+        )
+        await io.emit("result", {"stop_reason": "end_turn"})
+
+    session = InProcessSession(scripted_runner)
+    results = asyncio.run(roll_call(
+        session, roles, concurrency=concurrency, timeout=timeout,
+    ))
+
+    if output_format == "json":
+        sys.stdout.write(render_json(results))
+    else:
+        sys.stdout.write(render_table(results))
+    sys.stdout.flush()
+
+    failures = [r for r in results if r.error is not None]
+    return 0 if not failures else 2
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="atp")
     parser.add_argument("--teams-root", type=Path, default=None)
@@ -371,6 +436,22 @@ def main(argv: list[str] | None = None) -> int:
         help="Use the team's interview realizer (asks user questions via stdin) if available.",
     )
 
+    p_roll = sub.add_parser(
+        "rollcall",
+        help="Ping every role in one or all teams via the integration surface.",
+    )
+    p_roll.add_argument("team", nargs="?", default=None)
+    p_roll.add_argument(
+        "--format", choices=["table", "json"], default="table"
+    )
+    p_roll.add_argument("--concurrency", type=int, default=4)
+    p_roll.add_argument(
+        "--timeout",
+        type=float,
+        default=30.0,
+        help="Per-role timeout in seconds (default 30).",
+    )
+
     args = parser.parse_args(argv)
     teams_root = args.teams_root or _default_teams_root()
 
@@ -382,6 +463,11 @@ def main(argv: list[str] | None = None) -> int:
         args.db.parent.mkdir(parents=True, exist_ok=True)
         return cmd_run(
             teams_root, args.team, args.dispatcher, args.db, args.interview
+        )
+    if args.command == "rollcall":
+        return cmd_rollcall(
+            teams_root, args.team, args.format,
+            args.concurrency, args.timeout,
         )
 
     parser.print_help()
