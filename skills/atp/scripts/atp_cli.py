@@ -58,6 +58,7 @@ TEAM_OVERRIDES: dict[str, object] = {
         "module": name_a_puppy_roadmap,
         "build_roadmap": name_a_puppy_roadmap.build_roadmap,
         "realize": name_a_puppy_roadmap.realize,
+        "interview_realize": name_a_puppy_roadmap.make_realizer(interview=True),
         "team_id": name_a_puppy_roadmap.TEAM_ID,
         "worker_agents": [
             "breed-name-worker",
@@ -152,6 +153,56 @@ def _build_dispatcher(
     raise SystemExit(f"atp: unknown dispatcher {name!r}")
 
 
+async def _stdin_gate_answerer(arb, session_id, team_id):
+    """Poll the session for open question gates; prompt the user on stdin
+    and resolve each gate with their reply. Exits when the session
+    reaches a terminal status so the conductor can finish cleanly."""
+    seen: set[str] = set()
+    loop = asyncio.get_event_loop()
+    while True:
+        session_row = await arb._storage.fetch_one(
+            "session", {"session_id": str(session_id)}
+        )
+        if session_row and session_row["status"] in (
+            "completed",
+            "failed",
+            "aborted",
+        ):
+            return
+
+        open_gates = await arb.list_gates(
+            session_id, only_open=True, category="question"
+        )
+        for g in open_gates:
+            gid = g["gate_id"]
+            if gid in seen:
+                continue
+            seen.add(gid)
+            # Find the most recent question message on this plan_node.
+            messages = await arb.list_messages(session_id, team_id=team_id)
+            body = ""
+            for m in messages:
+                if (
+                    m.type == "question"
+                    and m.plan_node_id == g.get("plan_node_id")
+                ):
+                    body = m.body
+            options = json.loads(g.get("options_json") or "[]")
+            prompt = f"\n? {body}"
+            if options:
+                prompt += f"  (options: {'/'.join(options)})"
+            prompt += "\n> "
+            print(prompt, end="", flush=True)
+            # Read one line from stdin off the event loop.
+            answer = await loop.run_in_executor(
+                None, lambda: sys.stdin.readline().strip()
+            )
+            if not answer:
+                answer = options[0] if options else ""
+            await arb.resolve_gate(gid, verdict=answer)
+        await asyncio.sleep(0.1)
+
+
 def _mock_scheduler_decide(prompt: str) -> dict:
     """Parse the scheduler's prompt to find the plan-node list + latest
     state, then return an advance-to for the first un-done node, or
@@ -188,6 +239,7 @@ async def _run_team(
     dispatcher_name: str,
     db_path: Path,
     team_name: str,
+    interview: bool = False,
 ) -> int:
     backend = SqliteBackend(db_path)
     arb = Arbitrator(backend)
@@ -196,7 +248,10 @@ async def _run_team(
     override = TEAM_OVERRIDES.get(team_name)
     if override is not None:
         roadmap_id = await override["build_roadmap"](arb)
-        realizer = override["realize"]
+        if interview and "interview_realize" in override:
+            realizer = override["interview_realize"]
+        else:
+            realizer = override["realize"]
         team_id = override["team_id"]
     else:
         # Generic fallback: one-node-per-specialty demo roadmap. Real
@@ -236,9 +291,14 @@ async def _run_team(
         session_id=session_id,
         max_steps=500,
     )
-    await conductor.run_roadmap(
-        [WhatsNextSpecialty()],
-        realize_primitive=realizer,
+    # Run the conductor concurrently with a stdin-based gate answerer.
+    # Any question gate the realizer opens is rendered to stdout; the
+    # user's reply on stdin resolves the gate so the conductor resumes.
+    await asyncio.gather(
+        conductor.run_roadmap(
+            [WhatsNextSpecialty()], realize_primitive=realizer
+        ),
+        _stdin_gate_answerer(arb, session_id, team_id),
     )
 
     # Print a short summary including the final presented message, if any.
@@ -266,6 +326,7 @@ def cmd_run(
     team_name: str,
     dispatcher_name: str,
     db_path: Path,
+    interview: bool = False,
 ) -> int:
     team_dir = teams_root / team_name
     if not team_dir.is_dir():
@@ -278,7 +339,9 @@ def cmd_run(
             file=sys.stderr,
         )
         return 2
-    return asyncio.run(_run_team(manifest, dispatcher_name, db_path, team_name))
+    return asyncio.run(
+        _run_team(manifest, dispatcher_name, db_path, team_name, interview)
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -302,6 +365,11 @@ def main(argv: list[str] | None = None) -> int:
         default=Path("./.atp/atp.sqlite"),
         help="SQLite path for the arbitrator (default ./.atp/atp.sqlite).",
     )
+    p_run.add_argument(
+        "--interview",
+        action="store_true",
+        help="Use the team's interview realizer (asks user questions via stdin) if available.",
+    )
 
     args = parser.parse_args(argv)
     teams_root = args.teams_root or _default_teams_root()
@@ -312,7 +380,9 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_describe(teams_root, args.team)
     if args.command == "run":
         args.db.parent.mkdir(parents=True, exist_ok=True)
-        return cmd_run(teams_root, args.team, args.dispatcher, args.db)
+        return cmd_run(
+            teams_root, args.team, args.dispatcher, args.db, args.interview
+        )
 
     parser.print_help()
     return 2
