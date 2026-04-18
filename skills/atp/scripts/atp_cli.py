@@ -501,30 +501,27 @@ def cmd_rollcall(
             error=err,
         )
 
+    def _speaker(role) -> str:
+        kind_short = role.kind.rsplit("-", 1)[-1]
+        return f"{role.name} ({kind_short})"
+
     async def _run_all() -> list[RollCallResult]:
+        sys.stdout.write(f"facilitator> {ROLL_CALL_PROMPT}\n\n")
+        sys.stdout.flush()
         results: list[RollCallResult] = []
-        bar = "-" * 72
-        for i, role in enumerate(roles, 1):
-            sys.stdout.write(
-                f"\n[{i}/{len(roles)}] {role.kind} :: "
-                f"{role.team}/{role.name}\n{bar}\n"
-            )
+        for role in roles:
+            sys.stdout.write(f"{_speaker(role)}> ")
             sys.stdout.flush()
             result = await _run_one(role)
             if result.error is not None:
                 sys.stdout.write(
-                    f"\n[error] {result.error.kind}: "
-                    f"{result.error.message}\n"
+                    f"[error {result.error.kind}] {result.error.message}"
                 )
-            sys.stdout.write(f"\n└── ({result.duration_ms} ms)\n")
+            sys.stdout.write("\n\n")
             sys.stdout.flush()
             results.append(result)
         return results
 
-    sys.stdout.write(
-        f"rollcall: {len(roles)} roles, live via InProcessSession.events()\n"
-    )
-    sys.stdout.flush()
     results = asyncio.run(_run_all())
 
     sys.stdout.write("\n")
