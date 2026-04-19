@@ -6,52 +6,80 @@
   "required": ["kind", "schema_version", "name", "specialists"],
   "properties": {
     "kind": { "const": "agenticteam" },
-    "schema_version": { "const": 1 },
+    "schema_version": { "const": 2 },
     "name": { "type": "string", "minLength": 1 },
-    "identity": { "type": "string" },
-    "index": { "type": "string" },
+    "description": { "type": "string" },
+    "role": { "type": "string" },
     "team_leads": {
       "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["name"],
-        "properties": {
-          "name": { "type": "string" },
-          "frontmatter": { "type": "object" },
-          "body": { "type": "string" }
-        }
-      }
+      "items": { "$ref": "#/$defs/team_lead" }
     },
     "specialists": {
       "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["name", "specialties"],
-        "properties": {
-          "name": { "type": "string" },
-          "description": { "type": "string" },
-          "frontmatter": { "type": "object" },
-          "index": { "type": "string" },
-          "specialties": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": ["name"],
-              "properties": {
-                "name": { "type": "string" },
-                "frontmatter": { "type": "object" },
-                "worker_focus": { "type": "string" },
-                "verify": { "type": "string" },
-                "body": { "type": "string" },
-                "artifact_kind": {
-                  "enum": ["reference", "reference_unresolved", "output_location"]
-                }
-              }
-            }
-          }
+      "items": { "$ref": "#/$defs/specialist" }
+    },
+    "consulting": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/specialist" }
+    }
+  },
+  "$defs": {
+    "persona": {
+      "type": "object",
+      "properties": {
+        "archetype": { "type": "string" },
+        "voice": { "type": "string" },
+        "priorities": { "type": "string" }
+      }
+    },
+    "phase": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "team_lead": {
+      "type": "object",
+      "required": ["name", "role"],
+      "properties": {
+        "name": { "type": "string" },
+        "frontmatter": { "type": "object" },
+        "role": { "type": "string" },
+        "persona": { "$ref": "#/$defs/persona" },
+        "phases": { "type": "array", "items": { "$ref": "#/$defs/phase" } },
+        "interaction_style": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "specialist": {
+      "type": "object",
+      "required": ["name", "specialties"],
+      "properties": {
+        "name": { "type": "string" },
+        "frontmatter": { "type": "object" },
+        "role": { "type": "string" },
+        "persona": { "$ref": "#/$defs/persona" },
+        "sources": { "type": "array", "items": { "type": "string" } },
+        "exploratory_prompts": { "type": "array", "items": { "type": "string" } },
+        "specialties": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/specialty" }
         }
       }
     },
-    "consulting": { "type": "array" }
+    "specialty": {
+      "type": "object",
+      "required": ["name", "worker_focus"],
+      "properties": {
+        "name": { "type": "string" },
+        "frontmatter": { "type": "object" },
+        "worker_focus": { "type": "string" },
+        "verify": { "type": "string" },
+        "artifact_kind": {
+          "enum": ["reference_resolved", "reference_unresolved", "inline"]
+        }
+      }
+    }
   }
 }
