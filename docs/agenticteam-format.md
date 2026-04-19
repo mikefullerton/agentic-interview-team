@@ -22,22 +22,52 @@ specialty declared in its frontmatter `artifact:` field — no renaming,
 no flattening. A sealer copies each referenced file into the bundle
 and leaves the rest of the reference pool behind.
 
-## `team.json`
+## `team.json` (schema v2)
+
+Every authored markdown section maps to a structured JSON field. No
+prose is serialized as a bulk string.
 
 ```json
 {
   "kind": "agenticteam",
-  "schema_version": 1,
+  "schema_version": 2,
   "name": "devteam",
-  "identity":   { ... },   // team.md frontmatter + body
-  "index":      { ... },   // teams/<name>/index.md
-  "team_leads": [ ... ],
+  "description": "...",
+  "role": "Full-stack product analysis and development consulting...",
+  "team_leads": [
+    {
+      "name": "analysis",
+      "frontmatter": { ... },
+      "role": "Dispatch specialists against a target...",
+      "persona": {
+        "archetype": "Technical program manager...",
+        "voice": "Direct and structured...",
+        "priorities": "Signal over noise..."
+      },
+      "phases": [
+        { "name": "scan",     "description": "understand the target..." },
+        { "name": "dispatch", "description": "run specialists..." }
+      ],
+      "interaction_style": [
+        "Only team member who talks to the user",
+        "Presents a summary first, then offers drill-down"
+      ]
+    }
+  ],
   "specialists": [
     {
       "name": "platform-database",
       "frontmatter": { ... },
-      "description": "...",
-      "index": { ... },
+      "role": "Schema design, migrations, indexing...",
+      "persona": { "archetype": "...", "voice": "...", "priorities": "..." },
+      "sources": [
+        "guidelines/database-design/naming-conventions.md",
+        "guidelines/database-design/indexing.md"
+      ],
+      "exploratory_prompts": [
+        "If your data model had to support a feature you haven't thought of yet...",
+        "What if you needed to change your primary database technology?"
+      ],
       "specialties": [
         {
           "name": "indexing",
@@ -47,21 +77,44 @@ and leaves the rest of the reference pool behind.
             "artifact": "guidelines/database-design/indexing.md",
             "version": "1.0"
           },
-          "worker_focus": "...",
-          "verify": "...",
-          "body": "...full markdown body...",
+          "worker_focus": "Evaluate B-tree fundamentals...",
+          "verify": "EXPLAIN QUERY PLAN uses the proposed indexes...",
           "artifact_kind": "reference_resolved"
         }
       ]
     }
   ],
-  "consulting": [ ... ]
+  "consulting": [ ... same shape as specialists ... ]
 }
 ```
 
 Schema: `plugins/dev-team/schemas/agenticteam.schema.json` (JSON Schema
 draft 2020-12). Required top-level keys: `kind`, `schema_version`,
 `name`, `specialists`.
+
+### Field provenance
+
+| JSON field                          | markdown source                                      |
+| ----------------------------------- | ---------------------------------------------------- |
+| team `role`                         | `team.md` → `## Role`                                |
+| team-lead `role`                    | `team-leads/<lead>.md` → `## Role`                   |
+| team-lead `persona.{archetype,voice,priorities}` | `## Persona` → `### Archetype` / `### Voice` / `### Priorities` |
+| team-lead `phases[]`                | `## Phases` — bullets of `name — description`        |
+| team-lead `interaction_style[]`     | `## Interaction Style` — bulleted list               |
+| specialist `role`                   | `specialists/<sp>/specialist.md` → `## Role`         |
+| specialist `persona`                | same structure as team-lead persona                  |
+| specialist `sources[]`              | `## Cookbook Sources` or `## Sources` — bullet list  |
+| specialist `exploratory_prompts[]`  | `## Exploratory Prompts` — numbered list             |
+| specialty `worker_focus`            | specialty file → `## Worker Focus`                   |
+| specialty `verify`                  | specialty file → `## Verify`                         |
+
+### v1 → v2 changes
+
+- `schema_version: 2`.
+- Added structured fields: `role`, `persona`, `phases`, `interaction_style`, `sources`, `exploratory_prompts`.
+- **Dropped:** `identity` object, top-level `index`, specialist `index` and `description`, specialty `body`, `Manifest` prose sections (implicit from `specialties[]`).
+- **Dropped:** `index.md` files inside the bundle — the JSON structure is the index.
+- `artifact_kind` values: `reference` → `reference_resolved`; `output_location` folded into `inline`.
 
 ### `artifact_kind` values
 
