@@ -271,3 +271,57 @@ CREATE TABLE IF NOT EXISTS body (
     modification_date TEXT NOT NULL,
     PRIMARY KEY (owner_type, owner_id)
 );
+
+-- ---------------------------------------------------------------------------
+-- Dispatch log: one row per `claude -p` invocation (specialist) and per
+-- subagent Task call (worker, verifier). Children point at their parent
+-- via parent_dispatch_id so the specialist call is the root of a tree.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS dispatch (
+    dispatch_id         TEXT PRIMARY KEY,
+    session_id          TEXT NOT NULL,
+    team_id             TEXT NOT NULL,
+    plan_node_id        TEXT,
+    parent_dispatch_id  TEXT,                      -- NULL = top-level (specialist)
+    agent_kind          TEXT NOT NULL,             -- specialist|worker|verifier
+    agent_name          TEXT NOT NULL,
+    logical_model       TEXT NOT NULL,
+    concrete_model      TEXT,
+    status              TEXT NOT NULL,             -- running|completed|failed|timeout
+    start_date          TEXT NOT NULL,
+    end_date            TEXT,
+    FOREIGN KEY (session_id)         REFERENCES session(session_id),
+    FOREIGN KEY (plan_node_id)       REFERENCES plan_node(node_id),
+    FOREIGN KEY (parent_dispatch_id) REFERENCES dispatch(dispatch_id)
+);
+CREATE INDEX IF NOT EXISTS idx_dispatch_parent
+    ON dispatch(parent_dispatch_id);
+CREATE INDEX IF NOT EXISTS idx_dispatch_plan_node
+    ON dispatch(plan_node_id);
+
+-- ---------------------------------------------------------------------------
+-- Attempt: groups a worker dispatch with its (optional) verifier dispatch
+-- into one verdict-bearing unit of work. Declared by the specialist at the
+-- end of its run.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS attempt (
+    attempt_id              TEXT PRIMARY KEY,
+    result_id               TEXT NOT NULL,
+    session_id              TEXT NOT NULL,
+    attempt_kind            TEXT NOT NULL,         -- speciality|consultation|...
+    attempt_number          INTEGER NOT NULL,
+    worker_dispatch_id      TEXT NOT NULL,
+    verifier_dispatch_id    TEXT,
+    verdict                 TEXT,                  -- pass|fail|skipped
+    start_date              TEXT NOT NULL,
+    end_date                TEXT,
+    UNIQUE (result_id, attempt_kind, attempt_number),
+    FOREIGN KEY (result_id)            REFERENCES result(result_id),
+    FOREIGN KEY (session_id)           REFERENCES session(session_id),
+    FOREIGN KEY (worker_dispatch_id)   REFERENCES dispatch(dispatch_id),
+    FOREIGN KEY (verifier_dispatch_id) REFERENCES dispatch(dispatch_id)
+);
+CREATE INDEX IF NOT EXISTS idx_attempt_result
+    ON attempt(result_id);

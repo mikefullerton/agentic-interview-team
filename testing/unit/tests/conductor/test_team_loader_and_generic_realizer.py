@@ -97,16 +97,22 @@ def test_generic_realizer_runs_small_devteam_roadmap(tmp_path):
             roadmap_id=roadmap.roadmap_id,
         )
 
-        # Agent name format is <specialist>-<speciality>-worker.
-        agent_a = f"{picked_specialist.name}-{specialty_a}-worker"
-        agent_b = f"{picked_specialist.name}-{specialty_b}-worker"
-        # Mock returns a trivial {"result": {...}} envelope per worker.
-        dispatcher_responses = {
-            agent_a: {"result": {"note": "a-output"}},
-        }
-        if agent_b != agent_a:
-            dispatcher_responses[agent_b] = {"result": {"note": "b-output"}}
-        dispatcher = MockDispatcher(dispatcher_responses)
+        # Specialist path: one dispatcher call per plan_node keyed by
+        # specialist name. The return envelope carries the worker output
+        # plus an (empty) attempts array. MockDispatcher does not emit
+        # Task tool_use events, so no child dispatches are recorded —
+        # the realizer still writes a result row from the envelope.
+        focus_a = picked_specialist.specialties[specialty_a].worker_focus
+        focus_b = picked_specialist.specialties[specialty_b].worker_focus
+
+        def _response_for(prompt: str):
+            if specialty_a == specialty_b or focus_a in prompt:
+                return {"result": {"note": "a-output"}, "attempts": []}
+            return {"result": {"note": "b-output"}, "attempts": []}
+
+        dispatcher = MockDispatcher(
+            {picked_specialist.name: _response_for}
+        )
 
         conductor = Conductor(
             arbitrator=arb,

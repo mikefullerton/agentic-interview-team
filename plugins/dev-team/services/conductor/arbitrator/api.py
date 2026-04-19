@@ -355,6 +355,84 @@ class Arbitrator:
             plan_node_id=plan_node_id,
         )
 
+    async def create_dispatch(
+        self,
+        *,
+        session_id,
+        team_id: str,
+        agent_kind: str,
+        agent_name: str,
+        logical_model: str,
+        plan_node_id: str | None = None,
+        parent_dispatch_id: str | None = None,
+        concrete_model: str | None = None,
+    ) -> dict:
+        dispatch_id = _new_id("disp")
+        now = _utcnow_iso()
+        row = {
+            "dispatch_id": dispatch_id,
+            "session_id": str(session_id),
+            "team_id": team_id,
+            "plan_node_id": plan_node_id,
+            "parent_dispatch_id": parent_dispatch_id,
+            "agent_kind": agent_kind,
+            "agent_name": agent_name,
+            "logical_model": logical_model,
+            "concrete_model": concrete_model,
+            "status": "running",
+            "start_date": now,
+            "end_date": None,
+        }
+        await self._storage.insert("dispatch", row)
+        return row
+
+    async def close_dispatch(
+        self,
+        dispatch_id: str,
+        *,
+        status: str,
+        concrete_model: str | None = None,
+    ) -> dict:
+        now = _utcnow_iso()
+        patch: dict = {"status": status, "end_date": now}
+        if concrete_model is not None:
+            patch["concrete_model"] = concrete_model
+        await self._storage.update(
+            "dispatch", {"dispatch_id": dispatch_id}, patch,
+        )
+        row = await self._storage.fetch_one(
+            "dispatch", {"dispatch_id": dispatch_id},
+        )
+        return row
+
+    async def create_attempt(
+        self,
+        *,
+        result_id: str,
+        session_id,
+        attempt_kind: str,
+        attempt_number: int,
+        worker_dispatch_id: str,
+        verifier_dispatch_id: str | None = None,
+        verdict: str | None = None,
+    ) -> dict:
+        attempt_id = _new_id("att")
+        now = _utcnow_iso()
+        row = {
+            "attempt_id": attempt_id,
+            "result_id": result_id,
+            "session_id": str(session_id),
+            "attempt_kind": attempt_kind,
+            "attempt_number": attempt_number,
+            "worker_dispatch_id": worker_dispatch_id,
+            "verifier_dispatch_id": verifier_dispatch_id,
+            "verdict": verdict,
+            "start_date": now,
+            "end_date": now if verdict is not None else None,
+        }
+        await self._storage.insert("attempt", row)
+        return row
+
     async def list_results(
         self, session_id: UUID, team_id: str | None = None
     ) -> list[Result]:
