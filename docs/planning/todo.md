@@ -1,6 +1,6 @@
 # Dev-Team Planning Todo
 
-_Last refreshed 2026-04-18 — see `docs/architecture.md` for current state._
+_Last refreshed 2026-04-20 — see `docs/architecture.md` for current state._
 
 ## In Progress
 
@@ -14,10 +14,6 @@ _Last refreshed 2026-04-18 — see `docs/architecture.md` for current state._
 - **Cycle-detection policy.** `node_dependency` inserts can create cycles. Recommend write-time ancestor walk; pin the detail.
 - **Session scope options.** Schema supports one-session-per-run, one-per-primitive, and batching. Decide once executor team-lead behavior is being authored.
 - **Event-table retention.** Long-running projects will balloon `event`. Pick a pruning / archival policy.
-- **Dispatch / attempt tables on the live conductor schema.** Reference schema-v3.sql has them; live schema doesn't yet. When they land:
-  - extend `testing/unit/tests/conductor/contract/test_cross_stream_filter.py` to 11 streams
-  - add round-trip tests for `dispatch` + `attempt`
-  - update `plugins/dev-team/scripts/db/schema_lint.py` exemption list
 
 ### atp planning surface
 
@@ -30,7 +26,7 @@ _Last refreshed 2026-04-18 — see `docs/architecture.md` for current state._
 ### Integration surface
 
 - **Plugin scheme for interacting with the team.** Transport-neutral Session API + event stream so any host (native Mac chat app, CLI, Slack, web) can drive a team. Design: [`2026-04-18-integration-surface-design.md`](./2026-04-18-integration-surface-design.md). Plan: [`2026-04-18-integration-surface-plan.md`](./2026-04-18-integration-surface-plan.md) — 6 tasks in order.
-- **`atp rollcall` command.** Pings every team-lead / specialist / specialty worker / specialty verifier through the integration surface and reports identity + reachability. Design: [`2026-04-18-rollcall-design.md`](./2026-04-18-rollcall-design.md). Tasks 1-4 shipped (discovery + orchestrator + CLI + schema-conformance + failure-isolation tests, scripted runner). Open: Task 5 real-LLM smoke (`AGENTIC_REAL_LLM_SMOKE=1` gated), Task 6 SKILL.md docs.
+- **`atp rollcall` Task 6 — SKILL.md docs.** Design: [`2026-04-18-rollcall-design.md`](./2026-04-18-rollcall-design.md). Tasks 1-5 shipped (discovery + orchestrator + CLI + scripted runner + real-LLM smoke gated by `AGENTIC_REAL_LLM_SMOKE`). Only the SKILL.md authoring bullet remains.
 
 ### Tooling
 
@@ -43,6 +39,9 @@ _Last refreshed 2026-04-18 — see `docs/architecture.md` for current state._
 
 ## Recently Done
 
+- **Specialist-as-parent execution pipeline** (PR #32, 2026-04-19) — specialist is a `claude -p` subprocess per plan_node; worker+verifier are Task-tool subagents. Live `dispatch`/`attempt` tables with `parent_dispatch_id` self-FK, stream parser, `SpecialistDispatcher`, generic realizer rewrite.
+- **Rollcall real-LLM smoke + integration-surface transports** (PR #28, 2026-04-18) — `AGENTIC_REAL_LLM_SMOKE=1` gate spawns `claude -p` per discovered role; stdio NDJSON transport for the integration surface.
+- **`atp rollcall` Tasks 1-4** (PR #27, 2026-04-18) — discovery, orchestrator, table/JSON renderers, `atp rollcall` subcommand, 10 unit tests.
 - **Contract tests for roadmap arbitrator resources** (PR #23, 2026-04-18) — 28 tests under `testing/unit/tests/conductor/contract/`; covers verification items 2-4 (schema lint, tree+DAG round-trip, cross-stream filter).
 - **name-a-puppy + legacy runtime retirement** (PR #22).
 - **atp follow-ups: full action set, team loader, atp CLI, deprecation** (PR #20).
