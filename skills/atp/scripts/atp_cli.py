@@ -43,6 +43,7 @@ from services.conductor.dispatcher import (  # noqa: E402
     MockDispatcher,
 )
 from services.conductor.generic_realizer import make_generic_realizer  # noqa: E402
+from services.conductor.plan_realizer import make_plan_realizer  # noqa: E402
 from services.conductor.playbooks import name_a_puppy_roadmap  # noqa: E402
 from services.conductor.specialty import WhatsNextSpecialty  # noqa: E402
 from services.conductor.team_loader import TeamManifest, load_team  # noqa: E402
@@ -362,6 +363,96 @@ def cmd_run(
     )
 
 
+def _build_plan_dispatcher(
+    name: str, manifest: TeamManifest
+) -> Dispatcher:
+    """Build a Dispatcher for `atp plan`. Mock mode fabricates one
+    primitive plan_node per speciality so the mock path works for any
+    team without hand-authored fixtures."""
+    if name == "claude-code":
+        return ClaudeCodeDispatcher()
+    if name == "mock":
+        responses: dict[str, object] = {}
+        for specialist in manifest.specialists.values():
+            for specialty in specialist.specialties.values():
+                agent = f"{specialist.name}-{specialty.name}-planner"
+                responses[agent] = {
+                    "plan_nodes": [
+                        {
+                            "title": f"{specialist.name}.{specialty.name}",
+                            "node_kind": "primitive",
+                            "specialist": specialist.name,
+                            "speciality": specialty.name,
+                        }
+                    ],
+                    "depends_on": [],
+                }
+        return MockDispatcher(responses)
+    raise SystemExit(f"atp: unknown dispatcher {name!r}")
+
+
+def cmd_plan(
+    teams_root: Path,
+    team_name: str,
+    goal: str,
+    dispatcher_name: str,
+    db_path: Path,
+) -> int:
+    team_dir = teams_root / team_name
+    if not team_dir.is_dir():
+        print(f"atp: no team {team_name!r} under {teams_root}", file=sys.stderr)
+        return 2
+    if not (team_dir / "team-leads" / "planner.md").is_file():
+        print(
+            f"atp: team {team_name!r} has no team-leads/planner.md — "
+            "`atp plan` needs a planner team-lead to drive planning.",
+            file=sys.stderr,
+        )
+        return 2
+    manifest = load_team(team_dir)
+    if not manifest.specialists:
+        print(
+            f"atp: team {team_name!r} has no parseable specialties",
+            file=sys.stderr,
+        )
+        return 2
+
+    async def _run() -> str:
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        backend = SqliteBackend(db_path)
+        arb = Arbitrator(backend)
+        await arb.start()
+        try:
+            roadmap = await arb.create_roadmap(f"{manifest.name}: {goal}")
+            session_id = uuid4()
+            await arb.open_session(
+                session_id,
+                initial_team_id=manifest.name,
+                roadmap_id=roadmap.roadmap_id,
+            )
+            dispatcher = _build_plan_dispatcher(dispatcher_name, manifest)
+            realize = make_plan_realizer(manifest, goal=goal)
+            try:
+                await realize(arb, dispatcher, session_id, roadmap.roadmap_id)
+            except Exception:
+                from services.conductor.arbitrator import SessionStatus
+                await arb.close_session(session_id, SessionStatus.FAILED)
+                raise
+            from services.conductor.arbitrator import SessionStatus
+            await arb.close_session(session_id, SessionStatus.COMPLETED)
+            return roadmap.roadmap_id
+        finally:
+            await arb.close()
+
+    try:
+        roadmap_id = asyncio.run(_run())
+    except Exception as exc:
+        print(f"atp: plan failed: {exc}", file=sys.stderr)
+        return 2
+    print(roadmap_id)
+    return 0
+
+
 def cmd_rollcall(
     teams_root: Path,
     team: str | None,
@@ -592,6 +683,29 @@ def main(argv: list[str] | None = None) -> int:
         help="Use the team's interview realizer (asks user questions via stdin) if available.",
     )
 
+    p_plan = sub.add_parser(
+        "plan",
+        help=(
+            "Drive a team's planner to emit a roadmap. Prints the "
+            "roadmap_id on stdout."
+        ),
+    )
+    p_plan.add_argument("team")
+    p_plan.add_argument(
+        "--goal",
+        required=True,
+        help="Free-text goal to plan for.",
+    )
+    p_plan.add_argument(
+        "--dispatcher", choices=["mock", "claude-code"], default="mock"
+    )
+    p_plan.add_argument(
+        "--db",
+        type=Path,
+        default=Path("./.atp/atp.sqlite"),
+        help="SQLite path for the arbitrator (default ./.atp/atp.sqlite).",
+    )
+
     p_roll = sub.add_parser(
         "rollcall",
         help=(
@@ -627,6 +741,10 @@ def main(argv: list[str] | None = None) -> int:
         args.db.parent.mkdir(parents=True, exist_ok=True)
         return cmd_run(
             teams_root, args.team, args.dispatcher, args.db, args.interview
+        )
+    if args.command == "plan":
+        return cmd_plan(
+            teams_root, args.team, args.goal, args.dispatcher, args.db,
         )
     if args.command == "rollcall":
         return cmd_rollcall(
